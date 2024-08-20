@@ -1,8 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from .base_model import BaseModel
 
-class cnn(nn.Module):
+class cnn(BaseModel):
+    """A simple CNN model for MNIST dataset.
+    """
+    @staticmethod
+    def modify_commandline_options(parser, is_train):
+        return parser
+    
     def __init__(self, dropout=0.5):
         super(cnn, self).__init__()
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3)

@@ -1,9 +1,8 @@
 import argparse
 import os
-from util import util
 import torch
 import models
-import data
+import datasets
 
 
 class BaseOptions():
@@ -38,7 +37,7 @@ class BaseOptions():
         parser.add_argument('--init_gain', type=float, default=0.02, help='scaling factor for normal, xavier and orthogonal.')
         parser.add_argument('--no_dropout', action='store_true', help='no dropout for the generator')
         # dataset parameters
-        parser.add_argument('--dataset_mode', type=str, default='unaligned', help='chooses how datasets are loaded. [unaligned | aligned | single | colorization]')
+        parser.add_argument('--dataset_name', type=str, default='mnist', help='name of the dataset [mnist]')
         parser.add_argument('--direction', type=str, default='AtoB', help='AtoB or BtoA')
         parser.add_argument('--serial_batches', action='store_true', help='if true, takes images in order to make batches, otherwise takes them randomly')
         parser.add_argument('--num_threads', default=4, type=int, help='# threads for loading data')
@@ -74,44 +73,44 @@ class BaseOptions():
         opt, _ = parser.parse_known_args()
 
         # modify model-related parser options
-        model_name = opt.model
-        model_option_setter = models.get_option_setter(model_name)
-        parser = model_option_setter(parser, self.isTrain)
-        opt, _ = parser.parse_known_args()  # parse again with new defaults
+        # model_name = opt.model
+        # model_option_setter = models.get_option_setter(model_name)
+        # parser = model_option_setter(parser, self.isTrain)
+        # opt, _ = parser.parse_known_args()  # parse again with new defaults
 
         # modify dataset-related parser options
-        dataset_name = opt.dataset_mode
-        dataset_option_setter = data.get_option_setter(dataset_name)
+        dataset_name = opt.dataset_name
+        dataset_option_setter = datasets.get_option_setter(dataset_name)
         parser = dataset_option_setter(parser, self.isTrain)
 
         # save and return the parser
         self.parser = parser
         return parser.parse_args()
 
-    def print_options(self, opt):
-        """Print and save options
+    # def print_options(self, opt):
+    #     """Print and save options
 
-        It will print both current options and default values(if different).
-        It will save options into a text file / [checkpoints_dir] / opt.txt
-        """
-        message = ''
-        message += '----------------- Options ---------------\n'
-        for k, v in sorted(vars(opt).items()):
-            comment = ''
-            default = self.parser.get_default(k)
-            if v != default:
-                comment = '\t[default: %s]' % str(default)
-            message += '{:>25}: {:<30}{}\n'.format(str(k), str(v), comment)
-        message += '----------------- End -------------------'
-        print(message)
+    #     It will print both current options and default values(if different).
+    #     It will save options into a text file / [checkpoints_dir] / opt.txt
+    #     """
+    #     message = ''
+    #     message += '----------------- Options ---------------\n'
+    #     for k, v in sorted(vars(opt).items()):
+    #         comment = ''
+    #         default = self.parser.get_default(k)
+    #         if v != default:
+    #             comment = '\t[default: %s]' % str(default)
+    #         message += '{:>25}: {:<30}{}\n'.format(str(k), str(v), comment)
+    #     message += '----------------- End -------------------'
+    #     print(message)
 
-        # save to the disk
-        expr_dir = os.path.join(opt.checkpoints_dir, opt.name)
-        util.mkdirs(expr_dir)
-        file_name = os.path.join(expr_dir, '{}_opt.txt'.format(opt.phase))
-        with open(file_name, 'wt') as opt_file:
-            opt_file.write(message)
-            opt_file.write('\n')
+    #     # save to the disk
+    #     expr_dir = os.path.join(opt.checkpoints_dir, opt.name)
+    #     util.mkdirs(expr_dir)
+    #     file_name = os.path.join(expr_dir, '{}_opt.txt'.format(opt.phase))
+    #     with open(file_name, 'wt') as opt_file:
+    #         opt_file.write(message)
+    #         opt_file.write('\n')
 
     def parse(self):
         """Parse our options, create checkpoints directory suffix, and set up gpu device."""
@@ -123,7 +122,7 @@ class BaseOptions():
             suffix = ('_' + opt.suffix.format(**vars(opt))) if opt.suffix != '' else ''
             opt.name = opt.name + suffix
 
-        self.print_options(opt)
+        # self.print_options(opt)
 
         # set gpu ids
         str_ids = opt.gpu_ids.split(',')

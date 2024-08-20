@@ -36,11 +36,11 @@ case $NAME in
     ;;
   "mnist")
     kaggle competitions download -c digit-recognizer
-    mkdir -p data/mnist/train
-    mkdir -p data/mnist/test
+    mkdir -p data/mnist
+    mkdir -p data/mnist
     unzip digit-recognizer.zip
-    mv train.csv data/mnist/train/
-    mv test.csv data/mnist/test/
+    mv train.csv data/mnist
+    mv test.csv data/mnist
     rm sample_submission.csv
     rm digit-recognizer.zip
     ;;

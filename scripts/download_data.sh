@@ -34,22 +34,17 @@ case $NAME in
     rm -r train_masks
     rm train_masks.zip
     ;;
-  "other")
-    # Add code for other dataset here
+  "mnist")
+    kaggle competitions download -c digit-recognizer
+    mkdir -p data/mnist/train
+    mkdir -p data/mnist/test
+    unzip digit-recognizer.zip
+    mv train.csv data/mnist/train/
+    mv test.csv data/mnist/test/
+    rm sample_submission.csv
+    rm digit-recognizer.zip
     ;;
   *)
     echo "Invalid dataset name"
     ;;
 esac
-
-# kaggle competitions download -c carvana-image-masking-challenge -f train_hq.zip
-# unzip train_hq.zip
-# mv train_hq/* data/imgs/
-# rm -d train_hq
-# rm train_hq.zip
-
-# kaggle competitions download -c carvana-image-masking-challenge -f train_masks.zip
-# unzip train_masks.zip
-# mv train_masks/* data/masks/
-# rm -d train_masks
-# rm train_masks.zip

@@ -37,12 +37,27 @@ case $NAME in
   "mnist")
     kaggle competitions download -c digit-recognizer
     mkdir -p data/mnist
-    mkdir -p data/mnist
     unzip digit-recognizer.zip
     mv train.csv data/mnist
     mv test.csv data/mnist
     rm sample_submission.csv
     rm digit-recognizer.zip
+    ;;
+  "cifar10")
+    wget -c https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
+    mkdir -p data/cifar10
+    tar -xvf cifar-10-python.tar.gz
+    mv cifar-10-batches-py/* data/cifar10
+    rm cifar-10-python.tar.gz
+    rm -r cifar-10-batches-py
+    ;;
+  "tiny-imagenet")
+    wget -c https://www.image-net.org/data/tiny-imagenet-200.zip
+    mkdir -p data/tiny-imagenet
+    unzip tiny-imagenet-200.zip
+    mv tiny-imagenet-200/* data/tiny-imagenet
+    rm tiny-imagenet-200.zip
+    rm -r tiny-imagenet-200
     ;;
   *)
     echo "Invalid dataset name"

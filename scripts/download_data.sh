@@ -37,12 +37,23 @@ case $NAME in
   "mnist")
     kaggle competitions download -c digit-recognizer
     mkdir -p data/mnist
-    mkdir -p data/mnist
     unzip digit-recognizer.zip
     mv train.csv data/mnist
     mv test.csv data/mnist
     rm sample_submission.csv
     rm digit-recognizer.zip
+    ;;
+  "imagenet")
+    kaggle datasets download -d puneet6060/intel-image-classification
+    mkdir -p data/imagenet
+    unzip intel-image-classification.zip
+    mv seg_train data/imagenet
+    mv seg_test data/imagenet
+    mv seg_pred data/imagenet
+    rm -r seg_train
+    rm -r seg_test
+    rm -r seg_pred
+    rm intel-image-classification.zip
     ;;
   *)
     echo "Invalid dataset name"

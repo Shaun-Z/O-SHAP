@@ -10,6 +10,10 @@ bash scripts/download_data.sh carvana
 ```bash
 bash scripts/download_data.sh mnist
 ```
+3. ImageNet
+```bash
+bash scripts/download_data.sh imagenet
+
 # Test Scripts
 1. MNIST dataset test
 ```bash

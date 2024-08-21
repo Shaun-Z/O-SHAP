@@ -43,17 +43,21 @@ case $NAME in
     rm sample_submission.csv
     rm digit-recognizer.zip
     ;;
-  "imagenet")
-    kaggle datasets download -d puneet6060/intel-image-classification
-    mkdir -p data/imagenet
-    unzip intel-image-classification.zip
-    mv seg_train data/imagenet
-    mv seg_test data/imagenet
-    mv seg_pred data/imagenet
-    rm -r seg_train
-    rm -r seg_test
-    rm -r seg_pred
-    rm intel-image-classification.zip
+  "cifar10")
+    wget -c https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
+    mkdir -p data/cifar10
+    tar -xvf cifar-10-python.tar.gz
+    mv cifar-10-batches-py/* data/cifar10
+    rm cifar-10-python.tar.gz
+    rm -r cifar-10-batches-py
+    ;;
+  "tiny-imagenet")
+    wget -c https://www.image-net.org/data/tiny-imagenet-200.zip
+    mkdir -p data/tiny-imagenet
+    unzip tiny-imagenet-200.zip
+    mv tiny-imagenet-200/* data/tiny-imagenet
+    rm tiny-imagenet-200.zip
+    rm -r tiny-imagenet-200
     ;;
   *)
     echo "Invalid dataset name"

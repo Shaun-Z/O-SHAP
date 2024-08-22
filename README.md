@@ -28,6 +28,6 @@ I would like to express my sincere gratitude to the following individuals and pr
 
 - [Introduction to CNN Keras - 0.997 (top 6%)](https://www.kaggle.com/code/yassineghouzam/introduction-to-cnn-keras-0-997-top-6#2.1-Load-data): The MNIST dataset preprocessing for this project references its methodology.
 
-- [CycleGAN](https://github.com/junyanz/CycleGAN): The structure of this repository references this project.
+- [CycleGAN](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix): The structure of this repository references this project.
 
 I am truly thankful for the open-source community and the invaluable resources they provide.

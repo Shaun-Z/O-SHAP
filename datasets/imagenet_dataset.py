@@ -50,23 +50,23 @@ class ImageNetDataset(BaseDataset):
         if self.phase == 'train':
             dir = os.path.join(self.dir, 'train') # directory to the train images
             directories = sorted(glob(os.path.join(dir, '*')),key = extract_train_number) # directories of the train images
-            self.X_train = []
-            self.Y_train = []
+            self.X = []
+            self.Y = []
             for directory in directories:
                 images = sorted(glob(os.path.join(directory, 'images', '*.JPEG')), key = extract_val_number) # add images of each directory in order
-                self.X_train += images
-                self.Y_train += [directory.split('/')[-1]] * len(images)
+                self.X += images
+                self.Y += [directory.split('/')[-1]] * len(images)
 
         elif self.phase == 'val':
             dir = os.path.join(self.dir, 'val') # directory to the val images
-            self.X_val = sorted(glob(os.path.join(dir, 'images', '*.JPEG')), key = extract_val_number) # get the list of path to the test images
+            self.X = sorted(glob(os.path.join(dir, 'images', '*.JPEG')), key = extract_val_number) # get the list of path to the test images
             with open(os.path.join(dir, 'val_annotations.txt'), 'r') as file:
                 content = file.readlines() # read the content of the val_annotations.txt file
-            self.Y_val = [line.split()[1] for line in content]
+            self.Y = [line.split()[1] for line in content]
 
         else:
             dir = os.path.join(self.dir, 'test/images') # directory to the test images
-            self.X_test = sorted(glob(os.path.join(dir, '*.JPEG')), key = extract_val_number) # get the list of path to the test images
+            self.X = sorted(glob(os.path.join(dir, '*.JPEG')), key = extract_val_number) # get the list of path to the test images
 
 
     def __getitem__(self, index):
@@ -81,11 +81,11 @@ class ImageNetDataset(BaseDataset):
         transform = transforms.Compose([
             transforms.PILToTensor()
         ])
-        path = self.X_train[index]
+        path = self.X[index]
         im = Image.open(path).convert("RGB")
         X_train_tensor = transform(im).permute(1,2,0)
-        return {'X': X_train_tensor, 'Y': self.Y_train[index]} # X_train : {num_batches, 64, 64, 3} , Y_train : a list of labels
+        return {'X': X_train_tensor, 'Y': self.Y[index]} # X_train : {num_batches, 64, 64, 3} , Y_train : a list of labels
 
     def __len__(self):
         """Return the total number of images in the dataset."""
-        return len(self.X_train)
+        return len(self.X)

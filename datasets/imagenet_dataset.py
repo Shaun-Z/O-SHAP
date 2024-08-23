@@ -81,13 +81,10 @@ class ImageNetDataset(BaseDataset):
         transform = transforms.Compose([
             transforms.PILToTensor()
         ])
-        X_train_tensor = []
-        X_train_paths = self.X_train[index]
-        for path in X_train_paths:
-            im = Image.open(path).convert("RGB")
-            X_train_tensor.append(transform(im).permute(1,2,0))
-        X_train_tensor = torch.stack(X_train_tensor, dim = 0)
-        return {'X_train': X_train_tensor, 'Y_train': self.Y_train[index]} # X_train : {num_batches, 64, 64, 3} , Y_train : a list of labels
+        path = self.X_train[index]
+        im = Image.open(path).convert("RGB")
+        X_train_tensor = transform(im).permute(1,2,0)
+        return {'X': X_train_tensor, 'Y': self.Y_train[index]} # X_train : {num_batches, 64, 64, 3} , Y_train : a list of labels
 
     def __len__(self):
         """Return the total number of images in the dataset."""

@@ -35,38 +35,29 @@ class ImageNetDataset(BaseDataset):
         self.load_data()
 
     def load_data(self):
-        # define the extract_train_number function to make sure train glob will sort the files in the correct order
-        def extract_train_number(path):
-            folder_name = path.split('/')[-1]
-            return int(folder_name[1:])
-        # define the extract_val_number function to make sure val glob will sort the files in the correct order
-        def extract_val_number(path):
-            filename = path.split('/')[-1]
-            number = filename.split('_')[1].split('.')[0]
-            return int(number)
-        
         """Load data into memory.(here we only load the path to the data cuz the dataset is too large)"""
         # load data from /path/to/data/
         if self.phase == 'train':
-            dir = os.path.join(self.dir, 'train') # directory to the train images
-            directories = sorted(glob(os.path.join(dir, '*')),key = extract_train_number) # directories of the train images
+            dir = os.path.join(self.dir, self.phase) # directory to the train images
+            directories = os.listdir(dir) # directories of the train images
             self.X = []
             self.Y = []
             for directory in directories:
-                images = sorted(glob(os.path.join(directory, 'images', '*.JPEG')), key = extract_val_number) # add images of each directory in order
+                images = glob(os.path.join(dir, directory, 'images', '*.JPEG')) # get the list of path to the train images
                 self.X += images
-                self.Y += [directory.split('/')[-1]] * len(images)
+                self.Y += [directory] * len(images) # current directory is the label of the images
 
         elif self.phase == 'val':
-            dir = os.path.join(self.dir, 'val') # directory to the val images
-            self.X = sorted(glob(os.path.join(dir, 'images', '*.JPEG')), key = extract_val_number) # get the list of path to the test images
+            dir = os.path.join(self.dir, self.phase) # directory to the val images
+            self.X = glob(os.path.join(dir, 'images', '*.JPEG')) # get the list of path to the test images
             with open(os.path.join(dir, 'val_annotations.txt'), 'r') as file:
                 content = file.readlines() # read the content of the val_annotations.txt file
-            self.Y = [line.split()[1] for line in content]
+            for image in self.X:
+                self.Y.append(content[int(image.split('_')[-1].split('.')[0])].split()[1]) # look up the label of each image in val_annotations.txt
 
         else:
-            dir = os.path.join(self.dir, 'test/images') # directory to the test images
-            self.X = sorted(glob(os.path.join(dir, '*.JPEG')), key = extract_val_number) # get the list of path to the test images
+            dir = os.path.join(self.dir, self.phase, 'images') # directory to the test images
+            self.X = glob(os.path.join(dir, '*.JPEG')) # get the list of path to the test images
 
 
     def __getitem__(self, index):

@@ -47,3 +47,18 @@ def get_option_setter(model_name):
     """Return the static method <modify_commandline_options> of the model class."""
     model_class = find_model_using_name(model_name)
     return model_class.modify_commandline_options
+
+def create_model(opt):
+    """Create a model given the option.
+
+    This function warps the class CustomDatasetDataLoader.
+    This is the main interface between this package and 'train.py'/'test.py'
+
+    Example:
+        >>> from models import create_model
+        >>> model = create_model(opt)
+    """
+    model = find_model_using_name(opt.model)
+    instance = model(opt)
+    print("model [%s] was created" % type(instance).__name__)
+    return instance

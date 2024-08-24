@@ -34,14 +34,22 @@ case $NAME in
     rm -r train_masks
     rm train_masks.zip
     ;;
-  "mnist")
+  "mnist_csv")
     kaggle competitions download -c digit-recognizer
-    mkdir -p data/mnist
+    mkdir -p data/mnist_csv
     unzip digit-recognizer.zip
-    mv train.csv data/mnist
-    mv test.csv data/mnist
+    mv train.csv data/mnist_csv
+    mv test.csv data/mnist_csv
     rm sample_submission.csv
     rm digit-recognizer.zip
+    ;;
+  "mnist")
+    mkdir -p data/mnist/raw
+    wget -c -P data/mnist/raw https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz
+    wget -c -P data/mnist/raw https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz
+    wget -c -P data/mnist/raw https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz
+    wget -c -P data/mnist/raw https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz
+    gunzip -k data/mnist/raw/*.gz
     ;;
   "cifar10")
     wget -c https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz

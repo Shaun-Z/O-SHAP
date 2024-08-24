@@ -1,23 +1,50 @@
 # ML-Testbench
+
 This is a testbench for ML algorithms and explanation methods.
 
 # Download Datasets
+
 1. carvana-image-masking-challenge
+
 ```bash
 bash scripts/download_data.sh carvana
 ```
+
 2. MNIST
+
 ```bash
 bash scripts/download_data.sh mnist
 ```
+
 3. ImageNet
+
 ```bash
 bash scripts/download_data.sh imagenet
-
+```
 # Test Scripts
-1. MNIST dataset test
+
+1. MNIST
+
 ```bash
-python mnist_dataset_test.py --dataroot ./data/mnist
+python mnist_dataset_test.py --dataroot ./data/mnist --gpu_ids -1
+```
+
+or
+
+```bash
+python mnist_dataset_test.py -d ./datasets/mnist -g -1
+```
+
+2. ImageNet
+
+```bash
+python imagenet_dataset_test.py --dataroot ./data/tiny-imagenet --gpu_ids -1
+```
+
+or
+
+```bash
+python imagenet_dataset_test.py -d ./data/tiny-imagenet -g -1
 ```
 
 # Models

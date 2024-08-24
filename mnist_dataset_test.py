@@ -1,18 +1,29 @@
+'''
+To test this script, run the following command:
+----------------
+python mnist_dataset_test.py --dataroot ./datasets/mnist --gpu_ids -1
+----------------
+or
+----------------
+python mnist_dataset_test.py -d ./datasets/mnist -g -1
+----------------
+'''
+
 import numpy as np
-import argparse
 import matplotlib.pyplot as plt
 
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from options.train_options import TrainOptions
 from datasets.mnist_dataset import MnistDataset
-parser = argparse.ArgumentParser()
+
 opt = TrainOptions().parse()
 dataset = MnistDataset(opt)
-print(dataset[0]['X_train'].shape, dataset[0]['Y_train'], dataset[0]['X_val'].shape, dataset[0]['Y_val'])
+print(dataset[0]['X'].shape, dataset[0]['Y'])
 
 for i in range(10):
     plt.subplot(2, 5, i+1)
-    plt.imshow(dataset[i]['X_train'], cmap='gray')
-    plt.title(np.argmax(dataset[i]['Y_train']))
+    plt.imshow(dataset[i]['X'], cmap='gray')
+    plt.title(dataset[i]['Y'])
     plt.axis('off')
 plt.show()
+
+print(len(dataset))

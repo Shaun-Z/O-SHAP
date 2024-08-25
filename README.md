@@ -19,7 +19,7 @@ bash scripts/download_data.sh mnist
 3. ImageNet
 
 ```bash
-bash scripts/download_data.sh imagenet
+bash scripts/download_data.sh tiny-imagenet
 ```
 # Test Scripts
 

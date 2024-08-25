@@ -36,14 +36,14 @@ class ResClassModel(BaseModel):
         # self.visual_names = visual_names_A + visual_names_B  # combine visualizations for A and B
         # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>.
         if self.isTrain:
-            self.model_names = ['R_A']
+            self.model_names = ['resnet_classify']
         else:  # during test time, only load Gs
-            self.model_names = ['R_A']
+            self.model_names = ['resnet_classify']
 
         # define networks (both Generators and discriminators)
         # The naming is different from those used in the paper.
         # Code (vs. paper): G_A (G), G_B (F), D_A (D_Y), D_B (D_X)
-        self.netG_A = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, opt.norm,
+        self.resnet_classifier = networks.ResnetClassifier(opt.input_nc, opt.num_classes, opt.ngf, opt.n_blocks, opt.norm,
                                         not opt.no_dropout, opt.init_type, opt.init_gain, self.gpu_ids)
 
         if self.isTrain:

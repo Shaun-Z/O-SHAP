@@ -372,6 +372,52 @@ class ResnetGenerator(nn.Module):
     def forward(self, input):
         """Standard forward"""
         return self.model(input)
+    
+class ResnetClassifier(nn.Module):
+    """Resnet-based classifier that consists of Resnet blocks, based on ResnetGenerator
+    """
+
+    def __init__(self, input_nc, num_classes, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, padding_type='reflect', pool_type='max'):
+        """Construct a Resnet-based classifier
+
+        Parameters:
+            input_nc (int)      -- the number of channels in input images
+            num_class (int)     -- the number of output image classes
+            ngf (int)           -- the number of channels in the res_blocks
+            norm_layer          -- normalization layer
+            use_dropout (bool)  -- if use dropout layers
+            n_blocks (int)      -- the number of ResNet blocks
+            padding_type (str)  -- the name of padding layer in conv layers: reflect | replicate | zero
+            pool_type (str)     -- the type of pooling layer: max | avg
+        """
+        assert(n_blocks >= 0)
+        super(ResnetClassifier, self).__init__()
+        if type(norm_layer) == functools.partial:
+            use_bias = norm_layer.func == nn.InstanceNorm2d
+        else:
+            use_bias = norm_layer == nn.InstanceNorm2d
+
+        model = [nn.ReflectionPad2d(3),
+                 nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
+                 norm_layer(ngf),
+                 nn.ReLU(True)
+                 ]
+        
+        if pool_type == 'max':
+            model += nn.MaxPool2d(kernel_size=3, stride=2, padding=1) # here we add a maxpooling layer
+        elif pool_type == 'avg':
+            model += nn.AvgPool2d(kernel_size=3, stride=2, padding=1) # here we add a avgpooling layer
+
+        for i in range(n_blocks):       # add ResNet blocks
+            model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
+
+        model += nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.LazyLinear(num_classes)) # here we add Global Average Pooling layer and a Linear layer
+
+        self.model = nn.Sequential(*model)
+
+    def forward(self, input):
+        """Standard forward"""
+        return self.model(input)
 
 
 class ResnetBlock(nn.Module):

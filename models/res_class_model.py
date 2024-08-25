@@ -9,11 +9,10 @@ class ResClassModel(BaseModel):
 
     @staticmethod
     def modify_commandline_options(parser, is_train=True):
-        parser.set_defaults(no_dropout=True)  # default CycleGAN did not use dropout
-        # if is_train:
-        #     parser.add_argument('--lambda_A', type=float, default=10.0, help='weight for cycle loss (A -> B -> A)')
-        #     parser.add_argument('--lambda_B', type=float, default=10.0, help='weight for cycle loss (B -> A -> B)')
-        #     parser.add_argument('--lambda_identity', type=float, default=0.5, help='use identity mapping. Setting lambda_identity other than 0 has an effect of scaling the weight of the identity mapping loss. For example, if the weight of the identity loss should be 10 times smaller than the weight of the reconstruction loss, please set lambda_identity = 0.1')
+        parser.set_defaults(no_dropout=True)  # default model did not use dropout
+
+        parser.add_argument('--num_classes', type=int, default=200, help='the number of output image classes')
+        parser.add_argument('--n_blocks', type=int, default=6, help='the number of ResNet blocks')
         
         return parser
     
@@ -43,15 +42,15 @@ class ResClassModel(BaseModel):
         # define networks (both Generators and discriminators)
         # The naming is different from those used in the paper.
         # Code (vs. paper): G_A (G), G_B (F), D_A (D_Y), D_B (D_X)
-        self.resnet_classifier = networks.ResnetClassifier(opt.input_nc, opt.num_classes, opt.ngf, opt.n_blocks, opt.norm,
-                                        not opt.no_dropout, opt.init_type, opt.init_gain, self.gpu_ids)
+        self.resnet_classifier = networks.ResnetClassifier(opt.input_nc, opt.num_classes, opt.ngf, opt.n_blocks, opt.norm, not opt.no_dropout, opt.init_type, opt.init_gain, self.gpu_ids)
 
         if self.isTrain:
             # define loss functions
-            self.criterion = networks.GANLoss(opt.gan_mode).to(self.device)  # define loss.
+            # self.criterion = networks.GANLoss(opt.gan_mode).to(self.device)  # define loss.
+            self.criterion = torch.nn.MSELoss()  # define loss.
             # initialize optimizers; schedulers will be automatically created by function <BaseModel.setup>.
-            self.optimizer_G = torch.optim.Adam(itertools.chain(self.netG_A.parameters(), self.netG_B.parameters()), lr=opt.lr, betas=(opt.beta1, 0.999))
-            self.optimizers.append(self.optimizer_G)
+            self.optimizer = torch.optim.Adam(self.resnet_classifier.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
+            self.optimizers.append(self.optimizer)
 
     def set_input(self, input):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
@@ -61,28 +60,25 @@ class ResClassModel(BaseModel):
 
         The option 'direction' can be used to swap domain A and domain B.
         """
-        # AtoB = self.opt.direction == 'AtoB'
-        # self.real_A = input['A' if AtoB else 'B'].to(self.device)
-        # self.real_B = input['B' if AtoB else 'A'].to(self.device)
+        self.input = input['X'].to(self.device)
+        self.label = input['Y'].to(self.device)
         # self.image_paths = input['A_paths' if AtoB else 'B_paths']
-        pass
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
-        # self.fake_B = self.netG_A(self.real_A)  # G_A(A)
-        # self.rec_A = self.netG_B(self.fake_B)   # G_B(G_A(A))
-        # self.fake_A = self.netG_B(self.real_B)  # G_B(B)
-        # self.rec_B = self.netG_A(self.fake_A)   # G_A(G_B(B))
-        pass
+        self.output = self.resnet_classifier(self.input)  # model(input)
+
+    def backward(self):
+        """Calculate the loss for back propagation"""
+        # First, G_A should fake the discriminator
+        self.loss = self.criterion(self.output, self.label)
+        self.loss.backward()
 
     def optimize_parameters(self):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
         # forward
-        self.forward()      # compute fake images and reconstruction images.
-        # G_A and G_B
-        self.set_requires_grad([self.netD_A, self.netD_B], False)  # Ds require no gradients when optimizing Gs
-        self.optimizer_G.zero_grad()  # set G_A and G_B's gradients to zero
-        self.backward_G()             # calculate gradients for G_A and G_B
-        self.optimizer_G.step()       # update G_A and G_B's weights
-
-
+        self.forward()      # compute predictions
+        # backward
+        self.optimizer.zero_grad()  # set gradients to zero
+        self.backward()             # calculate gradients
+        self.optimizer.step()       # update weights

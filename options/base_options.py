@@ -1,5 +1,6 @@
 import argparse
 import os
+from util import util
 import torch
 import models
 import datasets
@@ -29,9 +30,7 @@ class BaseOptions():
         parser.add_argument('--output_nc', type=int, default=3, help='# of output image channels: 3 for RGB and 1 for grayscale')
         parser.add_argument('--ngf', type=int, default=64, help='# of gen filters in the last conv layer')
         parser.add_argument('--ndf', type=int, default=64, help='# of discrim filters in the first conv layer')
-        parser.add_argument('--netD', type=str, default='basic', help='specify discriminator architecture [basic | n_layers | pixel]. The basic model is a 70x70 PatchGAN. n_layers allows you to specify the layers in the discriminator')
-        parser.add_argument('--netG', type=str, default='resnet_9blocks', help='specify generator architecture [resnet_9blocks | resnet_6blocks | unet_256 | unet_128]')
-        parser.add_argument('--n_layers_D', type=int, default=3, help='only used if netD==n_layers')
+        
         parser.add_argument('--norm', type=str, default='instance', help='instance normalization or batch normalization [instance | batch | none]')
         parser.add_argument('--init_type', type=str, default='normal', help='network initialization [normal | xavier | kaiming | orthogonal]')
         parser.add_argument('--init_gain', type=float, default=0.02, help='scaling factor for normal, xavier and orthogonal.')
@@ -49,13 +48,13 @@ class BaseOptions():
         parser.add_argument('--no_flip', action='store_true', help='if specified, do not flip the images for data augmentation')
         parser.add_argument('--display_winsize', type=int, default=256, help='display window size for both visdom and HTML')
         # additional parameters
-        parser.add_argument('--epoch', '-e', type=str, default='latest', help='which epoch to load? set to latest to use latest cached model')
+        parser.add_argument('--epoch', type=str, default='latest', help='which epoch to load? set to latest to use latest cached model')
         parser.add_argument('--load_iter', type=int, default='0', help='which iteration to load? if load_iter > 0, the code will load models by iter_[load_iter]; otherwise, the code will load models by [epoch]')
         parser.add_argument('--verbose', action='store_true', help='if specified, print more debugging information')
         parser.add_argument('--suffix', default='', type=str, help='customized suffix: opt.name = opt.name + suffix: e.g., {model}_{netG}_size{load_size}')
         # wandb parameters
         parser.add_argument('--use_wandb', action='store_true', help='if specified, then init wandb logging')
-        parser.add_argument('--wandb_project_name', type=str, default='CycleGAN-and-pix2pix', help='specify wandb project name')
+        parser.add_argument('--wandb_project_name', type=str, default='ML-Testbench', help='specify wandb project name')
         self.initialized = True
         return parser
 
@@ -73,10 +72,10 @@ class BaseOptions():
         opt, _ = parser.parse_known_args()
 
         # modify model-related parser options
-        # model_name = opt.model
-        # model_option_setter = models.get_option_setter(model_name)
-        # parser = model_option_setter(parser, self.isTrain)
-        # opt, _ = parser.parse_known_args()  # parse again with new defaults
+        model_name = opt.model
+        model_option_setter = models.get_option_setter(model_name)
+        parser = model_option_setter(parser, self.isTrain)
+        opt, _ = parser.parse_known_args()  # parse again with new defaults
 
         # modify dataset-related parser options
         dataset_name = opt.dataset_name
@@ -87,30 +86,30 @@ class BaseOptions():
         self.parser = parser
         return parser.parse_args()
 
-    # def print_options(self, opt):
-    #     """Print and save options
+    def print_options(self, opt):
+        """Print and save options
 
-    #     It will print both current options and default values(if different).
-    #     It will save options into a text file / [checkpoints_dir] / opt.txt
-    #     """
-    #     message = ''
-    #     message += '----------------- Options ---------------\n'
-    #     for k, v in sorted(vars(opt).items()):
-    #         comment = ''
-    #         default = self.parser.get_default(k)
-    #         if v != default:
-    #             comment = '\t[default: %s]' % str(default)
-    #         message += '{:>25}: {:<30}{}\n'.format(str(k), str(v), comment)
-    #     message += '----------------- End -------------------'
-    #     print(message)
+        It will print both current options and default values(if different).
+        It will save options into a text file / [checkpoints_dir] / opt.txt
+        """
+        message = ''
+        message += '----------------- Options ---------------\n'
+        for k, v in sorted(vars(opt).items()):
+            comment = ''
+            default = self.parser.get_default(k)
+            if v != default:
+                comment = '\t[default: %s]' % str(default)
+            message += '{:>25}: {:<30}{}\n'.format(str(k), str(v), comment)
+        message += '----------------- End -------------------'
+        print(message)
 
-    #     # save to the disk
-    #     expr_dir = os.path.join(opt.checkpoints_dir, opt.name)
-    #     util.mkdirs(expr_dir)
-    #     file_name = os.path.join(expr_dir, '{}_opt.txt'.format(opt.phase))
-    #     with open(file_name, 'wt') as opt_file:
-    #         opt_file.write(message)
-    #         opt_file.write('\n')
+        # save to the disk
+        expr_dir = os.path.join(opt.checkpoints_dir, opt.name)
+        util.mkdirs(expr_dir)
+        file_name = os.path.join(expr_dir, '{}_opt.txt'.format(opt.phase))
+        with open(file_name, 'wt') as opt_file:
+            opt_file.write(message)
+            opt_file.write('\n')
 
     def parse(self):
         """Parse our options, create checkpoints directory suffix, and set up gpu device."""
@@ -122,7 +121,7 @@ class BaseOptions():
             suffix = ('_' + opt.suffix.format(**vars(opt))) if opt.suffix != '' else ''
             opt.name = opt.name + suffix
 
-        # self.print_options(opt)
+        self.print_options(opt)
 
         # set gpu ids
         str_ids = opt.gpu_ids.split(',')

@@ -1,3 +1,5 @@
+checkpoints*/
+
 # Data directory
 data/*
 !data/

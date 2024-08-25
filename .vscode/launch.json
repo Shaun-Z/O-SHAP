@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--dataroot", "./data/mnist", "--gpu_ids", "-1"]
+            "args": ["--dataroot", "./data/tiny-imagenet", "--gpu_ids", "-1", "-n", "RestNetClassifier", "-m", "res_class", "--dataset_name", "imagenet"]
         }
     ]
 }

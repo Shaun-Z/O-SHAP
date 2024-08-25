@@ -71,11 +71,12 @@ class ImageNetDataset(BaseDataset):
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
         transform = transforms.Compose([
-            transforms.PILToTensor()
+            transforms.PILToTensor(),
+            transforms.ConvertImageDtype(torch.float)
         ])
         path = self.X[index]
         im = Image.open(path).convert("RGB")
-        X_train_tensor = transform(im).permute(1,2,0)
+        X_train_tensor = transform(im) # .permute(1,2,0)
         return {'X': X_train_tensor, 'Y_train': self.Y_train[index], 'Y': self.Y[index]} # X_train : {num_batches, 64, 64, 3} , Y_train : a list of labels
 
     def __len__(self):

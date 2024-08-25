@@ -109,11 +109,16 @@ def init_net(net, init_type='normal', init_gain=0.02, gpu_ids=[]):
 
     Return an initialized network.
     """
-    if len(gpu_ids) > 0:
-        assert(torch.cuda.is_available())
-        net.to(gpu_ids[0])
-        net = torch.nn.DataParallel(net, gpu_ids)  # multi-GPUs
     init_weights(net, init_type, init_gain=init_gain)
+    if len(gpu_ids) > 0:
+        if gpu_ids == 'mps':
+            device = torch.device('mps')
+            net.to(device)
+        else:
+            assert(torch.cuda.is_available())
+            net.to(gpu_ids[0])
+            net = torch.nn.DataParallel(net, gpu_ids)  # multi-GPUs
+    # init_weights(net, init_type, init_gain=init_gain)
     return net
 
 
@@ -426,9 +431,9 @@ class ResnetClassifier(nn.Module):
                  ]
         
         if pool_type == 'max':
-            model += nn.MaxPool2d(kernel_size=3, stride=2, padding=1) # here we add a maxpooling layer
+            model += [nn.MaxPool2d(kernel_size=3, stride=2, padding=1)] # here we add a maxpooling layer
         elif pool_type == 'avg':
-            model += nn.AvgPool2d(kernel_size=3, stride=2, padding=1) # here we add a avgpooling layer
+            model += [nn.AvgPool2d(kernel_size=3, stride=2, padding=1)] # here we add a avgpooling layer
 
         for i in range(n_blocks):       # add ResNet blocks
             model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]

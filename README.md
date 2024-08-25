@@ -48,7 +48,29 @@ python imagenet_dataset_test.py -d ./data/tiny-imagenet -g -1
 ```
 
 # Models
-## cnn_model
+
+## ResNet Classifier
+
+`./models/res_class_model.py`
+
+# Training
+
+## ImageNet
+
+```bash
+python train.py --dataroot ./data/tiny-imagenet --name RestNetClassifier --gpu_ids -1 --model res_class --dataset_name imagenet
+```
+
+or
+
+```bash
+python train.py -d ./data/tiny-imagenet -n RestNetClassifier -g -1 -m res_class --dataset_name imagenet
+```
+
+> Some additional options
+> - `--continue_train`: load the latest model
+> - `--load_iter`: specify which iteration to load
+> - `--save_by_iter`: save model by iteration
 
 # Acknowledgements
 I would like to express my sincere gratitude to the following individuals and projects for their contributions and inspiration to this project:

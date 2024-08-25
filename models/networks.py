@@ -411,7 +411,7 @@ class ResnetClassifier(nn.Module):
         for i in range(n_blocks):       # add ResNet blocks
             model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
 
-        model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.LazyLinear(num_classes)] # here we add Global Average Pooling layer and a Linear layer
+        model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes)] # here we add Global Average Pooling layer and a Linear layer
 
         self.model = nn.Sequential(*model)
 

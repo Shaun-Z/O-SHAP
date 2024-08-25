@@ -76,8 +76,11 @@ class ImageNetDataset(BaseDataset):
         ])
         path = self.X[index]
         im = Image.open(path).convert("RGB")
-        X_train_tensor = transform(im) # .permute(1,2,0)
-        return {'X': X_train_tensor, 'Y_train': self.Y_train[index], 'Y': self.Y[index]} # X_train : {num_batches, 64, 64, 3} , Y_train : a list of labels
+        X_tensor = transform(im) # .permute(1,2,0)
+        if self.phase == 'train':
+            return {'X': X_tensor, 'Y_train': self.Y_train[index], 'Y': self.Y[index]} # X_train : {num_batches, 64, 64, 3} , Y_train : a list of labels
+        elif self.phase == 'val':
+            return {'X': X_tensor, 'Y': self.Y[index]}
 
     def __len__(self):
         """Return the total number of images in the dataset."""

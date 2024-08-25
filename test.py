@@ -18,3 +18,7 @@ for i, data in enumerate(dataset):
     model.forward()
     print(np.argmax(model.output.detach().numpy()))
     exit()
+
+'''
+python test.py -d ./data/tiny-imagenet -n RestNetClassifier -g -1 -m res_class --dataset_name imagenet --phase val 
+'''

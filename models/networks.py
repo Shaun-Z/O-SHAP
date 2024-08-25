@@ -203,6 +203,28 @@ def define_D(input_nc, ndf, netD, n_layers_D=3, norm='batch', init_type='normal'
         raise NotImplementedError('Discriminator model name [%s] is not recognized' % netD)
     return init_net(net, init_type, init_gain, gpu_ids)
 
+def define_resnet_classifier(input_nc, num_classes, ngf, n_blocks, norm='batch', use_dropout=False, pool_type='max', init_type='normal', init_gain=0.02, gpu_ids=[]):
+    """Create a resnet-based classifier
+
+    Parameters:
+        input_nc (int) -- the number of channels in input images
+        num_classes (int) -- the number of classes in the classification task
+        ngf (int) -- the number of filters in the last conv layer
+        n_blocks (int) -- the number of ResNet blocks
+        norm (str) -- the name of normalization layers used in the network: batch | instance | none
+        use_dropout (bool) -- if use dropout layers.
+        pool_type (str) -- the type of pooling layer: max | avg
+        init_type (str)    -- the name of our initialization method.
+        init_gain (float)  -- scaling factor for normal, xavier and orthogonal.
+        gpu_ids (int list) -- which GPUs the network runs on: e.g., 0,1,2
+
+    Returns a resnet-based classifier
+    """
+    net = None
+    norm_layer = get_norm_layer(norm_type=norm)
+    net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=n_blocks, pool_type = pool_type)
+    return init_net(net, init_type, init_gain, gpu_ids)
+
 
 ##############################################################################
 # Classes

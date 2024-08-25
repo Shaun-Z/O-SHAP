@@ -16,7 +16,7 @@ from options.train_options import TrainOptions
 from datasets.imagenet_dataset import ImageNetDataset
 opt = TrainOptions().parse()
 dataset = ImageNetDataset(opt)
-print(dataset[0]['X'].shape, dataset[0]['Y'])
+print(dataset[0]['X'].shape, dataset[0]['Y_train'], dataset[0]['Y'])
 
 for i in range(10):
     plt.subplot(2, 5, i+1)

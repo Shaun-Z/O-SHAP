@@ -46,6 +46,7 @@ class ImageNetDataset(BaseDataset):
                 images = glob(os.path.join(dir, directory, 'images', '*.JPEG')) # get the list of path to the train images
                 self.X += images
                 self.Y += [directory] * len(images) # current directory is the label of the images
+            self.Y_train = torch.tensor(pd.get_dummies(pd.Series(self.Y)).values, dtype=torch.float32) # one-hot encode the labels
 
         elif self.phase == 'val':
             dir = os.path.join(self.dir, self.phase) # directory to the val images
@@ -75,7 +76,7 @@ class ImageNetDataset(BaseDataset):
         path = self.X[index]
         im = Image.open(path).convert("RGB")
         X_train_tensor = transform(im).permute(1,2,0)
-        return {'X': X_train_tensor, 'Y': self.Y[index]} # X_train : {num_batches, 64, 64, 3} , Y_train : a list of labels
+        return {'X': X_train_tensor, 'Y_train': self.Y_train[index], 'Y': self.Y[index]} # X_train : {num_batches, 64, 64, 3} , Y_train : a list of labels
 
     def __len__(self):
         """Return the total number of images in the dataset."""

@@ -84,9 +84,9 @@ class ImageNetDataset(BaseDataset):
         transform = transforms.Compose([
             # transforms.PILToTensor(),
             # transforms.ConvertImageDtype(torch.float)
-            transforms.Resize(256), # Resize images to 256 x 256
+            transforms.Resize(224), # Resize images to 224 x 224
             transforms.CenterCrop(224), # Center crop image
-            transforms.RandomHorizontalFlip(),
+            # transforms.RandomHorizontalFlip(),
             transforms.PILToTensor(),  # Converting cropped images to tensors
             transforms.ConvertImageDtype(torch.float),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], 

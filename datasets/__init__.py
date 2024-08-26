@@ -29,7 +29,7 @@ def get_option_setter(dataset_name):
     dataset_class = find_dataset_using_name(dataset_name)
     return dataset_class.modify_commandline_options
 
-def create_dataset(opt):
+def create_dataloader(opt):
     """Create a dataset given the option.
 
     This function wraps the class CustomDatasetDataLoader.

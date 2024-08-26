@@ -1,5 +1,6 @@
 checkpoints*/
 results*/
+wandb/
 # Data directory
 data/*
 !data/

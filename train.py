@@ -1,3 +1,7 @@
+'''
+python train.py -d ./data/tiny-imagenet -n RestNetClassifier -g 0 -m res_class --dataset_name imagenet --batch_size 128 --lr 0.0001
+'''
+
 import time
 from options.train_options import TrainOptions
 from datasets import create_dataloader

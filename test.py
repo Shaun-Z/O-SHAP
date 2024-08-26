@@ -12,11 +12,12 @@ print('The number of testing images = %d' % dataset_size)
 model = create_model(opt)      # create a model given opt.model and other options
 model.setup(opt)   
 
+labels = dataset.labels   # get the labels so we can search the label from one-hot encoding
 for i, data in enumerate(dataset):
-    print(data['X'].shape, data['Y'])
+    print(data['X'].shape, data['Y']) # print the true label
     model.set_input(data)
     model.forward()
-    print(np.argmax(model.output.detach().numpy()))
+    print(labels[np.argmax(model.output.detach().numpy())])  # print the predicted label
     exit()
 
 '''

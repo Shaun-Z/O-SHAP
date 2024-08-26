@@ -17,13 +17,13 @@ from options.train_options import TrainOptions
 from datasets.imagenet_dataset import ImageNetDataset
 opt = TrainOptions().parse()
 dataset = ImageNetDataset(opt)
-print(dataset[0]['X'].shape, dataset[0]['Y_train'], dataset[0]['Y'])
+print(dataset[1000]['X'].shape, dataset[1000]['Y_one_hot'],  \
+      dataset[1000]['Y'], dataset.labels[np.argmax(dataset[1000]['Y_one_hot'])])
+print(len(dataset.labels), len(dataset.labels_meaning))
 
-print(dataset[0]['X'].to(torch.device(opt.gpu_ids))[0][0][0].dtype)
-
-# for i in range(10):
-#     plt.subplot(2, 5, i+1)
-#     plt.imshow(dataset[i]['X'], cmap='gray')
-#     plt.title(dataset[i]['Y'])
-#     plt.axis('off')
-# plt.show()
+for i in range(10):
+    plt.subplot(2, 5, i+1)
+    plt.imshow(dataset[i]['X'].permute(1,2,0), cmap='gray')
+    plt.title(dataset.labels_meaning[dataset[i]['Y']])
+    plt.axis('off')
+plt.show()

@@ -32,6 +32,15 @@ class ImageNetDataset(BaseDataset):
         BaseDataset.__init__(self, opt)  # call the default constructor of BaseDataset
         self.dir = os.path.join(opt.dataroot)  # get the image directory: data/tiny-imagenet
         self.phase = opt.phase # get the phase: train, val, test
+        with open (os.path.join(self.dir, 'wnids.txt'), 'r') as file1:
+            content1 = file1.read()
+        self.labels = content1.strip().split('\n') # get the labels of the dataset
+        with open (os.path.join(self.dir, 'words.txt'), 'r') as file2:
+            content2 = file2.read()
+        self.labels_meaning = dict()
+        for line in content2.strip().split('\n'):
+            label, meaning = line.split('\t')
+            self.labels_meaning[label] = meaning # get the meaning of the labels
         self.load_data()
 
     def load_data(self):
@@ -46,7 +55,7 @@ class ImageNetDataset(BaseDataset):
                 images = glob(os.path.join(dir, directory, 'images', '*.JPEG')) # get the list of path to the train images
                 self.X += images
                 self.Y += [directory] * len(images) # current directory is the label of the images
-            self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y)).values, dtype=torch.float32) # one-hot encode the labels
+            self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
 
         elif self.phase == 'val':
             dir = os.path.join(self.dir, self.phase) # directory to the val images
@@ -55,7 +64,7 @@ class ImageNetDataset(BaseDataset):
                 content = file.readlines() # read the content of the val_annotations.txt file
             for image in self.X:
                 self.Y.append(content[int(image.split('_')[-1].split('.')[0])].split()[1]) # look up the label of each image in val_annotations.txt
-            self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y)).values, dtype=torch.float32) # one-hot encode the labels
+            self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
             '''Revisions are required here'''
 
         else:

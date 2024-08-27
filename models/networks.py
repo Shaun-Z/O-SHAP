@@ -427,8 +427,7 @@ class ResnetClassifier(nn.Module):
         model = [nn.ReflectionPad2d(3),
                  nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
                  norm_layer(ngf),
-                 nn.ReLU(inplace=True),
-                 nn.MaxPool2d(kernel_size = 3, stride = 2, padding = 1)]
+                 nn.ReLU(inplace=True)]
         
         if pool_type == 'max':
             model += [nn.MaxPool2d(kernel_size=3, stride=2, padding=1)] # here we add a maxpooling layer

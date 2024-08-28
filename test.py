@@ -14,12 +14,11 @@ model.setup(opt)
 
 labels = dataloader.dataset.labels   # get the labels so we can search the label from one-hot encoding
 for i, data in enumerate(dataloader):
-    print(data['X'].shape, data['Y']) # print the true label
     model.set_input(data)
     model.forward()
-    print(labels[np.argmax(model.output.detach().numpy())])  # print the predicted label
-    exit()
-
+    predict_result = model.output.detach().numpy()
+    index_max = np.argmax(predict_result)
+    print(data['Y'], labels[index_max], predict_result[0,index_max], index_max)  # print the true label and the predicted label
 '''
 python test.py -d ./data/tiny-imagenet -n RestNetClassifier -g -1 -m res_class --dataset_name imagenet --phase val 
 '''

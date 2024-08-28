@@ -10,15 +10,20 @@ python imagenet_dataset_test.py -d ./data/tiny-imagenet -g -1
 '''
 import numpy as np
 import matplotlib.pyplot as plt
-import torch
 
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from options.train_options import TrainOptions
 from datasets.imagenet_dataset import ImageNetDataset
 opt = TrainOptions().parse()
 dataset = ImageNetDataset(opt)
-print(dataset[1000]['X'].shape, dataset[1000]['Y_one_hot'],  \
-      dataset[1000]['Y'], dataset.labels[np.argmax(dataset[1000]['Y_one_hot'])])
+
+for i in range(len(dataset)):
+    if dataset[i]['Y'] == dataset.labels[np.argmax(dataset[i]['Y_one_hot'])]:
+        # print(dataset[i]['X'].shape)
+        print(dataset[i]['Y_one_hot'])
+    else:
+        print('Error')
+        exit()
+
 print(len(dataset.labels), len(dataset.labels_meaning))
 
 for i in range(10):

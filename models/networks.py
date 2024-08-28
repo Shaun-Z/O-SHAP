@@ -427,8 +427,8 @@ class ResnetClassifier(nn.Module):
         model = [nn.ReflectionPad2d(3),
                  nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
                  norm_layer(ngf),
-                 nn.ReLU(inplace=True),
-                 nn.MaxPool2d(kernel_size = 3, stride = 2, padding = 1)]
+                 nn.ReLU(inplace=True)]
+                #  nn.MaxPool2d(kernel_size = 3, stride = 2, padding = 1)]
         
         if pool_type == 'max':
             model += [nn.MaxPool2d(kernel_size=3, stride=2, padding=1)] # here we add a maxpooling layer
@@ -436,7 +436,7 @@ class ResnetClassifier(nn.Module):
             model += [nn.AvgPool2d(kernel_size=3, stride=2, padding=1)] # here we add a avgpooling layer
 
         for i in range(n_blocks):       # add ResNet blocks
-            model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
+            model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias), nn.ReLU(True)]
 
         # model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes), nn.Softmax(dim=1)] # here we add Global Average Pooling layer and a Linear layer
 

@@ -18,7 +18,7 @@ for i, data in enumerate(dataloader):
     model.forward()
     predict_result = model.output.detach().numpy()
     index_max = np.argmax(predict_result)
-    print(data['Y'], labels[index_max], predict_result[0,index_max], index_max)  # print the true label and the predicted label
+    print(data['Y'], labels[index_max], data['Y'][0]==labels[index_max], index_max)  # print the true label and the predicted label
 '''
 python test.py -d ./data/tiny-imagenet -n RestNetClassifier -g -1 -m res_class --dataset_name imagenet --phase val 
 '''

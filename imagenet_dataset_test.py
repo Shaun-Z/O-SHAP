@@ -17,18 +17,20 @@ opt = TrainOptions().parse()
 dataset = ImageNetDataset(opt)
 
 for i in range(len(dataset)):
-    if dataset[i]['Y'] == dataset.labels[np.argmax(dataset[i]['Y_one_hot'])]:
+    Y = dataset[i]['Y']
+    index = np.argmax(dataset[i]['Y_one_hot'])
+    if Y == dataset.labels[index]:
         # print(dataset[i]['X'].shape)
-        print(dataset[i]['Y_one_hot'])
+        print(f'{i}\t{Y}\t{index}')
     else:
         print('Error')
         exit()
 
 print(len(dataset.labels), len(dataset.labels_meaning))
 
-for i in range(10):
-    plt.subplot(2, 5, i+1)
-    plt.imshow(dataset[i]['X'].permute(1,2,0), cmap='gray')
-    plt.title(dataset.labels_meaning[dataset[i]['Y']])
-    plt.axis('off')
-plt.show()
+# for i in range(10):
+#     plt.subplot(2, 5, i+1)
+#     plt.imshow(dataset[i]['X'].permute(1,2,0), cmap='gray')
+#     plt.title(dataset.labels_meaning[dataset[i]['Y']])
+#     plt.axis('off')
+# plt.show()

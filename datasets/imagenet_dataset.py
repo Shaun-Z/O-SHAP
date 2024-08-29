@@ -82,15 +82,15 @@ class ImageNetDataset(BaseDataset):
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
         transform = transforms.Compose([
-            # transforms.PILToTensor(),
-            # transforms.ConvertImageDtype(torch.float)
-            transforms.Resize(224), # Resize images to 224 x 224
-            transforms.CenterCrop(224), # Center crop image
-            # transforms.RandomHorizontalFlip(),
-            transforms.PILToTensor(),  # Converting cropped images to tensors
-            transforms.ConvertImageDtype(torch.float),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                        std=[0.229, 0.224, 0.225])
+            transforms.PILToTensor(),
+            transforms.ConvertImageDtype(torch.float)
+            # transforms.Resize(224), # Resize images to 224 x 224
+            # transforms.CenterCrop(224), # Center crop image
+            # # transforms.RandomHorizontalFlip(),
+            # transforms.PILToTensor(),  # Converting cropped images to tensors
+            # transforms.ConvertImageDtype(torch.float),
+            # transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+            #             std=[0.229, 0.224, 0.225])
         ])
         path = self.X[index]
         im = Image.open(path).convert("RGB")

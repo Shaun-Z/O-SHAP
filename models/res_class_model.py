@@ -12,7 +12,7 @@ class ResClassModel(BaseModel):
         parser.set_defaults(no_dropout=True)  # default model did not use dropout
 
         parser.add_argument('--num_classes', type=int, default=200, help='the number of output image classes')
-        parser.add_argument('--n_blocks', type=int, default=50, help='the number of ResNet blocks')
+        parser.add_argument('--net_name', type=str, default='resnet50', help='the number of ResNet blocks')
         parser.add_argument('--pool_type', type=str, default='max', help='the type of pooling layer: max | avg')
         
         return parser
@@ -43,7 +43,7 @@ class ResClassModel(BaseModel):
         # define networks (both Generators and discriminators)
         # The naming is different from those used in the paper.
         # Code (vs. paper): G_A (G), G_B (F), D_A (D_Y), D_B (D_X)
-        self.netResnet_classifier = networks.define_resnet_classifier(opt.input_nc, opt.num_classes, opt.ngf, opt.n_blocks, opt.norm, not opt.no_dropout, opt.pool_type, opt.init_type, opt.init_gain, self.gpu_ids)
+        self.netResnet_classifier = networks.define_resnet_classifier(opt.input_nc, opt.num_classes, opt.ngf, opt.net_name, opt.norm, not opt.no_dropout, opt.pool_type, opt.init_type, opt.init_gain, self.gpu_ids)
 
         if self.isTrain:
             # define loss functions

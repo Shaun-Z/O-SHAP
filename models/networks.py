@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.nn import init
 import functools
 from torch.optim import lr_scheduler
+import torchvision.models as models
 
 
 ###############################################################################
@@ -210,14 +211,14 @@ def define_D(input_nc, ndf, netD, n_layers_D=3, norm='batch', init_type='normal'
         raise NotImplementedError('Discriminator model name [%s] is not recognized' % netD)
     return init_net(net, init_type, init_gain, gpu_ids)
 
-def define_resnet_classifier(input_nc, num_classes, ngf, n_blocks, norm='batch', use_dropout=False, pool_type='max', init_type='normal', init_gain=0.02, gpu_ids=[]):
+def define_resnet_classifier(input_nc, num_classes, ngf, net_name, norm='batch', use_dropout=False, pool_type='max', init_type='normal', init_gain=0.02, gpu_ids=[]):
     """Create a resnet-based classifier
 
     Parameters:
         input_nc (int) -- the number of channels in input images
         num_classes (int) -- the number of classes in the classification task
         ngf (int) -- the number of filters in the last conv layer
-        n_blocks (int) -- the number of ResNet blocks
+        net_name (int) -- the architecture's name: resnet18 | resnet34 | resnet50 | resnet101 | resnet152
         norm (str) -- the name of normalization layers used in the network: batch | instance | none
         use_dropout (bool) -- if use dropout layers.
         pool_type (str) -- the type of pooling layer: max | avg
@@ -229,7 +230,19 @@ def define_resnet_classifier(input_nc, num_classes, ngf, n_blocks, norm='batch',
     """
     net = None
     norm_layer = get_norm_layer(norm_type=norm)
-    net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=n_blocks, pool_type = pool_type)
+    if net_name == 'resnet18':
+        net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[2,2,2,2], pool_type = pool_type)
+    elif net_name == 'resnet34':
+        net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[3,4,6,3], pool_type = pool_type)
+    elif net_name == 'resnet50':
+        net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[3,4,6,3], pool_type = pool_type)
+    elif net_name == 'resnet101':
+        net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[3,4,23,3], pool_type = pool_type)
+    elif net_name == 'resnet152':
+        net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[3,8,36,3], pool_type = pool_type)
+    else:
+        raise NotImplementedError('Classifier model name [%s] is not recognized' % net_name)
+
     return init_net(net, init_type, init_gain, gpu_ids)
 
 
@@ -406,7 +419,7 @@ class ResnetClassifier(nn.Module):
     """Resnet-based classifier that consists of Resnet blocks, based on ResnetGenerator
     """
 
-    def __init__(self, input_nc, num_classes, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, padding_type='reflect', pool_type='max'):
+    def __init__(self, input_nc, num_classes, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks = [3,4,6,3], padding_type='reflect', pool_type='max'):
         """Construct a Resnet-based classifier
 
         Parameters:
@@ -415,11 +428,11 @@ class ResnetClassifier(nn.Module):
             ngf (int)           -- the number of channels in the res_blocks
             norm_layer          -- normalization layer
             use_dropout (bool)  -- if use dropout layers
-            n_blocks (int)      -- the number of ResNet blocks
+            n_blocks (list)     -- the number of ResNet blocks
             padding_type (str)  -- the name of padding layer in conv layers: reflect | replicate | zero
             pool_type (str)     -- the type of pooling layer: max | avg
         """
-        assert(n_blocks >= 0)
+        assert(all([n_blocks[i] > 0 for i in range(len(n_blocks))]))
         super(ResnetClassifier, self).__init__()
         if type(norm_layer) == functools.partial:
             use_bias = norm_layer.func == nn.InstanceNorm2d
@@ -427,29 +440,105 @@ class ResnetClassifier(nn.Module):
             use_bias = norm_layer == nn.InstanceNorm2d
 
         model = [nn.ReflectionPad2d(3),
-                 nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
+                 nn.Conv2d(input_nc, ngf, kernel_size=7, stride=2, padding=0, bias=use_bias),
                  norm_layer(ngf),
                  nn.ReLU(inplace=True)]
-                #  nn.MaxPool2d(kernel_size = 3, stride = 2, padding = 1)]
         
         if pool_type == 'max':
             model += [nn.MaxPool2d(kernel_size=3, stride=2, padding=1)] # here we add a maxpooling layer
         elif pool_type == 'avg':
             model += [nn.AvgPool2d(kernel_size=3, stride=2, padding=1)] # here we add a avgpooling layer
+        else:
+            raise NotImplementedError('Pooling layer [%s] is not implemented' % pool_type)
 
-        for i in range(n_blocks):       # add ResNet blocks
-            model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias), nn.ReLU(True)]
+        self.in_channels = ngf
+        
+        model += self.get_resnet_layer(Bottleneck, n_blocks[0], ngf)
+        model += self.get_resnet_layer(Bottleneck, n_blocks[1], ngf*2, stride = 2)
+        model += self.get_resnet_layer(Bottleneck, n_blocks[2], ngf*4, stride = 2)
+        model += self.get_resnet_layer(Bottleneck, n_blocks[3], ngf*8, stride = 2)
 
         # model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes), nn.Softmax(dim=1)] # here we add Global Average Pooling layer and a Linear layer
 
-        model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes)] # here we add Global Average Pooling layer and a Linear layer
+        model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(self.in_channels, num_classes)] # here we add Global Average Pooling layer and a Linear layer
 
         self.model = nn.Sequential(*model)
+
+    def get_resnet_layer(self, block, n_blocks, channels, stride = 1):
+    
+        layers = []
+        
+        if self.in_channels != block.expansion * channels:
+            downsample = True
+        else:
+            downsample = False
+
+        layers.append(block(self.in_channels, channels, stride, downsample))
+        
+        for i in range(1, n_blocks):
+            layers.append(block(block.expansion * channels, channels))
+
+        self.in_channels = block.expansion * channels
+            
+        return layers
 
     def forward(self, input):
         """Standard forward"""
         return self.model(input)
 
+class Bottleneck(nn.Module):
+    
+    expansion = 4
+    
+    def __init__(self, in_channels, out_channels, stride = 1, downsample = False):
+        super().__init__()
+    
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size = 1, 
+                               stride = 1, bias = False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size = 3, 
+                               stride = stride, padding = 1, bias = False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        
+        self.conv3 = nn.Conv2d(out_channels, self.expansion * out_channels, kernel_size = 1,
+                               stride = 1, bias = False)
+        self.bn3 = nn.BatchNorm2d(self.expansion * out_channels)
+        
+        self.relu = nn.ReLU(inplace = True)
+        
+        if downsample:
+            conv = nn.Conv2d(in_channels, self.expansion * out_channels, kernel_size = 1, 
+                             stride = stride, bias = False)
+            bn = nn.BatchNorm2d(self.expansion * out_channels)
+            downsample = nn.Sequential(conv, bn)
+        else:
+            downsample = None
+            
+        self.downsample = downsample
+        
+    def forward(self, x):
+        
+        i = x
+        
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        
+        x = self.conv3(x)
+        x = self.bn3(x)
+                
+        if self.downsample is not None:
+            i = self.downsample(i)
+            
+        x += i
+        x = self.relu(x)
+    
+        return x
 
 class ResnetBlock(nn.Module):
     """Define a Resnet block"""

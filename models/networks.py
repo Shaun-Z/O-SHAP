@@ -436,7 +436,7 @@ class ResnetClassifier(nn.Module):
             model += [nn.AvgPool2d(kernel_size=3, stride=2, padding=1)] # here we add a avgpooling layer
 
         for i in range(n_blocks):       # add ResNet blocks
-            model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias), nn.ReLU(True)]
+            model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
 
         # model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes), nn.Softmax(dim=1)] # here we add Global Average Pooling layer and a Linear layer
 
@@ -506,6 +506,7 @@ class ResnetBlock(nn.Module):
     def forward(self, x):
         """Forward function (with skip connections)"""
         out = x + self.conv_block(x)  # add skip connections
+        out = nn.ReLU(inplace = True)(out)
         return out
 
 

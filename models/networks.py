@@ -410,7 +410,7 @@ class ResnetClassifier(nn.Module):
         Parameters:
             input_nc (int)      -- the number of channels in input images
             num_class (int)     -- the number of output image classes
-            ngf (int)           -- the number of channels in the res_blocks
+            ngf (int)           -- the number of filters in the last conv layer
             norm_layer          -- normalization layer
             use_dropout (bool)  -- if use dropout layers
             n_blocks (int)      -- the number of ResNet blocks
@@ -435,11 +435,29 @@ class ResnetClassifier(nn.Module):
         elif pool_type == 'avg':
             model += [nn.AvgPool2d(kernel_size=3, stride=2, padding=1)] # here we add a avgpooling layer
 
+        n_downsampling = 2
+        for i in range(n_downsampling):  # add downsampling layers
+            mult = 2 ** i
+            model += [nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1, bias=use_bias),
+                      norm_layer(ngf * mult * 2),
+                      nn.ReLU(True)]
+
+        mult = 2 ** n_downsampling
+
         for i in range(n_blocks):       # add ResNet blocks
-            model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
+            model += [ResnetBlock(ngf * mult, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
 
         # model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes), nn.Softmax(dim=1)] # here we add Global Average Pooling layer and a Linear layer
 
+        for i in range(n_downsampling):  # add upsampling layers
+            mult = 2 ** (n_downsampling - i)
+            model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+                                         kernel_size=3, stride=2,
+                                         padding=1, output_padding=1,
+                                         bias=use_bias),
+                      norm_layer(int(ngf * mult / 2)),
+                      nn.ReLU(True)]
+            
         model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes)] # here we add Global Average Pooling layer and a Linear layer
 
         self.model = nn.Sequential(*model)

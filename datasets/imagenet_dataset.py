@@ -69,9 +69,12 @@ class ImageNetDataset(BaseDataset):
             # self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
             '''Revisions are required here'''
 
-        else:
+        elif self.phase == 'test':
             dir = os.path.join(self.dir, self.phase, 'images') # directory to the test images
             self.X = glob(os.path.join(dir, '*.JPEG')) # get the list of path to the test images
+        
+        else:
+            raise ValueError(f'Invalid phase: {self.phase}')
 
 
     def __getitem__(self, index):
@@ -98,7 +101,10 @@ class ImageNetDataset(BaseDataset):
         im = Image.open(path).convert("RGB")
         X_tensor = transform(im) # .permute(1,2,0)
 
-        return {'X': X_tensor, 'Y_class': self.Y_class[index], 'Y': self.Y[index]} # X_tensor : {num_batches, 3, 64, 64} , Y_one_hot : a list of labels
+        if self.phase == 'test':
+            return {'X': X_tensor}
+        else:
+            return {'X': X_tensor, 'Y_class': self.Y_class[index], 'Y': self.Y[index]} # X_tensor : {num_batches, 3, 64, 64} , Y_one_hot : a list of labels
 
 
     def __len__(self):

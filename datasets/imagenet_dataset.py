@@ -55,7 +55,7 @@ class ImageNetDataset(BaseDataset):
                 images = glob(os.path.join(dir, directory, 'images', '*.JPEG')) # get the list of path to the train images
                 self.X += images
                 self.Y += [directory] * len(images) # current directory is the label of the images
-                self.Y_class = torch.tensor([self.labels.index(item) for item in self.Y], dtype=torch.float32) # get the class of each image
+                self.Y_class = torch.tensor([self.labels.index(item) for item in self.Y], dtype=torch.long) # get the class of each image
             # self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
 
         elif self.phase == 'val':
@@ -65,7 +65,7 @@ class ImageNetDataset(BaseDataset):
                 content = file.readlines() # read the content of the val_annotations.txt file
             for image in self.X:
                 self.Y.append(content[int(image.split('_')[-1].split('.')[0])].split()[1]) # look up the label of each image in val_annotations.txt
-            self.Y_class = torch.tensor([self.labels.index(item) for item in self.Y], dtype=torch.float32) # get the class of each image
+            self.Y_class = torch.tensor([self.labels.index(item) for item in self.Y], dtype=torch.long) # get the class of each image
             # self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
             '''Revisions are required here'''
 

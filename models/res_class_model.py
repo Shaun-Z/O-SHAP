@@ -43,11 +43,7 @@ class ResClassModel(BaseModel):
         # define networks (both Generators and discriminators)
         # The naming is different from those used in the paper.
         # Code (vs. paper): G_A (G), G_B (F), D_A (D_Y), D_B (D_X)
-        # self.netResnet_classifier = networks.define_resnet_classifier(opt.input_nc, opt.num_classes, opt.ngf, opt.net_name, opt.norm, not opt.no_dropout, opt.pool_type, opt.init_type, opt.init_gain, self.gpu_ids)
-        model = models.resnet50(pretrained=True)
-        model.conv1 = nn.Conv2d(opt.input_nc, opt.ngf, kernel_size=7, stride=2, padding=3, bias=False)
-        model.fc = nn.Linear(model.fc.in_features, opt.num_classes)
-        self.netResnet_classifier = model
+        self.netResnet_classifier = networks.define_resnet_classifier(opt.input_nc, opt.num_classes, opt.ngf, opt.net_name, opt.norm, not opt.no_dropout, opt.pool_type, opt.init_type, opt.init_gain, self.gpu_ids)
 
         if self.isTrain:
             # define loss functions

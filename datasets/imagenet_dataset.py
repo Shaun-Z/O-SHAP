@@ -96,7 +96,8 @@ class ImageNetDataset(BaseDataset):
         im = Image.open(path).convert("RGB")
         X_tensor = transform(im) # .permute(1,2,0)
 
-        return {'X': X_tensor, 'Y_one_hot': self.Y_one_hot[index], 'Y': self.Y[index]} # X_tensor : {num_batches, 3, 64, 64} , Y_one_hot : a list of labels
+        return {'X': X_tensor, 'Y_one_hot': self.Y_one_hot[index], 'Y': self.Y[index]} 
+        # X_tensor : {num_batches, 3, 64, 64} , Y_one_hot : a list of one-hot encoded labels, Y : a list of labels
 
 
     def __len__(self):

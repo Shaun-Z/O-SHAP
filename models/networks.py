@@ -231,11 +231,7 @@ def define_resnet_classifier(input_nc, num_classes, ngf, net_name, norm='batch',
     net = None
     norm_layer = get_norm_layer(norm_type=norm)
 
-    net = models.resnet50(pretrained=True)
-    net.conv1 = nn.Conv2d(input_nc, ngf, kernel_size=7, stride=2, padding=3, bias=False)
-    net.fc = nn.Linear(net.fc.in_features, num_classes)
-
-    '''if net_name == 'resnet18':
+    if net_name == 'resnet18':
         net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[2,2,2,2], pool_type = pool_type)
     elif net_name == 'resnet34':
         net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[3,4,6,3], pool_type = pool_type)
@@ -246,7 +242,7 @@ def define_resnet_classifier(input_nc, num_classes, ngf, net_name, norm='batch',
     elif net_name == 'resnet152':
         net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[3,8,36,3], pool_type = pool_type)
     else:
-        raise NotImplementedError('Classifier model name [%s] is not recognized' % net_name)'''
+        raise NotImplementedError('Classifier model name [%s] is not recognized' % net_name)
 
     return init_net(net, init_type, init_gain, gpu_ids)
 
@@ -463,11 +459,14 @@ class ResnetClassifier(nn.Module):
         model += self.get_resnet_layer(Bottleneck, n_blocks[2], ngf*4, stride = 2)
         model += self.get_resnet_layer(Bottleneck, n_blocks[3], ngf*8, stride = 2)
 
-        # model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes), nn.Softmax(dim=1)] # here we add Global Average Pooling layer and a Linear layer
-
         model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(self.in_channels, num_classes)] # here we add Global Average Pooling layer and a Linear layer
 
-        self.model = nn.Sequential(*model)
+        # self.model = nn.Sequential(*model)
+
+        net = models.resnet50(pretrained=True)
+        net.conv1 = nn.Conv2d(input_nc, ngf, kernel_size=7, stride=2, padding=3, bias=False)
+        net.fc = nn.Linear(net.fc.in_features, num_classes)
+        self.model = net
 
     def get_resnet_layer(self, block, n_blocks, channels, stride = 1):
     

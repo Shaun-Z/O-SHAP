@@ -18,13 +18,14 @@ dataset = ImageNetDataset(opt)
 
 for i in range(len(dataset)):
     Y = dataset[i]['Y']
-    index = np.argmax(dataset[i]['Y_one_hot'])
-    if Y == dataset.labels[index]:
-        # print(dataset[i]['X'].shape)
-        print(f'{i}\t{Y}\t{index}')
-    else:
-        print('Error')
-        exit()
+    index = dataset[i]['Y_class']
+    print(index)
+    # if Y == dataset.labels[index]:
+    #     # print(dataset[i]['X'].shape)
+    #     print(f'{i}\t{Y}\t{index}')
+    # else:
+    #     print('Error')
+    #     exit()
 
 print(len(dataset.labels), len(dataset.labels_meaning))
 

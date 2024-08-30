@@ -55,7 +55,8 @@ class ImageNetDataset(BaseDataset):
                 images = glob(os.path.join(dir, directory, 'images', '*.JPEG')) # get the list of path to the train images
                 self.X += images
                 self.Y += [directory] * len(images) # current directory is the label of the images
-            self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
+                self.Y_class = [self.labels.index(item) for item in self.Y]
+            # self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
 
         elif self.phase == 'val':
             dir = os.path.join(self.dir, self.phase) # directory to the val images
@@ -64,7 +65,8 @@ class ImageNetDataset(BaseDataset):
                 content = file.readlines() # read the content of the val_annotations.txt file
             for image in self.X:
                 self.Y.append(content[int(image.split('_')[-1].split('.')[0])].split()[1]) # look up the label of each image in val_annotations.txt
-            self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
+            self.Y_class = [self.labels.index(item) for item in self.Y]
+            # self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
             '''Revisions are required here'''
 
         else:
@@ -82,21 +84,21 @@ class ImageNetDataset(BaseDataset):
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
         transform = transforms.Compose([
-            transforms.PILToTensor(),
-            transforms.ConvertImageDtype(torch.float)
-            # transforms.Resize(224), # Resize images to 224 x 224
-            # transforms.CenterCrop(224), # Center crop image
-            # # transforms.RandomHorizontalFlip(),
-            # transforms.PILToTensor(),  # Converting cropped images to tensors
-            # transforms.ConvertImageDtype(torch.float),
-            # transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-            #             std=[0.229, 0.224, 0.225])
+            # transforms.PILToTensor(),
+            # transforms.ConvertImageDtype(torch.float)
+            transforms.Resize(224), # Resize images to 224 x 224
+            transforms.CenterCrop(224), # Center crop image
+            # transforms.RandomHorizontalFlip(),
+            transforms.PILToTensor(),  # Converting cropped images to tensors
+            transforms.ConvertImageDtype(torch.float),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                        std=[0.229, 0.224, 0.225])
         ])
         path = self.X[index]
         im = Image.open(path).convert("RGB")
         X_tensor = transform(im) # .permute(1,2,0)
 
-        return {'X': X_tensor, 'Y_one_hot': self.Y_one_hot[index], 'Y': self.Y[index]} # X_tensor : {num_batches, 3, 64, 64} , Y_one_hot : a list of labels
+        return {'X': X_tensor, 'Y_class': self.Y_class[index], 'Y': self.Y[index]} # X_tensor : {num_batches, 3, 64, 64} , Y_one_hot : a list of labels
 
 
     def __len__(self):

@@ -1,4 +1,5 @@
 from options.test_options import TestOptions
+from options.train_options import TrainOptions
 from datasets import create_dataloader
 from models import create_model
 import numpy as np
@@ -10,7 +11,7 @@ dataset_size = len(dataloader)    # get the number of images in the dataset.
 print('The number of testing images = %d' % dataset_size)
 
 model = create_model(opt)      # create a model given opt.model and other options
-model.setup(opt)   
+model.setup(opt)
 
 labels = dataloader.dataset.labels   # get the labels so we can search the label from one-hot encoding
 for i, data in enumerate(dataloader):
@@ -18,7 +19,8 @@ for i, data in enumerate(dataloader):
     model.forward()
     predict_result = model.output.detach().numpy()
     index_max = np.argmax(predict_result)
-    print(data['Y'], labels[index_max], data['Y'][0]==labels[index_max], data['Y_class'], index_max, predict_result[0,index_max])  # print the true label and the predicted label
+    print(data['Y'][0]==labels[index_max], data['Y'], labels[index_max], data['Y_class'], index_max)  # print the true label and the predicted label
+    # exit()
 '''
-python test.py -d ./data/tiny-imagenet -n RestNetClassifier -g -1 -m res_class --dataset_name imagenet --phase val 
+python test.py -d ./data/tiny-imagenet -n RestNetClassifier -g -1 -m res_class --dataset_name imagenet --phase val --serial_batch
 '''

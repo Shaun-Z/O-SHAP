@@ -12,14 +12,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from options.train_options import TrainOptions
+from options.test_options import TestOptions
 from datasets.imagenet_dataset import ImageNetDataset
+
 opt = TrainOptions().parse()
 dataset = ImageNetDataset(opt)
 
+print(dataset[0]['X'].max(), dataset[0]['X'].min())
+print(dataset[2]['X'].max(), dataset[2]['X'].min())
+print(dataset[3]['X'].max(), dataset[3]['X'].min())
+print(dataset[4]['X'].max(), dataset[4]['X'].min())
+print(dataset[5]['X'].max(), dataset[5]['X'].min())
+
 for i in range(len(dataset)):
-    Y = dataset[i]['Y']
-    index = dataset[i]['Y_class']
-    print(index)
+    data = dataset[i]
+    Y = data['Y']
+    print(f"X:{dataset.X[i]}\tY_class:{data['Y_class'].numpy()}\tY:{Y}")
+    exit()
     # if Y == dataset.labels[index]:
     #     # print(dataset[i]['X'].shape)
     #     print(f'{i}\t{Y}\t{index}')

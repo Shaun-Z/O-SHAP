@@ -1,7 +1,7 @@
 import os
 import sys
 import numpy as np
-from datasets.base_dataset import BaseDataset
+from datasets.base_dataset import BaseDataset, get_transform
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
@@ -42,6 +42,7 @@ class ImageNetDataset(BaseDataset):
             label, meaning = line.split('\t')
             self.labels_meaning[label] = meaning # get the meaning of the labels
         self.load_data()
+        self.tranform = get_transform(self.opt, grayscale=(self.opt.input_nc == 1))
 
     def load_data(self):
         """Load data into memory.(here we only load the path to the data cuz the dataset is too large)"""
@@ -49,6 +50,7 @@ class ImageNetDataset(BaseDataset):
         self.X = []
         self.Y = []
         if self.phase == 'train':
+            print(f"Loading {self.phase} data")
             dir = os.path.join(self.dir, self.phase) # directory to the train images
             directories = os.listdir(dir) # directories of the train images
             for directory in directories:
@@ -56,9 +58,9 @@ class ImageNetDataset(BaseDataset):
                 self.X += images
                 self.Y += [directory] * len(images) # current directory is the label of the images
                 self.Y_class = torch.tensor([self.labels.index(item) for item in self.Y], dtype=torch.long) # get the class of each image
-            # self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
 
         elif self.phase == 'val':
+            print(f"Loading {self.phase} data")
             dir = os.path.join(self.dir, self.phase) # directory to the val images
             self.X = glob(os.path.join(dir, 'images', '*.JPEG')) # get the list of path to the test images
             with open(os.path.join(dir, 'val_annotations.txt'), 'r') as file:
@@ -66,12 +68,11 @@ class ImageNetDataset(BaseDataset):
             for image in self.X:
                 self.Y.append(content[int(image.split('_')[-1].split('.')[0])].split()[1]) # look up the label of each image in val_annotations.txt
             self.Y_class = torch.tensor([self.labels.index(item) for item in self.Y], dtype=torch.long) # get the class of each image
-            # self.Y_one_hot = torch.tensor(pd.get_dummies(pd.Series(self.Y))[self.labels].values, dtype=torch.float32) # one-hot encode the labels
-            '''Revisions are required here'''
 
         elif self.phase == 'test':
             dir = os.path.join(self.dir, self.phase, 'images') # directory to the test images
             self.X = glob(os.path.join(dir, '*.JPEG')) # get the list of path to the test images
+            '''Revisions are required here'''
         
         else:
             raise ValueError(f'Invalid phase: {self.phase}')
@@ -86,20 +87,21 @@ class ImageNetDataset(BaseDataset):
         Returns:
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
-        transform = transforms.Compose([
+        '''transform = transforms.Compose([
             # transforms.PILToTensor(),
             # transforms.ConvertImageDtype(torch.float)
             transforms.Resize(224), # Resize images to 224 x 224
-            transforms.CenterCrop(224), # Center crop image
-            # transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(5),
+            transforms.RandomHorizontalFlip(0.5),
+            transforms.RandomCrop(224, padding = 10),
             transforms.PILToTensor(),  # Converting cropped images to tensors
             transforms.ConvertImageDtype(torch.float),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                        std=[0.229, 0.224, 0.225])
-        ])
+                                std=[0.229, 0.224, 0.225])
+        ])'''
         path = self.X[index]
-        im = Image.open(path).convert("RGB")
-        X_tensor = transform(im) # .permute(1,2,0)
+        im = Image.open(path).convert("RGB") # read the image
+        X_tensor = self.tranform(im)
 
         if self.phase == 'test':
             return {'X': X_tensor}

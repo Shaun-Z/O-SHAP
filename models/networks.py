@@ -435,56 +435,11 @@ class ResnetClassifier(nn.Module):
         """
         assert(all([n_blocks[i] > 0 for i in range(len(n_blocks))]))
         super(ResnetClassifier, self).__init__()
-        if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
-        else:
-            use_bias = norm_layer == nn.InstanceNorm2d
 
-        model = [nn.ReflectionPad2d(3),
-                 nn.Conv2d(input_nc, ngf, kernel_size=7, stride=2, padding=0, bias=use_bias),
-                 norm_layer(ngf),
-                 nn.ReLU(inplace=True)]
-        
-        if pool_type == 'max':
-            model += [nn.MaxPool2d(kernel_size=3, stride=2, padding=1)] # here we add a maxpooling layer
-        elif pool_type == 'avg':
-            model += [nn.AvgPool2d(kernel_size=3, stride=2, padding=1)] # here we add a avgpooling layer
-        else:
-            raise NotImplementedError('Pooling layer [%s] is not implemented' % pool_type)
-
-        self.in_channels = ngf
-        
-        model += self.get_resnet_layer(Bottleneck, n_blocks[0], ngf)
-        model += self.get_resnet_layer(Bottleneck, n_blocks[1], ngf*2, stride = 2)
-        model += self.get_resnet_layer(Bottleneck, n_blocks[2], ngf*4, stride = 2)
-        model += self.get_resnet_layer(Bottleneck, n_blocks[3], ngf*8, stride = 2)
-
-        model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(self.in_channels, num_classes)] # here we add Global Average Pooling layer and a Linear layer
-
-        # self.model = nn.Sequential(*model)
-
-        net = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
+        net = models.resnet101(weights=models.ResNet101_Weights.DEFAULT)
         net.conv1 = nn.Conv2d(input_nc, ngf, kernel_size=7, stride=2, padding=3, bias=False)
         net.fc = nn.Linear(net.fc.in_features, num_classes)
         self.model = net
-
-    def get_resnet_layer(self, block, n_blocks, channels, stride = 1):
-    
-        layers = []
-        
-        if self.in_channels != block.expansion * channels:
-            downsample = True
-        else:
-            downsample = False
-
-        layers.append(block(self.in_channels, channels, stride, downsample))
-        
-        for i in range(1, n_blocks):
-            layers.append(block(block.expansion * channels, channels))
-
-        self.in_channels = block.expansion * channels
-            
-        return layers
 
     def forward(self, input):
         """Standard forward"""

@@ -47,7 +47,6 @@ class ResClassModel(BaseModel):
 
         if self.isTrain:
             # define loss functions
-            # self.criterion = networks.GANLoss(opt.gan_mode).to(self.device)  # define loss.
             self.criterion = torch.nn.CrossEntropyLoss()  # define loss.
             # initialize optimizers; schedulers will be automatically created by function <BaseModel.setup>.
             self.optimizer = torch.optim.Adam(self.netResnet_classifier.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
@@ -79,6 +78,7 @@ class ResClassModel(BaseModel):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
         # forward
         self.forward()      # compute predictions
+        self.set_requires_grad([self.netResnet_classifier], True)
         # backward
         self.optimizer.zero_grad()  # set gradients to zero
         self.backward()             # calculate gradients

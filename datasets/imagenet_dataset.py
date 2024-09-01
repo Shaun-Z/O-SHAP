@@ -42,7 +42,7 @@ class ImageNetDataset(BaseDataset):
             label, meaning = line.split('\t')
             self.labels_meaning[label] = meaning # get the meaning of the labels
         self.load_data()
-        self.tranform = get_transform(self.opt, grayscale=(self.opt.input_nc == 1))
+        self.transform = get_transform(self.opt, grayscale=(self.opt.input_nc == 1))
 
     def load_data(self):
         """Load data into memory.(here we only load the path to the data cuz the dataset is too large)"""
@@ -87,21 +87,18 @@ class ImageNetDataset(BaseDataset):
         Returns:
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
-        '''transform = transforms.Compose([
-            # transforms.PILToTensor(),
-            # transforms.ConvertImageDtype(torch.float)
-            transforms.Resize(224), # Resize images to 224 x 224
+        transform = transforms.Compose([
+            transforms.Resize(224),
             transforms.RandomRotation(5),
             transforms.RandomHorizontalFlip(0.5),
             transforms.RandomCrop(224, padding = 10),
-            transforms.PILToTensor(),  # Converting cropped images to tensors
-            transforms.ConvertImageDtype(torch.float),
+            transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                                std=[0.229, 0.224, 0.225])
-        ])'''
+                std=[0.229, 0.224, 0.225])
+        ])
         path = self.X[index]
         im = Image.open(path).convert("RGB") # read the image
-        X_tensor = self.tranform(im)
+        X_tensor = transform(im)
 
         if self.phase == 'test':
             return {'X': X_tensor}

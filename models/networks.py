@@ -463,7 +463,7 @@ class ResnetClassifier(nn.Module):
 
         # self.model = nn.Sequential(*model)
 
-        net = models.resnet50(pretrained=True)
+        net = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
         net.conv1 = nn.Conv2d(input_nc, ngf, kernel_size=7, stride=2, padding=3, bias=False)
         net.fc = nn.Linear(net.fc.in_features, num_classes)
         self.model = net

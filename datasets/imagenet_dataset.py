@@ -50,7 +50,7 @@ class ImageNetDataset(BaseDataset):
         self.X = []
         self.Y = []
         if self.phase == 'train':
-            print(f"Loading {self.phase} data")
+            print(f"Loading \033[92m{self.phase}\033[0m data")
             dir = os.path.join(self.dir, self.phase) # directory to the train images
             directories = os.listdir(dir) # directories of the train images
             for directory in directories:

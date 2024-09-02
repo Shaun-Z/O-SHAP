@@ -452,7 +452,7 @@ class ResnetClassifier(nn.Module):
             use_bias = norm_layer == nn.InstanceNorm2d
 
         model = [nn.ReflectionPad2d(3),
-            nn.Conv2d(input_nc, channels[0], kernel_size=7, padding=0, bias=use_bias),
+            nn.Conv2d(input_nc, channels[0], kernel_size=7, stride = 2, padding=0, bias=use_bias),
             norm_layer(channels[0]),
             nn.ReLU(inplace=True)]
         

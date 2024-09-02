@@ -1,10 +1,11 @@
 import torch
 import torch.nn as nn
 from torch.nn import init
-import functools
-from torch.optim import lr_scheduler
 import torchvision.models as models
+from torch.optim import lr_scheduler
+import functools
 
+from collections import namedtuple
 
 ###############################################################################
 # Helper Functions
@@ -232,7 +233,11 @@ def define_resnet_classifier(input_nc, num_classes, ngf, net_name, norm='batch',
     norm_layer = get_norm_layer(norm_type=norm)
 
     if net_name == 'custom':
-        net = ResnetClassifier(input_nc, num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, pool_type = pool_type)
+        ResNetConfig = namedtuple('ResNetConfig', ['block', 'n_blocks', 'channels'])
+        resnet_config = ResNetConfig(   block = Bottleneck,
+                                        n_blocks = [3,4,23,3],
+                                        channels = [64, 128, 256, 512])
+        net = ResnetClassifier(input_nc, num_classes, resnet_config, norm_layer=norm_layer, use_dropout=use_dropout, pool_type = pool_type)
     else:
         if net_name == 'resnet18':
             net = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
@@ -426,7 +431,7 @@ class ResnetClassifier(nn.Module):
     """Resnet-based classifier that consists of Resnet blocks, based on ResnetGenerator
     """
 
-    def __init__(self, input_nc, num_classes, block = Bottleneck, n_blocks = [3,4,23,3], channels = [64, 128, 256, 512], norm_layer=nn.BatchNorm2d, use_dropout=False, padding_type='reflect', pool_type='max'):
+    def __init__(self, input_nc, num_classes, config, norm_layer=nn.BatchNorm2d, use_dropout=False, padding_type='reflect', pool_type='max'):
         """Construct a Resnet-based classifier
 
         Parameters:
@@ -438,6 +443,7 @@ class ResnetClassifier(nn.Module):
             padding_type (str)  -- the name of padding layer in conv layers: reflect | replicate | zero
             pool_type (str)     -- the type of pooling layer: max | avg
         """
+        block, n_blocks, channels = config
         assert(len(n_blocks) >= 0)
         super(ResnetClassifier, self).__init__()
         if type(norm_layer) == functools.partial:

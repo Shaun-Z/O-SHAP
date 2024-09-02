@@ -553,7 +553,7 @@ class Bottleneck(nn.Module):
     def forward(self, x):
         """Forward function (with skip connections)"""
         i = x
-        out = self.conv_block(x) + self.downsample(i) if self.downsample is not None else i # add skip connections
+        out = self.conv_block(x) + (self.downsample(i) if self.downsample is not None else i) # add skip connections
         out = nn.ReLU(inplace = True)(out)
         return out
 

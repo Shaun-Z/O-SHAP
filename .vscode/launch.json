@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--dataroot", "./data/tiny-imagenet", "--gpu_ids", "-1", "-n", "RestNetClassifier", "-m", "res_class", "--dataset_name", "imagenet", "--phase", "val", "--serial_batch"]
+            "args": ["--dataroot", "./data/tiny-imagenet", "--gpu_ids", "0,1", "-n", "CustomClassifier", "-m", "res_class", "--net_name", "custom", "--dataset_name", "imagenet", "--phase", "val", "--batch_size", "1", "--lr", "0.0002"]
         }
     ]
 }

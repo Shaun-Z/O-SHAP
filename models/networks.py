@@ -509,7 +509,7 @@ class ResnetClassifier(nn.Module):
         layers.append(block(self.in_channels, channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample))
         
         for i in range(1, n_blocks):
-            layers.append(block(block.expansion * channels, channels))
+            layers.append(block(block.expansion * channels, channels, padding_type, stride, norm_layer, use_dropout, use_bias))
 
         self.in_channels = block.expansion * channels
             
@@ -518,11 +518,11 @@ class ResnetClassifier(nn.Module):
 class Bottleneck(nn.Module):
 
     """Define a Bottleneck block"""
+    expansion = 4
 
     def __init__(self, in_channels, out_channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample = False):
-        super(ResnetBlock, self).__init__()
-        self.expansion = 4
-        self.conv_block = self.build_conv_block(in_channels, out_channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample)
+        super(Bottleneck, self).__init__()
+        self.conv_block, self.downsample = self.build_conv_block(in_channels, out_channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample)
 
     def build_conv_block(self, in_channels, out_channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample):
         """Construct a convolutional block.
@@ -540,18 +540,8 @@ class Bottleneck(nn.Module):
         Returns a conv block (with a conv layer, a normalization layer, and a non-linearity layer (ReLU))
         """
         conv_block = []
-
-        p = 0
-        if padding_type == 'reflect':
-            conv_block += [nn.ReflectionPad2d(1)]
-        elif padding_type == 'replicate':
-            conv_block += [nn.ReplicationPad2d(1)]
-        elif padding_type == 'zero':
-            p = 1
-        else:
-            raise NotImplementedError('padding [%s] is not implemented' % padding_type)
         
-        conv_block += [nn.Conv2d(in_channels, out_channels, kernel_size = 1, padding=p, stride = stride, bias = use_bias), norm_layer(out_channels), nn.ReLU(inplace = True)]
+        conv_block += [nn.Conv2d(in_channels, out_channels, kernel_size = 1, stride = stride, bias = use_bias), norm_layer(out_channels), nn.ReLU(inplace = True)]
 
         if use_dropout:
             conv_block += [nn.Dropout(0.5)]
@@ -571,25 +561,20 @@ class Bottleneck(nn.Module):
         if use_dropout:
             conv_block += [nn.Dropout(0.5)]
 
-        p = 0
-        if padding_type == 'reflect':
-            conv_block += [nn.ReflectionPad2d(1)]
-        elif padding_type == 'replicate':
-            conv_block += [nn.ReplicationPad2d(1)]
-        elif padding_type == 'zero':
-            p = 1
-        else:
-            raise NotImplementedError('padding [%s] is not implemented' % padding_type)
-
-        conv_block += [nn.Conv2d(out_channels, self.expansion * out_channels, kernel_size = 1, padding=p, stride = stride, bias = use_bias), norm_layer(self.expansion * out_channels)]
+        conv_block += [nn.Conv2d(out_channels, self.expansion * out_channels, kernel_size = 1, stride = stride, bias = use_bias), norm_layer(self.expansion * out_channels)]
         
         if downsample:
-            conv_block += [nn.Conv2d(in_channels, self.expansion * out_channels, kernel_size = 1, stride = stride, bias = False),
-                           norm_layer(self.expansion * out_channels)]
+            downsample = nn.Sequential(*[nn.Conv2d(in_channels, self.expansion * out_channels, kernel_size = 1, stride = stride, bias = False),
+                           norm_layer(self.expansion * out_channels)])
+        else:
+            downsample = None
+            
+        return nn.Sequential(*conv_block), downsample
             
     def forward(self, x):
         """Forward function (with skip connections)"""
-        out = x + self.conv_block(x)  # add skip connections
+        i = x
+        out = self.conv_block(x) + self.downsample(i) if self.downsample is not None else i # add skip connections
         out = nn.ReLU(inplace = True)(out)
         return out
 

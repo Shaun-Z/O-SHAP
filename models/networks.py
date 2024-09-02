@@ -421,12 +421,12 @@ class ResnetGenerator(nn.Module):
     def forward(self, input):
         """Standard forward"""
         return self.model(input)
-    
+
 class ResnetClassifier(nn.Module):
     """Resnet-based classifier that consists of Resnet blocks, based on ResnetGenerator
     """
 
-    def __init__(self, input_nc, num_classes, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, padding_type='reflect', pool_type='max'):
+    def __init__(self, input_nc, num_classes, block = Bottleneck, n_blocks = [3,4,23,3], channels = [64, 128, 256, 512], norm_layer=nn.BatchNorm2d, use_dropout=False, padding_type='reflect', pool_type='max'):
         """Construct a Resnet-based classifier
 
         Parameters:
@@ -446,82 +446,146 @@ class ResnetClassifier(nn.Module):
             use_bias = norm_layer == nn.InstanceNorm2d
 
         model = [nn.ReflectionPad2d(3),
-                 nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
-                 norm_layer(ngf),
-                 nn.ReLU(inplace=True)]
-                #  nn.MaxPool2d(kernel_size = 3, stride = 2, padding = 1)]
+            nn.Conv2d(input_nc, channels[0], kernel_size=7, padding=0, bias=use_bias),
+            norm_layer(channels[0]),
+            nn.ReLU(inplace=True)]
         
+        #  nn.MaxPool2d(kernel_size = 3, stride = 2, padding = 1)]
         if pool_type == 'max':
             model += [nn.MaxPool2d(kernel_size=3, stride=2, padding=1)] # here we add a maxpooling layer
         elif pool_type == 'avg':
             model += [nn.AvgPool2d(kernel_size=3, stride=2, padding=1)] # here we add a avgpooling layer
 
-        for i in range(n_blocks):       # add ResNet blocks
-            model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias), nn.ReLU(True)]
+        # n_downsampling = 2
+        # for i in range(n_downsampling):  # add downsampling layers
+        #     mult = 2 ** i
+        #     model += [[nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1, bias=use_bias),
+        #               norm_layer(ngf * mult * 2),
+        #               nn.ReLU(True)]]
+
+        # mult = 2 ** n_downsampling
+
+        self.in_channels = channels[0]
+        for i in range(len(n_blocks)): # add ResNet blocks
+            model += [self.get_resnet_layer(block, n_blocks[i], channels[i], padding_type, norm_layer, use_dropout, use_bias, stride = 1 if i == 0 else 2)]
 
         # model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes), nn.Softmax(dim=1)] # here we add Global Average Pooling layer and a Linear layer
 
-        model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes)] # here we add Global Average Pooling layer and a Linear layer
+        # for i in range(n_downsampling):  # add upsampling layers
+        #     mult = 2 ** (n_downsampling - i)
+        #     model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+        #                                     kernel_size=3, stride=2,
+        #                                     padding=1, output_padding=1,
+        #                                     bias=use_bias),
+        #                 norm_layer(int(ngf * mult / 2)),
+        #                 nn.ReLU(True)]
+
+        model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(channels[-1], num_classes)] # here we add Global Average Pooling layer and a Linear layer
 
         self.model = nn.Sequential(*model)
 
     def forward(self, input):
         """Standard forward"""
         return self.model(input)
+    
+    def get_resnet_layer(self, block, n_blocks, channels, padding_type, norm_layer, use_dropout, use_bias, stride = 1):
+        """
+        Construct a Resnet layer with multiple blocks
+        """
+
+        layers = []
+        
+        if self.in_channels != block.expansion * channels:
+            downsample = True
+        else:
+            downsample = False
+
+        layers.append(block(self.in_channels, channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample))
+        
+        for i in range(1, n_blocks):
+            layers.append(block(block.expansion * channels, channels))
+
+        self.in_channels = block.expansion * channels
+            
+        return nn.Sequential(*layers)
 
 class Bottleneck(nn.Module):
-    
-    expansion = 4
-    
-    def __init__(self, in_channels, out_channels, stride = 1, downsample = False):
-        super().__init__()
-    
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size = 1, 
-                               stride = 1, bias = False)
-        self.bn1 = nn.BatchNorm2d(out_channels)
+
+    """Define a Bottleneck block"""
+
+    def __init__(self, in_channels, out_channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample = False):
+        super(ResnetBlock, self).__init__()
+        self.expansion = 4
+        self.conv_block = self.build_conv_block(in_channels, out_channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample)
+
+    def build_conv_block(self, in_channels, out_channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample):
+        """Construct a convolutional block.
+
+        Parameters:
+            in_channels (int)   -- the number of channels in the conv layer.
+            out_channels (int)  -- the number of channels in the conv layer.
+            padding_type (str)  -- the name of padding layer: reflect | replicate | zero
+            stride (int)        -- the stride of the conv layer
+            norm_layer          -- normalization layer
+            use_dropout (bool)  -- if use dropout layers.
+            use_bias (bool)     -- if the conv layer uses bias or not
+            downsample (bool)   -- if the conv layer is used for downsample
+
+        Returns a conv block (with a conv layer, a normalization layer, and a non-linearity layer (ReLU))
+        """
+        conv_block = []
+
+        p = 0
+        if padding_type == 'reflect':
+            conv_block += [nn.ReflectionPad2d(1)]
+        elif padding_type == 'replicate':
+            conv_block += [nn.ReplicationPad2d(1)]
+        elif padding_type == 'zero':
+            p = 1
+        else:
+            raise NotImplementedError('padding [%s] is not implemented' % padding_type)
         
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size = 3, 
-                               stride = stride, padding = 1, bias = False)
-        self.bn2 = nn.BatchNorm2d(out_channels)
+        conv_block += [nn.Conv2d(in_channels, out_channels, kernel_size = 1, padding=p, stride = stride, bias = use_bias), norm_layer(out_channels), nn.ReLU(inplace = True)]
+
+        if use_dropout:
+            conv_block += [nn.Dropout(0.5)]
+
+        p = 0
+        if padding_type == 'reflect':
+            conv_block += [nn.ReflectionPad2d(1)]
+        elif padding_type == 'replicate':
+            conv_block += [nn.ReplicationPad2d(1)]
+        elif padding_type == 'zero':
+            p = 1
+        else:
+            raise NotImplementedError('padding [%s] is not implemented' % padding_type)
         
-        self.conv3 = nn.Conv2d(out_channels, self.expansion * out_channels, kernel_size = 1,
-                               stride = 1, bias = False)
-        self.bn3 = nn.BatchNorm2d(self.expansion * out_channels)
-        
-        self.relu = nn.ReLU(inplace = True)
+        conv_block += [nn.Conv2d(out_channels, out_channels, kernel_size = 3, padding=p, stride = stride, bias = use_bias), norm_layer(out_channels), nn.ReLU(inplace = True)]
+
+        if use_dropout:
+            conv_block += [nn.Dropout(0.5)]
+
+        p = 0
+        if padding_type == 'reflect':
+            conv_block += [nn.ReflectionPad2d(1)]
+        elif padding_type == 'replicate':
+            conv_block += [nn.ReplicationPad2d(1)]
+        elif padding_type == 'zero':
+            p = 1
+        else:
+            raise NotImplementedError('padding [%s] is not implemented' % padding_type)
+
+        conv_block += [nn.Conv2d(out_channels, self.expansion * out_channels, kernel_size = 1, padding=p, stride = stride, bias = use_bias), norm_layer(self.expansion * out_channels)]
         
         if downsample:
-            conv = nn.Conv2d(in_channels, self.expansion * out_channels, kernel_size = 1, 
-                             stride = stride, bias = False)
-            bn = nn.BatchNorm2d(self.expansion * out_channels)
-            downsample = nn.Sequential(conv, bn)
-        else:
-            downsample = None
+            conv_block += [nn.Conv2d(in_channels, self.expansion * out_channels, kernel_size = 1, stride = stride, bias = False),
+                           norm_layer(self.expansion * out_channels)]
             
-        self.downsample = downsample
-        
     def forward(self, x):
-        
-        i = x
-        
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        
-        x = self.conv2(x)
-        x = self.bn2(x)
-        x = self.relu(x)
-        
-        x = self.conv3(x)
-        x = self.bn3(x)
-                
-        if self.downsample is not None:
-            i = self.downsample(i)
-            
-        x += i
-        x = self.relu(x)
-    
-        return x
+        """Forward function (with skip connections)"""
+        out = x + self.conv_block(x)  # add skip connections
+        out = nn.ReLU(inplace = True)(out)
+        return out
 
 class ResnetBlock(nn.Module):
     """Define a Resnet block"""

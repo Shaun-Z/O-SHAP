@@ -543,7 +543,7 @@ class Bottleneck(nn.Module):
         conv_block += [nn.Conv2d(out_channels, self.expansion * out_channels, kernel_size = 1, stride = 1, bias = use_bias), norm_layer(self.expansion * out_channels)]
         
         if downsample:
-            downsample = nn.Sequential(*[nn.Conv2d(in_channels, self.expansion * out_channels, kernel_size = 1, stride = stride, bias = False),
+            downsample = nn.Sequential(*[nn.Conv2d(in_channels, self.expansion * out_channels, kernel_size = 1, stride = stride, bias = use_bias),
                            norm_layer(self.expansion * out_channels)])
         else:
             downsample = None

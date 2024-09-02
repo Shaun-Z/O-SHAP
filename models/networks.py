@@ -456,35 +456,14 @@ class ResnetClassifier(nn.Module):
             norm_layer(channels[0]),
             nn.ReLU(inplace=True)]
         
-        #  nn.MaxPool2d(kernel_size = 3, stride = 2, padding = 1)]
         if pool_type == 'max':
             model += [nn.MaxPool2d(kernel_size=3, stride=2, padding=1)] # here we add a maxpooling layer
         elif pool_type == 'avg':
             model += [nn.AvgPool2d(kernel_size=3, stride=2, padding=1)] # here we add a avgpooling layer
 
-        # n_downsampling = 2
-        # for i in range(n_downsampling):  # add downsampling layers
-        #     mult = 2 ** i
-        #     model += [[nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1, bias=use_bias),
-        #               norm_layer(ngf * mult * 2),
-        #               nn.ReLU(True)]]
-
-        # mult = 2 ** n_downsampling
-
         self.in_channels = channels[0]
         for i in range(len(n_blocks)): # add ResNet blocks
             model += [self.get_resnet_layer(block, n_blocks[i], channels[i], padding_type, norm_layer, use_dropout, use_bias, stride = 1 if i == 0 else 2)]
-
-        # model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes), nn.Softmax(dim=1)] # here we add Global Average Pooling layer and a Linear layer
-
-        # for i in range(n_downsampling):  # add upsampling layers
-        #     mult = 2 ** (n_downsampling - i)
-        #     model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
-        #                                     kernel_size=3, stride=2,
-        #                                     padding=1, output_padding=1,
-        #                                     bias=use_bias),
-        #                 norm_layer(int(ngf * mult / 2)),
-        #                 nn.ReLU(True)]
 
         model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(channels[-1], num_classes)] # here we add Global Average Pooling layer and a Linear layer
 

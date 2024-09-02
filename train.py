@@ -1,5 +1,5 @@
 ''' Train resnet model
-python train.py -d ./data/tiny-imagenet -n RestNetClassifier -g 0 -m res_class --net_name resnet101 --dataset_name imagenet --batch_size 256 --lr 0.0002 --n_epochs 20 --n_epochs_decay 20 --use_wandb
+python train.py -d ./data/tiny-imagenet -n ResnetClassifier -g 0 -m res_class --net_name resnet101 --dataset_name imagenet --batch_size 256 --lr 0.0002 --n_epochs 20 --n_epochs_decay 20 --use_wandb
 '''
 
 ''' Train custom model

@@ -34,5 +34,5 @@ for i, data in enumerate(dataloader):
     print(f"\033[92m{is_True}\033[0m\t{data['Y']}\t\033[92m{labels[index_max]}\033[0m\t{data['Y_class']}\t\033[92m{index_max}\033[0m\t{y_prob[0,index_max]}")  # print the true label and the predicted label
     # exit()
 '''
-python test.py -d ./data/tiny-imagenet -n RestNetClassifier -g -1 -m res_class --dataset_name imagenet --phase val --eval --net_name resnet101
+python test.py -d ./data/tiny-imagenet -n ResnetClassifier -g -1 -m res_class --dataset_name imagenet --phase val --eval --net_name resnet101
 '''

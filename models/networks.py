@@ -485,10 +485,10 @@ class ResnetClassifier(nn.Module):
         else:
             downsample = False
 
-        layers.append(block(self.in_channels, channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample))
+        layers.append(block(self.in_channels, channels, padding_type, norm_layer, use_dropout, use_bias, stride, downsample))
         
         for i in range(1, n_blocks):
-            layers.append(block(block.expansion * channels, channels, padding_type, stride, norm_layer, use_dropout, use_bias))
+            layers.append(block(block.expansion * channels, channels, padding_type, norm_layer, use_dropout, use_bias))
 
         self.in_channels = block.expansion * channels
             
@@ -499,7 +499,7 @@ class Bottleneck(nn.Module):
     """Define a Bottleneck block"""
     expansion = 4
 
-    def __init__(self, in_channels, out_channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample = False):
+    def __init__(self, in_channels, out_channels, padding_type, norm_layer, use_dropout, use_bias, stride=1, downsample = False):
         super(Bottleneck, self).__init__()
         self.conv_block, self.downsample = self.build_conv_block(in_channels, out_channels, padding_type, stride, norm_layer, use_dropout, use_bias, downsample)
 

@@ -218,7 +218,7 @@ def define_resnet_classifier(input_nc, num_classes, ngf, net_name, norm='batch',
         input_nc (int) -- the number of channels in input images
         num_classes (int) -- the number of classes in the classification task
         ngf (int) -- the number of filters in the last conv layer
-        net_name (int) -- the architecture's name: resnet18 | resnet34 | resnet50 | resnet101 | resnet152
+        net_name (str) -- the architecture's name: resnet18 | resnet34 | resnet50 | resnet101 | resnet152 | custom
         norm (str) -- the name of normalization layers used in the network: batch | instance | none
         use_dropout (bool) -- if use dropout layers.
         pool_type (str) -- the type of pooling layer: max | avg
@@ -231,18 +231,24 @@ def define_resnet_classifier(input_nc, num_classes, ngf, net_name, norm='batch',
     net = None
     norm_layer = get_norm_layer(norm_type=norm)
 
-    if net_name == 'resnet18':
-        net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[2,2,2,2], pool_type = pool_type)
-    elif net_name == 'resnet34':
-        net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[3,4,6,3], pool_type = pool_type)
-    elif net_name == 'resnet50':
-        net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[3,4,6,3], pool_type = pool_type)
-    elif net_name == 'resnet101':
-        net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[3,4,23,3], pool_type = pool_type)
-    elif net_name == 'resnet152':
-        net = ResnetClassifier(input_nc,num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=[3,8,36,3], pool_type = pool_type)
+    if net_name == 'custom':
+        net = ResnetClassifier(input_nc, num_classes, ngf, norm_layer=norm_layer, use_dropout=use_dropout, pool_type = pool_type)
     else:
-        raise NotImplementedError('Classifier model name [%s] is not recognized' % net_name)
+        if net_name == 'resnet18':
+            net = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        elif net_name == 'resnet34':
+            net = models.resnet34(weights=models.ResNet34_Weights.DEFAULT)
+        elif net_name == 'resnet50':
+            net = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
+        elif net_name == 'resnet101':
+            net = models.resnet101(weights=models.ResNet101_Weights.DEFAULT)
+        elif net_name == 'resnet152':
+            net = models.resnet152(weights=models.ResNet152_Weights.DEFAULT)
+        else:
+            raise NotImplementedError(f'Classifier model name \033[92m[net_name]\033[0m is not recognized')
+        
+        net.conv1 = nn.Conv2d(input_nc, ngf, kernel_size=7, stride=2, padding=3, bias=False)
+        net.fc = nn.Linear(net.fc.in_features, num_classes)
 
     return init_net(net, init_type, init_gain, gpu_ids)
 
@@ -420,7 +426,7 @@ class ResnetClassifier(nn.Module):
     """Resnet-based classifier that consists of Resnet blocks, based on ResnetGenerator
     """
 
-    def __init__(self, input_nc, num_classes, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks = [3,4,6,3], padding_type='reflect', pool_type='max'):
+    def __init__(self, input_nc, num_classes, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, padding_type='reflect', pool_type='max'):
         """Construct a Resnet-based classifier
 
         Parameters:
@@ -429,17 +435,12 @@ class ResnetClassifier(nn.Module):
             ngf (int)           -- the number of channels in the res_blocks
             norm_layer          -- normalization layer
             use_dropout (bool)  -- if use dropout layers
-            n_blocks (list)     -- the number of ResNet blocks
             padding_type (str)  -- the name of padding layer in conv layers: reflect | replicate | zero
             pool_type (str)     -- the type of pooling layer: max | avg
         """
-        assert(all([n_blocks[i] > 0 for i in range(len(n_blocks))]))
         super(ResnetClassifier, self).__init__()
 
-        net = models.resnet101(weights=models.ResNet101_Weights.DEFAULT)
-        net.conv1 = nn.Conv2d(input_nc, ngf, kernel_size=7, stride=2, padding=3, bias=False)
-        net.fc = nn.Linear(net.fc.in_features, num_classes)
-        self.model = net
+        self.model = None
 
     def forward(self, input):
         """Standard forward"""

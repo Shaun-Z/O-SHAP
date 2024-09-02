@@ -12,7 +12,7 @@ class ResClassModel(BaseModel):
         parser.set_defaults(no_dropout=True)  # default model did not use dropout
 
         parser.add_argument('--num_classes', type=int, default=200, help='the number of output image classes')
-        parser.add_argument('--net_name', type=str, default='resnet50', help='the number of ResNet blocks')
+        parser.add_argument('--net_name', type=str, default='custom', help='the number of ResNet blocks')
         parser.add_argument('--pool_type', type=str, default='max', help='the type of pooling layer: max | avg')
         
         return parser

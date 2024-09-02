@@ -25,7 +25,7 @@ class ResClassModel(BaseModel):
         """
         BaseModel.__init__(self, opt)
         # specify the training losses you want to print out. The training/test scripts will call <BaseModel.get_current_losses>
-        self.loss_names = ['Resnet']
+        self.loss_names = ['Resnet', 'Resnet_val']
         # specify the images you want to save/display. The training/test scripts will call <BaseModel.get_current_visuals>
         # visual_names_A = ['real_A', 'fake_B', 'rec_A']
         # visual_names_B = ['real_B', 'fake_A', 'rec_B']
@@ -63,6 +63,16 @@ class ResClassModel(BaseModel):
         self.input = input['X'].to(self.device)
         self.label = input['Y_class'].to(self.device)
         # self.image_paths = input['A_paths' if AtoB else 'B_paths']
+
+    def validate(self, DataLoader_val):
+        '''Call set_input() before calling this function'''
+        loss = 0
+        with torch.no_grad():
+            for i, data in enumerate(DataLoader_val):
+                self.set_input(data)
+                self.forward()
+                loss += self.criterion(self.output, self.label)
+        self.loss_Resnet_val = loss / len(DataLoader_val)
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""

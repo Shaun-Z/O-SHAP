@@ -440,7 +440,7 @@ class ResnetClassifier(nn.Module):
         """
         assert(len(n_blocks) >= 0)
         super(ResnetClassifier, self).__init__()
-                if type(norm_layer) == functools.partial:
+        if type(norm_layer) == functools.partial:
             use_bias = norm_layer.func == nn.InstanceNorm2d
         else:
             use_bias = norm_layer == nn.InstanceNorm2d

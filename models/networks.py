@@ -432,15 +432,38 @@ class ResnetClassifier(nn.Module):
         Parameters:
             input_nc (int)      -- the number of channels in input images
             num_class (int)     -- the number of output image classes
-            ngf (int)           -- the number of channels in the res_blocks
+            ngf (int)           -- the number of filters in the last conv layer
             norm_layer          -- normalization layer
             use_dropout (bool)  -- if use dropout layers
             padding_type (str)  -- the name of padding layer in conv layers: reflect | replicate | zero
             pool_type (str)     -- the type of pooling layer: max | avg
         """
+        assert(len(n_blocks) >= 0)
         super(ResnetClassifier, self).__init__()
+                if type(norm_layer) == functools.partial:
+            use_bias = norm_layer.func == nn.InstanceNorm2d
+        else:
+            use_bias = norm_layer == nn.InstanceNorm2d
 
-        self.model = None
+        model = [nn.ReflectionPad2d(3),
+                 nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
+                 norm_layer(ngf),
+                 nn.ReLU(inplace=True)]
+                #  nn.MaxPool2d(kernel_size = 3, stride = 2, padding = 1)]
+        
+        if pool_type == 'max':
+            model += [nn.MaxPool2d(kernel_size=3, stride=2, padding=1)] # here we add a maxpooling layer
+        elif pool_type == 'avg':
+            model += [nn.AvgPool2d(kernel_size=3, stride=2, padding=1)] # here we add a avgpooling layer
+
+        for i in range(n_blocks):       # add ResNet blocks
+            model += [ResnetBlock(ngf, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias), nn.ReLU(True)]
+
+        # model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes), nn.Softmax(dim=1)] # here we add Global Average Pooling layer and a Linear layer
+
+        model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(ngf, num_classes)] # here we add Global Average Pooling layer and a Linear layer
+
+        self.model = nn.Sequential(*model)
 
     def forward(self, input):
         """Standard forward"""
@@ -557,6 +580,7 @@ class ResnetBlock(nn.Module):
     def forward(self, x):
         """Forward function (with skip connections)"""
         out = x + self.conv_block(x)  # add skip connections
+        out = nn.ReLU(inplace = True)(out)
         return out
 
 

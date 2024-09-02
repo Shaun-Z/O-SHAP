@@ -67,12 +67,14 @@ class ResClassModel(BaseModel):
     def validate(self, DataLoader_val):
         '''Call set_input() before calling this function'''
         loss = 0
+        self.eval()
         with torch.no_grad():
             for i, data in enumerate(DataLoader_val):
                 self.set_input(data)
                 self.forward()
                 loss += self.criterion(self.output, self.label)
-        self.loss_Resnet_val = loss / len(DataLoader_val)
+        self.loss_Resnet_val = loss / i
+        self.train()
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""

@@ -465,7 +465,7 @@ class ResnetClassifier(nn.Module):
         for i in range(len(n_blocks)): # add ResNet blocks
             model += [self.get_resnet_layer(block, n_blocks[i], channels[i], padding_type, norm_layer, use_dropout, use_bias, stride = 1 if i == 0 else 2)]
 
-        model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(channels[-1], num_classes)] # here we add Global Average Pooling layer and a Linear layer
+        model += [nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten(), nn.Linear(self.in_channels, num_classes)] # here we add Global Average Pooling layer and a Linear layer
 
         self.model = nn.Sequential(*model)
 
@@ -520,7 +520,7 @@ class Bottleneck(nn.Module):
         """
         conv_block = []
         
-        conv_block += [nn.Conv2d(in_channels, out_channels, kernel_size = 1, stride = stride, bias = use_bias), norm_layer(out_channels), nn.ReLU(inplace = True)]
+        conv_block += [nn.Conv2d(in_channels, out_channels, kernel_size = 1, stride = 1, bias = use_bias), norm_layer(out_channels), nn.ReLU(inplace = True)]
 
         if use_dropout:
             conv_block += [nn.Dropout(0.5)]
@@ -540,7 +540,7 @@ class Bottleneck(nn.Module):
         if use_dropout:
             conv_block += [nn.Dropout(0.5)]
 
-        conv_block += [nn.Conv2d(out_channels, self.expansion * out_channels, kernel_size = 1, stride = stride, bias = use_bias), norm_layer(self.expansion * out_channels)]
+        conv_block += [nn.Conv2d(out_channels, self.expansion * out_channels, kernel_size = 1, stride = 1, bias = use_bias), norm_layer(self.expansion * out_channels)]
         
         if downsample:
             downsample = nn.Sequential(*[nn.Conv2d(in_channels, self.expansion * out_channels, kernel_size = 1, stride = stride, bias = False),

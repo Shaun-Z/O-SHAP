@@ -17,7 +17,7 @@ if __name__ == '__main__':
     opt = TrainOptions().parse()   # get training options
     dataloader = create_dataloader(opt)  # create a dataset given opt.dataset_mode and other options
     dataset_size = len(dataloader)    # get the number of images in the dataset.
-    print(f'The number of training images = {dataset_size}')
+    print(f'The number of training images = \033[92m{dataset_size}\033[0m')
 
     model = create_model(opt)      # create a model given opt.model and other options
     model.setup(opt)               # regular setup: load and print networks; create schedulers
@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     opt.phase = 'val'
     dataloader_val = create_dataloader(opt)  # create a dataset given opt.dataset_mode and other options
-    print(f'The number of validation images = {len(dataloader_val)}')
+    print(f'The number of validation images = \033[92m{len(dataloader_val)}\033[0m')
 
     for epoch in tqdm(range(opt.epoch_count, opt.n_epochs + opt.n_epochs_decay + 1)):    # outer loop for different epochs; we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>
         epoch_start_time = time.time()  # timer for entire epoch

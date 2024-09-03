@@ -49,8 +49,10 @@ class ImageNetDataset(BaseDataset):
         # load data from /path/to/data/
         self.X = []
         self.Y = []
+
+        print(f"Loading \033[92m{self.phase}\033[0m data")
+        
         if self.phase == 'train':
-            print(f"Loading \033[92m{self.phase}\033[0m data")
             dir = os.path.join(self.dir, self.phase) # directory to the train images
             directories = os.listdir(dir) # directories of the train images
             for directory in directories:
@@ -60,7 +62,6 @@ class ImageNetDataset(BaseDataset):
                 self.Y_class = torch.tensor([self.labels.index(item) for item in self.Y], dtype=torch.long) # get the class of each image
 
         elif self.phase == 'val':
-            print(f"Loading {self.phase} data")
             dir = os.path.join(self.dir, self.phase) # directory to the val images
             self.X = glob(os.path.join(dir, 'images', '*.JPEG')) # get the list of path to the test images
             with open(os.path.join(dir, 'val_annotations.txt'), 'r') as file:

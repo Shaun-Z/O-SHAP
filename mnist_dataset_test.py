@@ -15,15 +15,17 @@ import matplotlib.pyplot as plt
 from options.train_options import TrainOptions
 from datasets.mnist_dataset import MnistDataset
 
-opt = TrainOptions().parse()
-dataset = MnistDataset(opt)
-print(dataset[0]['X'].shape, dataset[0]['Y'])
+if __name__ == '__main__':
 
-for i in range(10):
-    plt.subplot(2, 5, i+1)
-    plt.imshow(dataset[i]['X'], cmap='gray')
-    plt.title(dataset[i]['Y'])
-    plt.axis('off')
-plt.show()
+    opt = TrainOptions().parse()
+    dataset = MnistDataset(opt)
+    print(dataset[0]['X'].shape, dataset[0]['Y'])
 
-print(len(dataset))
+    for i in range(10):
+        plt.subplot(2, 5, i+1)
+        plt.imshow(dataset[i]['X'], cmap='gray')
+        plt.title(dataset[i]['Y'])
+        plt.axis('off')
+    plt.show()
+
+    print(len(dataset))

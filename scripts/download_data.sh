@@ -67,6 +67,14 @@ case $NAME in
     rm tiny-imagenet-200.zip
     rm -r tiny-imagenet-200
     ;;
+  "cub200")
+    kaggle datasets download veeralakrishna/200-bird-species-with-11788-images --unzip
+    mkdir -p data/CUB_200_2011
+    tar -xvzf CUB_200_2011.tgz -C ./data
+    tar -xvzf segmentations.tgz -C ./data/CUB_200_2011
+    rm CUB_200_2011.tgz
+    rm segmentations.tgz
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

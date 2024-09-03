@@ -2,15 +2,20 @@
 
 This is a testbench for ML algorithms and explanation methods.
 
+> These have already been achieved
+> - Dataset
+>   - [X] MNIST
+>   - [X] Tiny-ImageNet
+>   - [ ] CUB-200-2011
+> - Model
+>   - [X] Resnet Classifier
+
 - [ML-Testbench](#ml-testbench)
 - [Download Datasets](#download-datasets)
-- [Test Scripts](#test-scripts)
-  - [MNIST](#mnist)
-  - [ImageNet](#imagenet)
 - [Models](#models)
   - [ResNet Classifier](#resnet-classifier)
 - [Training](#training)
-  - [ImageNet](#imagenet-1)
+  - [ImageNet](#imagenet)
 - [How to add your work](#how-to-add-your-work)
   - [Model](#model)
   - [Dataset](#dataset)
@@ -35,31 +40,6 @@ bash scripts/download_data.sh mnist
 ```bash
 bash scripts/download_data.sh tiny-imagenet
 ```
-# Test Scripts
-
-## MNIST
-
-```bash
-python mnist_dataset_test.py --dataroot ./data/mnist --gpu_ids -1
-```
-
-or
-
-```bash
-python mnist_dataset_test.py -d ./datasets/mnist -g -1
-```
-
-## ImageNet
-
-```bash
-python imagenet_dataset_test.py --dataroot ./data/tiny-imagenet --gpu_ids -1
-```
-
-or
-
-```bash
-python imagenet_dataset_test.py -d ./data/tiny-imagenet -g -1
-```
 
 # Models
 
@@ -72,19 +52,20 @@ python imagenet_dataset_test.py -d ./data/tiny-imagenet -g -1
 ## ImageNet
 
 ```bash
-python train.py --dataroot ./data/tiny-imagenet --name RestNetClassifier --gpu_ids -1 --model res_class --dataset_name imagenet
+python train.py --dataroot ./data/tiny-imagenet --name Restnet101Classifier --gpu_ids -1 --model res_class --net_name resnet101 --dataset_name imagenet --batch_size 128
 ```
 
 or
 
 ```bash
-python train.py -d ./data/tiny-imagenet -n RestNetClassifier -g -1 -m res_class --dataset_name imagenet
+python train.py -d ./data/tiny-imagenet -n Restnet101Classifier -g -1 -m res_class --net_name resnet101 --dataset_name imagenet --batch_size 128
 ```
 
 > Some additional options
 > - `--continue_train`: load the latest model
 > - `--load_iter`: specify which iteration to load
 > - `--save_by_iter`: save model by iteration
+> - `--use_wandb`: use wandb for visualization
 
 # How to add your work
 

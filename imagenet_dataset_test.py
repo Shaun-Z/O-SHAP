@@ -29,7 +29,7 @@ if __name__ == '__main__':
     for i in range(len(dataset)):
         data = dataset[i]
         Y = data['Y']
-        print(f"X:{dataset.X[i]}\tY_class:{data['Y_class'].numpy()}\tY:{Y}")
+        print(f"X:{dataset.X[i]}\tY_class:{data['Y_class'].numpy()}\tY:{Y}\t{data['X'].shape}")
         exit()
         # if Y == dataset.labels[index]:
         #     # print(dataset[i]['X'].shape)

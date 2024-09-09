@@ -1,6 +1,15 @@
+'''
+python explain.py -d ./data/tiny-imagenet -n CustomClassifier -g 0 -m res_class --net_name custom --dataset_name imagenet --eval
+--epoch 18
+'''
+
 import time
 from tqdm import tqdm
-from options.train_options import TrainOptions
+from options.explain_options import ExplainOptions
+from explanations import create_explanation
 
 if __name__ == '__main__':
-    opt = TrainOptions().parse()   # get training options
+    opt = ExplainOptions().parse()   # get training options
+    explainer = create_explanation(opt)
+    explainer.explain(1)
+    explainer.plot()

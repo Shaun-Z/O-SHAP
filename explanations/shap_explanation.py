@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 import torchvision
 from torchvision import transforms
@@ -12,10 +13,6 @@ class ShapExplanation(BaseExplanation):
     
     @staticmethod
     def modify_commandline_options(parser):
-        # default values
-        parser.add_argument('--n_evals', type=int, default=5000, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
-        parser.add_argument('--index_explain', type=list, default=[100], help='the shape of the input data')
-
         # rewrite default values
         parser.set_defaults(batch_size=50)
         return parser
@@ -26,32 +23,36 @@ class ShapExplanation(BaseExplanation):
         self.model.setup(opt)
         self.model.eval()
         self.dataset = create_dataset(opt)
-        self.explainer = self.define_explainer(opt, self.dataset)
+        self.explainer = self.define_explainer(self.predict, self.dataset)
 
-    def explain(self, X: np.ndarray):
+    def explain(self, img_index: int):
+        X = self.dataset[img_index]['X'].unsqueeze(0)
         input_img = transform(X)
         self.shap_values = self.explainer(input_img, max_evals=self.opt.n_evals, batch_size=self.opt.batch_size, outputs=self.opt.index_explain)
 
     def predict(self, img: np.ndarray) -> torch.Tensor:
-        self.model.input = torch.Tensor(img).to(self.device)
+        self.model.input = nhwc_to_nchw(torch.Tensor(img)).to(self.device)
         self.model.forward()
         return self.model.output
 
-    def define_explainer(self, dataset):
-        Xtr = transform(dataset[0]['X'].unsqueeze(0))
+    def define_explainer(self, pred_fn, dataset):
+        Xtr = transform(dataset[0]['X'])
         # out = predict(Xtr[0:1])
         masker_blur = shap.maskers.Image("blur(64, 64)", Xtr.shape)
 
-        explainer = shap.Explainer(self.predict, masker_blur, output_names=None)
+        explainer = shap.Explainer(pred_fn, masker_blur, output_names=None)
         return explainer
-    
-    def save(self, path):
-        pass
 
-    def plot(self):
-        shap.image_plot(shap_values=self.shap_values.values,
-                        pixel_values=self.shap_values.data,
+    def plot(self, save_path: str = None):
+        data = inv_transform(self.shap_values.data).cpu().numpy()[0] # 原图
+        values = [val for val in np.moveaxis(self.shap_values.values[0],-1, 0)] # shap值热力图
+        shap.image_plot(shap_values=values,
+                        pixel_values=data,
                         labels=None)
+        if save_path:
+            plt.savefig(save_path)
+        else:
+            plt.show()
 
 def nhwc_to_nchw(x: torch.Tensor) -> torch.Tensor:
     if x.dim() == 4:
@@ -71,10 +72,10 @@ mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
 
 transform= [
-    transforms.Lambda(nchw_to_nhwc),
     transforms.Resize(224),
-    transforms.Lambda(lambda x: x*(1/255)),
-    transforms.Normalize(mean=mean, std=std),
+    # transforms.Lambda(lambda x: x*(1/255)),
+    # transforms.Normalize(mean=mean, std=std),
+    transforms.Lambda(nchw_to_nhwc),
 ]
 
 inv_transform= [
@@ -83,6 +84,7 @@ inv_transform= [
         mean = (-1 * np.array(mean) / np.array(std)).tolist(),
         std = (1 / np.array(std)).tolist()
     ),
+    transforms.Lambda(nchw_to_nhwc),
 ]
 
 transform = torchvision.transforms.Compose(transform)

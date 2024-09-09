@@ -185,7 +185,7 @@ class Visualizer():
             if epoch != self.current_epoch:
                 self.current_epoch = epoch
                 result_table.add_data(*table_row)
-                self.wandb_run.log({"Result": result_table})
+                self.wandb_run.log({"Result": result_table, "Epoch": epoch})
 
         if self.use_html and (save_result or not self.saved):  # save images to an HTML file if they haven't been saved.
             self.saved = True

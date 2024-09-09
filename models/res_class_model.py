@@ -3,7 +3,6 @@ import torch.nn as nn
 # from util.image_pool import ImagePool
 from .base_model import BaseModel
 from . import networks
-import torchvision.models as models
 
 class ResClassModel(BaseModel):
 

@@ -9,7 +9,7 @@ from options.explain_options import ExplainOptions
 from explanations import create_explanation
 
 if __name__ == '__main__':
-    opt = ExplainOptions().parse()   # get training options
+    opt = ExplainOptions().parse()   # get explain options
     explainer = create_explanation(opt)
     explainer.explain(1)
     explainer.plot()

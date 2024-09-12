@@ -14,6 +14,7 @@ class ShapExplanation(BaseExplanation):
     @staticmethod
     def modify_commandline_options(parser):
         # rewrite default values
+        parser.add_argument('--n_evals', type=int, default=5000, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
         parser.set_defaults(batch_size=50)
         return parser
 

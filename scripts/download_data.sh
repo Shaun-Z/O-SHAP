@@ -81,6 +81,15 @@ case $NAME in
     tar -xvzf severstal-steel-defect-detection.zip -C ./data/severstal
     rm severstal-steel-defect-detection.zip
     ;;
+  "pascal_voc_2007")
+    wget -c http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar
+    wget -c http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar
+    mkdir -p data/pascal_voc_2007/trainval
+    mkdir -p data/pascal_voc_2007/test
+    tar -xvzf VOCtrainval_06-Nov-2007.tar -C ./data/pascal_voc_2007/trainval
+    tar -xvzf VOCtest_06-Nov-2007.tar -C ./data/pascal_voc_2007/test
+    rm VOCtrainval_06-Nov-2007.tar VOCtest_06-Nov-2007.tar
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

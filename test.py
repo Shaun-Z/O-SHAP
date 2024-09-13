@@ -2,7 +2,7 @@ from options.test_options import TestOptions
 from options.train_options import TrainOptions
 from datasets import create_dataloader
 from models import create_model
-import numpy as np
+import time
 import torch
 import torch.nn.functional as F
 
@@ -26,7 +26,9 @@ if __name__ == '__main__':
     labels = dataloader.dataset.labels   # get the labels so we can search the label
     for i, data in enumerate(dataloader):
         model.set_input(data)
-        model.test()
+        time_stamp = time.time() # timer for computation time
+        model.test()           # run inference
+        print(f"Computation time: \033[92m{(time.time() - time_stamp)}\033[0m s")
         predict_result = model.output
 
         y_prob = F.softmax(predict_result, dim = -1) # get the probability of each class
@@ -36,8 +38,8 @@ if __name__ == '__main__':
 
         is_True = [a == b for a,b in zip(data['Y'], predicted_labels)] # check if the predicted label is correct
 
-        for j in range(len(is_True)):
-            print(f"\033[92m{is_True[j]}\033[0m\t{data['Y'][j]}\t\033[92m{predicted_labels[j]}\033[0m\t{data['Y_class'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}")  # print the true label and the predicted label
+        # for j in range(len(is_True)):
+        #     print(f"\033[92m{is_True[j]}\033[0m\t{data['Y'][j]}\t\033[92m{predicted_labels[j]}\033[0m\t{data['Y_class'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}")  # print the true label and the predicted label
 '''
-python test.py -d ./data/tiny-imagenet -n ResnetClassifier -g -1 -m res_class --dataset_name imagenet --phase val --eval --net_name resnet101 --batch_size 4
+python test.py -d ./data/tiny-imagenet -n Resnet50onImageNet -g -1 -m res_class --dataset_name imagenet --phase val --eval --net_name resnet50 --batch_size 4 --epoch 15
 '''

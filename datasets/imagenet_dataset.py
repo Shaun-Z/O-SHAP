@@ -42,7 +42,31 @@ class ImageNetDataset(BaseDataset):
             label, meaning = line.split('\t')
             self.labels_meaning[label] = meaning # get the meaning of the labels
         self.load_data()
-        self.transform = get_transform(self.opt, grayscale=(self.opt.input_nc == 1))
+        self.mean = [0.485, 0.456, 0.406]
+        self.std = [0.229, 0.224, 0.225]
+        if self.phase == 'train':
+            self.transform = transforms.Compose([
+                transforms.Resize(224),
+                transforms.RandomRotation(5),
+                transforms.RandomHorizontalFlip(0.5),
+                transforms.RandomCrop(224, padding = 10),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=self.mean, std=self.std)
+            ])
+        else:
+            self.transform = transforms.Compose([
+                transforms.Resize(224),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                    std=[0.229, 0.224, 0.225])
+            ])
+        self.inv_transform = transforms.Compose([
+            transforms.Normalize(
+                mean = (-1 * np.array(self.mean) / np.array(self.std)).tolist(),
+                std = (1 / np.array(self.std)).tolist()
+            ),
+        ])
 
     def load_data(self):
         """Load data into memory.(here we only load the path to the data cuz the dataset is too large)"""
@@ -88,27 +112,32 @@ class ImageNetDataset(BaseDataset):
         Returns:
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
-        if self.phase == 'train':
-            transform = transforms.Compose([
-                transforms.Resize(224),
-                transforms.RandomRotation(5),
-                transforms.RandomHorizontalFlip(0.5),
-                transforms.RandomCrop(224, padding = 10),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                    std=[0.229, 0.224, 0.225])
-            ])
-        else:
-            transform = transforms.Compose([
-                transforms.Resize(224),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                    std=[0.229, 0.224, 0.225])
-            ])
+        # if self.phase == 'train':
+        #     transform = transforms.Compose([
+        #         transforms.Resize(224),
+        #         transforms.RandomRotation(5),
+        #         transforms.RandomHorizontalFlip(0.5),
+        #         transforms.RandomCrop(224, padding = 10),
+        #         transforms.ToTensor(),
+        #         transforms.Normalize(mean=self.mean, std=self.std)
+        #     ])
+        #     inv_transform = transforms.Compose([
+        #         transforms.Normalize(
+        #             mean = (-1 * np.array(self.mean) / np.array(self.std)).tolist(),
+        #             std = (1 / np.array(self.std)).tolist()
+        #         ),
+        #     ])
+        # else:
+        #     transform = transforms.Compose([
+        #         transforms.Resize(224),
+        #         transforms.CenterCrop(224),
+        #         transforms.ToTensor(),
+        #         transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+        #             std=[0.229, 0.224, 0.225])
+        #     ])
         path = self.X[index]
         im = Image.open(path).convert("RGB") # read the image
-        X_tensor = transform(im)
+        X_tensor = self.transform(im)
 
         if self.phase == 'test':
             return {'X': X_tensor}

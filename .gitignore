@@ -8,6 +8,7 @@ data/*
 test.ipynb
 
 *.svg
+img_res
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

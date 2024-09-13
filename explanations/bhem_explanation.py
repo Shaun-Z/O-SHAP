@@ -56,7 +56,7 @@ class layer:
         img = np.zeros_like(self.image)
         if len(masks) != 0:
             for mask in masks:
-                img[:,mask] = self.image[:,mask]
+                img[:,mask[0],mask[1]] = self.image[:,mask[0],mask[1]]
         self.masked_image = img
         self.seg_active = np.zeros(self.segment_num)
         self.seg_active = seg_keys
@@ -84,7 +84,7 @@ class layer:
         if self.masked_image is None:
             return None
         else:
-            plt.imshow(self.masked_image)
+            plt.imshow(self.masked_image.permute(1,2,0))
             plt.colorbar()
             plt.title("Masked Image")
             plt.show()
@@ -162,6 +162,7 @@ class BhemExplanation(BaseExplanation):
     def explain(self, img_index: int):
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
         self.initialize_layers(input_img)   # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
+        self.print_explanation_info()
 
         indexes = [list(self.layers[i].segment_mapping.keys()) for i in range(1, self.layer_num)]
         scores = np.zeros((1, len(self.dataset.labels), int(input_img.shape[-1]*input_img.shape[-2]/16/16)))
@@ -202,17 +203,17 @@ class BhemExplanation(BaseExplanation):
 
                                         img = self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])    # Get masked image with f4 (C, H, W) tensor
 
-                                        # plt.figure(figsize=(20, 10))
-                                        # plt.subplot(1, 2, 1)
-                                        # plt.imshow(img, cmap='gray', vmin=0, vmax=255)
-                                        # plt.title("Include f4")
-                                        # plt.colorbar()
-                                        # plt.subplot(1, 2, 2)
-                                        # plt.imshow(img1, cmap='gray', vmin=0, vmax=255)
-                                        # plt.colorbar()
-                                        # plt.title("Exclude f4")
-                                        # plt.savefig(f'./img_res/img({f1}_{s1})({f2}_{s2})({f3}_{s3})({f4}_{s4}).png')
-                                        # plt.close()
+                                        plt.figure(figsize=(20, 10))
+                                        plt.subplot(1, 2, 1)
+                                        plt.imshow(self.dataset.inv_transform(img).permute(1,2,0), vmin=0, vmax=255)
+                                        plt.title("Include f4")
+                                        plt.colorbar()
+                                        plt.subplot(1, 2, 2)
+                                        plt.imshow(self.dataset.inv_transform(img1).permute(1,2,0), vmin=0, vmax=255)
+                                        plt.colorbar()
+                                        plt.title("Exclude f4")
+                                        plt.savefig(f'./img_res/img({f1}_{s1})({f2}_{s2})({f3}_{s3})({f4}_{s4}).png')
+                                        plt.close()
 
                                         P1 = self.predict(img.unsqueeze(0))
                                         P2 = self.predict(img1.unsqueeze(0))

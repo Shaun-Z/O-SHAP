@@ -30,3 +30,8 @@ def create_explanation(opt):
     explanation_class = find_explanation_using_name(opt.explanation_name)
     explanation = explanation_class(opt)
     return explanation
+
+def get_option_setter(explanation_name):
+    """Return the static method <modify_commandline_options> of the dataset class."""
+    explanation_class = find_explanation_using_name(explanation_name)
+    return explanation_class.modify_commandline_options

@@ -10,7 +10,6 @@ class ExplainOptions(BaseOptions):
     def initialize(self, parser):
         parser = BaseOptions.initialize(self, parser)  # define shared options
         # default values
-        parser.add_argument('--n_evals', type=int, default=5000, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
         parser.add_argument('--index_explain', type=list, default=[1], help='the index of the class to explain')
         parser.add_argument('--explanation_name', type=str, default='shap', help='the name of the explanation method')
 

@@ -1,6 +1,6 @@
 '''
 python explain.py -d ./data/tiny-imagenet -n CustomClassifier -g 0 -m res_class --net_name custom --dataset_name imagenet --eval
---epoch 20
+--epoch 15
 '''
 
 import time

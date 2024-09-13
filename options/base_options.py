@@ -4,6 +4,7 @@ from util import util
 import torch
 import models
 import datasets
+import explanations
 
 
 class BaseOptions():
@@ -80,6 +81,11 @@ class BaseOptions():
         dataset_name = opt.dataset_name
         dataset_option_setter = datasets.get_option_setter(dataset_name)
         parser = dataset_option_setter(parser, self.isTrain)
+
+        # modify explanation-related parser options
+        explanation_name = opt.explanation_name
+        explanation_option_setter = explanations.get_option_setter(explanation_name)
+        parser = explanation_option_setter(parser)
 
         # save and return the parser
         self.parser = parser

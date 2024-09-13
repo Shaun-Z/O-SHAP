@@ -75,6 +75,12 @@ case $NAME in
     rm CUB_200_2011.tgz
     rm segmentations.tgz
     ;;
+  "serverstal")
+    kaggle competitions download -c severstal-steel-defect-detection
+    mkdir -p data/severstal
+    tar -xvzf severstal-steel-defect-detection.zip -C ./data/severstal
+    rm severstal-steel-defect-detection.zip
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

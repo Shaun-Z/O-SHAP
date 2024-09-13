@@ -88,15 +88,24 @@ class ImageNetDataset(BaseDataset):
         Returns:
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
-        transform = transforms.Compose([
-            transforms.Resize(224),
-            transforms.RandomRotation(5),
-            transforms.RandomHorizontalFlip(0.5),
-            transforms.RandomCrop(224, padding = 10),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                std=[0.229, 0.224, 0.225])
-        ])
+        if self.phase == 'train':
+            transform = transforms.Compose([
+                transforms.Resize(224),
+                transforms.RandomRotation(5),
+                transforms.RandomHorizontalFlip(0.5),
+                transforms.RandomCrop(224, padding = 10),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                    std=[0.229, 0.224, 0.225])
+            ])
+        else:
+            transform = transforms.Compose([
+                transforms.Resize(224),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                    std=[0.229, 0.224, 0.225])
+            ])
         path = self.X[index]
         im = Image.open(path).convert("RGB") # read the image
         X_tensor = transform(im)
@@ -104,7 +113,7 @@ class ImageNetDataset(BaseDataset):
         if self.phase == 'test':
             return {'X': X_tensor}
         else:
-            return {'X': X_tensor, 'Y_class': self.Y_class[index], 'Y': self.Y[index]} # X_tensor : {num_batches, 3, 64, 64} , Y_one_hot : a list of labels
+            return {'X': X_tensor, 'Y_class': self.Y_class[index], 'Y': self.Y[index]} # return the image and its class
 
 
     def __len__(self):

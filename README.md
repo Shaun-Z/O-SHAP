@@ -41,6 +41,30 @@ bash scripts/download_data.sh mnist
 bash scripts/download_data.sh tiny-imagenet
 ```
 
+4. cifar10
+
+```bash
+bash scripts/download_data.sh cifar10
+```
+
+5. cub200
+
+```bash
+bash scripts/download_data.sh cub200
+```
+
+6. serverstal
+
+```bash
+bash scripts/download_data.sh serverstal
+```
+
+7. pascal_voc_2007
+
+```bash
+bash scripts/download_data.sh pascal_voc_2007
+```
+
 # Models
 
 ## ResNet Classifier

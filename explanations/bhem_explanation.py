@@ -192,62 +192,83 @@ class BhemExplanation(BaseExplanation):
 
                         feature_group_num = (2**(len(f1s)+len(f2s)+len(f3s)+len(f4s)))
                         
+                        img1 = torch.zeros_like(input_img)
+                        img = torch.zeros_like(input_img)
+                        # cnt = 0
+
                         for subset1 in all_subsets(f1s):
                             for subset2 in all_subsets(f2s):
                                 for subset3 in all_subsets(f3s):
                                     for subset4 in all_subsets(f4s):
                                         # print(f"Feature 4: {subset4}")
+                                        # cnt+=1
+                                        # print(cnt, end='\r')
 
-                                        img1 = self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])   # Get masked image without f4 (C, H, W) tensor
+                                        img1 += self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])   # Get masked image without f4 (C, H, W) tensor
                                         subset4.append(f4)
 
-                                        img = self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])    # Get masked image with f4 (C, H, W) tensor
+                                        img += self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])    # Get masked image with f4 (C, H, W) tensor
 
-                                        plt.figure(figsize=(20, 10))
-                                        plt.subplot(1, 2, 1)
-                                        plt.imshow(self.dataset.inv_transform(img).permute(1,2,0), vmin=0, vmax=255)
-                                        plt.title("Include f4")
-                                        plt.colorbar()
-                                        plt.subplot(1, 2, 2)
-                                        plt.imshow(self.dataset.inv_transform(img1).permute(1,2,0), vmin=0, vmax=255)
-                                        plt.colorbar()
-                                        plt.title("Exclude f4")
-                                        plt.savefig(f'./img_res/img({f1}_{s1})({f2}_{s2})({f3}_{s3})({f4}_{s4}).png')
-                                        plt.close()
+                                        # img1 = self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])   # Get masked image without f4 (C, H, W) tensor
+                                        # subset4.append(f4)
 
-                                        P1 = self.predict(img.unsqueeze(0))
-                                        P2 = self.predict(img1.unsqueeze(0))
+                                        # img = self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])    # Get masked image with f4 (C, H, W) tensor
+
+                                        # plt.figure(figsize=(20, 10))
+                                        # plt.subplot(1, 2, 1)
+                                        # plt.imshow(self.dataset.inv_transform(img).permute(1,2,0), vmin=0, vmax=255)
+                                        # plt.title("Include f4")
+                                        # plt.colorbar()
+                                        # plt.subplot(1, 2, 2)
+                                        # plt.imshow(self.dataset.inv_transform(img1).permute(1,2,0), vmin=0, vmax=255)
+                                        # plt.colorbar()
+                                        # plt.title("Exclude f4")
+                                        # plt.savefig(f'./img_res/img({f1}_{s1})({f2}_{s2})({f3}_{s3})({f4}_{s4}).png')
+                                        # plt.close()
+
+                                        # P1 = self.predict(img.unsqueeze(0))
+                                        # P2 = self.predict(img1.unsqueeze(0))
                                         # P1.shape, P2.shape: (1,200)
 
-                                        scores[:,:,f4] += np.array((P1-P2).cpu().detach().numpy())/feature_group_num
-
+                                        # scores[:,:,f4] += np.array((P1-P2).cpu().detach().numpy())/feature_group_num
                                         s4 +=1
                                     s3 +=1
                                 s2 +=1
                             s1 +=1
+
+                        img /= feature_group_num
+                        img1 /= feature_group_num
+                        P1 = self.predict(img.unsqueeze(0))
+                        P2 = self.predict(img1.unsqueeze(0))
+                        scores[:,:,f4] += np.array((P1-P2).cpu().detach().numpy())
         self.scores = scores.reshape(1, len(self.dataset.labels), int(input_img.shape[-1]/16), int(input_img.shape[-2]/16))
+        np.save(f'./scores_{img_index}.npy', self.scores)
         return scores
                 
-    def plot_viz(self, result, resized_images, savename=None):
+    def plot(self, img_index: int, path: str = None):
         # result = scores.reshape(1,10, 14, 14)
+        input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
+        image = self.dataset.inv_transform(input_img).permute(1,2,0)
 
-        fig, axes = plt.subplots(nrows=1, ncols=11, figsize=(40,10), squeeze=False)
+        exp_result = np.load(f'./scores_{img_index}.npy')
 
-        axes[0, 0].imshow(self.image, cmap=plt.get_cmap("gray_r"), alpha=0.3)
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(40,10), squeeze=False)
+
+        axes[0, 0].imshow(image, alpha=0.3)
         axes[0][0].axis('off')
-        max_val = np.nanpercentile(result[0], 99.9)
+        max_val = np.nanpercentile(exp_result[0], 99.9)
         for i in range(10):
-            axes[0][i+1].imshow(-self.image, cmap='gray', alpha=0.3)
-            axes[0][i+1].imshow(resized_images[0][i], cmap=red_transparent_blue, vmin=-np.nanpercentile(result[0], 99.9),vmax=np.nanpercentile(result[0], 99.9))
+            axes[0][i+1].imshow(self.image, alpha=0.3)
+            axes[0][i+1].imshow(exp_result[0][i], cmap=red_transparent_blue, vmin=-np.nanpercentile(exp_result[0], 99.9),vmax=np.nanpercentile(exp_result[0], 99.9))
             axes[0][i+1].axis('off')
-            im = axes[0, i+1].imshow(resized_images[0][i], cmap=red_transparent_blue, vmin=-max_val, vmax=max_val)
+            im = axes[0, i+1].imshow(exp_result[0][i], cmap=red_transparent_blue, vmin=-max_val, vmax=max_val)
 
         plt.colorbar( im, ax=np.ravel(axes).tolist(), label="BHEM value", orientation="horizontal", aspect=40 / 0.2)
 
-        if savename is not None:
-            plt.savefig(savename)
-        else:
-            plt.show()
+        # if savename is not None:
+        #     plt.savefig(savename)
+        # else:
+        #     plt.show()
 
     def print_explanation_info(self):
         logging.info(f'''Explanaion Info:

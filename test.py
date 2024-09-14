@@ -28,18 +28,19 @@ if __name__ == '__main__':
         model.set_input(data)
         time_stamp = time.time() # timer for computation time
         model.test()           # run inference
-        print(f"Computation time: \033[92m{(time.time() - time_stamp)}\033[0m s")
+        # print(f"Computation time: \033[92m{(time.time() - time_stamp)}\033[0m s")
         predict_result = model.output
 
         y_prob = F.softmax(predict_result, dim = -1) # get the probability of each class
+
         index_max = torch.argmax(y_prob, 1) # get the index of the max probability
         indices = index_max.tolist() # convert the tensor to list
         predicted_labels = [labels[i] for i in indices] # get the predicted labels
 
         is_True = [a == b for a,b in zip(data['Y'], predicted_labels)] # check if the predicted label is correct
 
-        # for j in range(len(is_True)):
-        #     print(f"\033[92m{is_True[j]}\033[0m\t{data['Y'][j]}\t\033[92m{predicted_labels[j]}\033[0m\t{data['Y_class'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}")  # print the true label and the predicted label
+        for j in range(len(is_True)):
+            print(f"\033[92m{is_True[j]}\033[0m\t{data['Y'][j]}\t\033[92m{predicted_labels[j]}\033[0m\t{data['Y_class'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}")  # print the true label and the predicted label
 '''
 python test.py -d ./data/tiny-imagenet -n Resnet50onImageNet -g -1 -m res_class --dataset_name imagenet --phase val --eval --net_name resnet50 --batch_size 4 --epoch 15
 '''

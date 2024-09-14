@@ -12,5 +12,7 @@ from explanations import create_explanation
 if __name__ == '__main__':
     opt = ExplainOptions().parse()   # get explain options
     explainer = create_explanation(opt)
-    explainer.explain(1)
+    explainer.explain(5) # 1, 5
+    print(explainer.dataset[5]['Y_class'], explainer.dataset[5]['Y'])
+    explainer.plot()
     

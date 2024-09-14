@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
+import torch.nn.functional as F
 import torchvision
 from torchvision import transforms
 import shap
@@ -34,6 +35,7 @@ class ShapExplanation(BaseExplanation):
     def predict(self, img: np.ndarray) -> torch.Tensor:
         self.model.input = nhwc_to_nchw(torch.Tensor(img)).to(self.device)
         self.model.forward()
+        # y_prob = F.softmax(self.model.output, dim = -1)
         return self.model.output
 
     def define_explainer(self, pred_fn, dataset):
@@ -47,6 +49,7 @@ class ShapExplanation(BaseExplanation):
     def plot(self, save_path: str = None):
         data = inv_transform(self.shap_values.data).cpu().numpy()[0] # 原图
         values = [val for val in np.moveaxis(self.shap_values.values[0],-1, 0)] # shap值热力图
+        print(values[0].shape)
         shap.image_plot(shap_values=values,
                         pixel_values=data,
                         labels=None)

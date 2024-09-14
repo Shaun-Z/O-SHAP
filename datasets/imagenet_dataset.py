@@ -15,8 +15,11 @@ class ImageNetDataset(BaseDataset):
     """A dataset class for ImageNet dataset.
 
     It assumes that the directory '/path/to/data/' contains the following directories:
-    - train.csv
-    - test.csv
+        - train: contains the training images
+        - val: contains the validation images
+        - test: contains the test images
+        - wnids.txt: contains the labels of the dataset
+        - words.txt: contains the meaning of the labels
     """
 
     @staticmethod
@@ -112,29 +115,6 @@ class ImageNetDataset(BaseDataset):
         Returns:
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
-        # if self.phase == 'train':
-        #     transform = transforms.Compose([
-        #         transforms.Resize(224),
-        #         transforms.RandomRotation(5),
-        #         transforms.RandomHorizontalFlip(0.5),
-        #         transforms.RandomCrop(224, padding = 10),
-        #         transforms.ToTensor(),
-        #         transforms.Normalize(mean=self.mean, std=self.std)
-        #     ])
-        #     inv_transform = transforms.Compose([
-        #         transforms.Normalize(
-        #             mean = (-1 * np.array(self.mean) / np.array(self.std)).tolist(),
-        #             std = (1 / np.array(self.std)).tolist()
-        #         ),
-        #     ])
-        # else:
-        #     transform = transforms.Compose([
-        #         transforms.Resize(224),
-        #         transforms.CenterCrop(224),
-        #         transforms.ToTensor(),
-        #         transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-        #             std=[0.229, 0.224, 0.225])
-        #     ])
         path = self.X[index]
         im = Image.open(path).convert("RGB") # read the image
         X_tensor = self.transform(im)

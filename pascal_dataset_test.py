@@ -13,12 +13,12 @@ import matplotlib.pyplot as plt
 
 from options.train_options import TrainOptions
 from options.test_options import TestOptions
-from datasets.pascal_dataset import PascalVoc2007
+from datasets.pascalvoc_dataset import PascalVocDataset
 
 if __name__ == '__main__':
     
     opt = TrainOptions().parse()
-    dataset = PascalVoc2007(opt)
+    dataset = PascalVocDataset(opt)
 
     for i in range(len(dataset)):
         data = dataset[i]

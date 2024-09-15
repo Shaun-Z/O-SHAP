@@ -11,7 +11,7 @@ from glob import glob
 import torch
 
 
-class PascalVoc2007(BaseDataset):
+class PascalVocDataset(BaseDataset):
     """A dataset class for pascal_voc_2007 dataset.
 
     """

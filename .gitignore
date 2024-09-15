@@ -5,7 +5,6 @@ wandb/
 data/*
 !data/
 .vscode/
-test.ipynb
 
 *.svg
 img_res

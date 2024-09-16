@@ -11,9 +11,9 @@ class ResClassModel(BaseModel):
         parser.set_defaults(no_dropout=True)  # default model did not use dropout
 
         parser.add_argument('--num_classes', type=int, default=200, help='the number of output image classes')
-        parser.add_argument('--net_name', type=str, default='custom', help='the number of ResNet blocks')
-        parser.add_argument('--pool_type', type=str, default='max', help='the type of pooling layer: max | avg')
-        parser.add_argument('--loss_type', type=str, default='cross_entropy', help='the type of loss function: cross_entropy | bcewithlogits')
+        parser.add_argument('--net_name', type=str, default='custom', help='the type of ResNet blocks [custom | resnet18 | resnet34 | resnet50 | resnet101 | resnet152]')
+        parser.add_argument('--pool_type', type=str, default='max', help='the type of pooling layer [max | avg]')
+        parser.add_argument('--loss_type', type=str, default='cross_entropy', help='the type of loss function [cross_entropy | bcewithlogits]')
         
         return parser
     

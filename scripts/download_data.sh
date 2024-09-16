@@ -86,8 +86,8 @@ case $NAME in
     wget -c http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar
     mkdir -p data/pascal_voc_2007/trainval
     mkdir -p data/pascal_voc_2007/test
-    tar -xvzf VOCtrainval_06-Nov-2007.tar -C ./data/pascal_voc_2007/trainval
-    tar -xvzf VOCtest_06-Nov-2007.tar -C ./data/pascal_voc_2007/test
+    tar -xvf VOCtrainval_06-Nov-2007.tar -C ./data/pascal_voc_2007/trainval
+    tar -xvf VOCtest_06-Nov-2007.tar -C ./data/pascal_voc_2007/test
     rm VOCtrainval_06-Nov-2007.tar VOCtest_06-Nov-2007.tar
     ;;
   *)

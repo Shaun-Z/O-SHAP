@@ -31,6 +31,7 @@ class ShapExplanation(BaseExplanation):
         X = self.dataset[img_index]['X'].unsqueeze(0)
         input_img = transform(X)
         self.shap_values = self.explainer(input_img, max_evals=self.opt.n_evals, batch_size=self.opt.batch_size, outputs=self.opt.index_explain)
+        np.save(f"results/{self.opt.explanation_name}/shap_values.npy", self.shap_values.values)
 
     def predict(self, img: np.ndarray) -> torch.Tensor:
         self.model.input = nhwc_to_nchw(torch.Tensor(img)).to(self.device)
@@ -76,7 +77,7 @@ mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
 
 transform= [
-    transforms.Resize(224),
+    # transforms.Resize(224),
     # transforms.Lambda(lambda x: x*(1/255)),
     # transforms.Normalize(mean=mean, std=std),
     transforms.Lambda(nchw_to_nhwc),

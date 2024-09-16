@@ -24,6 +24,15 @@ if __name__ == '__main__':
         data = dataset[i]
         Y = data['Y']
         print(f"X:{data['X']}\t X.shape:{data['X'].shape}\tY:{data['Y']}")
+
+        plt.figure()
+        plt.subplot(1, 2, 1)
+        plt.imshow(dataset.inv_transform(data['X']).permute(1,2,0))
+        plt.subplot(1, 2, 2)
+        plt.imshow(data['X'].permute(1,2,0))
+        plt.axis('off')
+        plt.show()
+
         break
         # if Y == dataset.labels[index]:
         #     # print(dataset[i]['X'].shape)

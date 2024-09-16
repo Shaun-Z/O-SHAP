@@ -129,8 +129,7 @@ class PascalVocDataset(BaseDataset):
         X_tensor = self.transform(im)
         Y_dict = {key: self.classes[key][index] for key in self.classes.keys()}
         Y_class = torch.tensor(list(Y_dict.values()),dtype=torch.float32)
-        Y = [key for key, value in Y_dict.items() if value == 1]
-        return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y, 'Y_dict': Y_dict} # return the image and its class
+        return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y_dict} # return the image and its class
 
 
     def __len__(self):

@@ -70,7 +70,6 @@ class ResClassModel(BaseModel):
         # self.image_paths = input['A_paths' if AtoB else 'B_paths']
 
     def validate(self, DataLoader_val):
-        '''Call set_input() before calling this function'''
         loss = 0
         self.eval()
         with torch.no_grad():

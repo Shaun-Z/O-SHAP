@@ -1,11 +1,16 @@
-''' Train resnet model
-python train.py -d ./data/tiny-imagenet -n ResnetClassifier -g 0 -m res_class --net_name resnet101 --dataset_name imagenet --batch_size 512 --lr 0.0002 --n_epochs 20 --n_epochs_decay 20 --use_wandb
+# %% Train resnet model on tiny-imagenet dataset
 '''
-
-''' Train custom model
+python train.py -d ./data/tiny-imagenet -n Resnet101onImageNet -g 0 -m res_class --net_name resnet101 --dataset_name imagenet --batch_size 512 --lr 0.0002 --n_epochs 20 --n_epochs_decay 20 --use_wandb
+'''
+# %% Train resnet model on pascalvoc dataset
+'''
+python train.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class --net_name resnet18 --num_classes 20 --dataset_name pascalvoc --loss_type bcewithlogits --batch_size 128 --lr 0.0002 --n_epochs 20 --n_epochs_decay 20 --use_wandb
+'''
+# %% Train custom model
+'''
 python train.py -d ./data/tiny-imagenet -n CustomClassifier -g 0 -m res_class --net_name custom --dataset_name imagenet --batch_size 512 --lr 0.0002 --n_epochs 20 --n_epochs_decay 20 --use_wandb
 '''
-
+# %%
 import time
 from tqdm import tqdm
 from options.train_options import TrainOptions

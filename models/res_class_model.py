@@ -13,6 +13,7 @@ class ResClassModel(BaseModel):
         parser.add_argument('--num_classes', type=int, default=200, help='the number of output image classes')
         parser.add_argument('--net_name', type=str, default='custom', help='the number of ResNet blocks')
         parser.add_argument('--pool_type', type=str, default='max', help='the type of pooling layer: max | avg')
+        parser.add_argument('--loss_type', type=str, default='cross_entropy', help='the type of loss function: cross_entropy | bcewithlogits')
         
         return parser
     
@@ -46,7 +47,12 @@ class ResClassModel(BaseModel):
 
         if self.isTrain:
             # define loss functions
-            self.criterion = torch.nn.CrossEntropyLoss()  # define loss.
+            if opt.loss_type == 'cross_entropy':
+                self.criterion = torch.nn.CrossEntropyLoss()    # Softmax + NLLLoss
+            elif opt.loss_type == 'bcewithlogits':
+                self.criterion = torch.nn.BCEWithLogitsLoss()   # Sigmoid + BCELoss
+            else:
+                raise NotImplementedError(f'Loss type {opt.loss_type} is not implemented')
             # initialize optimizers; schedulers will be automatically created by function <BaseModel.setup>.
             self.optimizer = torch.optim.Adam(self.netResnet_classifier.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
             self.optimizers.append(self.optimizer)

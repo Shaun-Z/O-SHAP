@@ -74,7 +74,7 @@ class PascalVocDataset(BaseDataset):
         # load data from /path/to/data/
 
         self.X = []
-        self.Y = dict.fromkeys(self.classes, [])
+        self.classes = dict.fromkeys(self.classes, [])
 
         print(f"Loading \033[92m{self.phase}\033[0m data")
         
@@ -87,7 +87,7 @@ class PascalVocDataset(BaseDataset):
                 with open(os.path.join(dir, "ImageSets/Main", class_ + '_train.txt'), 'r') as file:
                     content = file.read()
                     s = content.strip().split()[1::2]
-                    self.Y[class_] = list(map(lambda x: 1 if int(x) == 1 else 0, s))
+                    self.classes[class_] = list(map(lambda x: 1 if int(x) == 1 else 0, s))
 
         elif self.phase == 'val':
             dir = os.path.join(self.dir, "trainval/VOCdevkit/VOC2007") # directory to the val images
@@ -98,7 +98,7 @@ class PascalVocDataset(BaseDataset):
                 with open(os.path.join(dir, "ImageSets/Main", class_ + '_val.txt'), 'r') as file:
                     content = file.read()
                     s = content.strip().split()[1::2]
-                    self.Y[class_] = list(map(lambda x: 1 if int(x) == 1 else 0, s))
+                    self.classes[class_] = list(map(lambda x: 1 if int(x) == 1 else 0, s))
 
         elif self.phase == 'test':
             dir = os.path.join(self.dir, "test/VOCdevkit/VOC2007") # directory to the test images
@@ -109,7 +109,7 @@ class PascalVocDataset(BaseDataset):
                 with open(os.path.join(dir, "ImageSets/Main", class_ + '_test.txt'), 'r') as file:
                     content = file.read()
                     s = content.strip().split()[1::2]
-                    self.Y[class_] = list(map(lambda x: 1 if int(x) == 1 else 0, s))
+                    self.classes[class_] = list(map(lambda x: 1 if int(x) == 1 else 0, s))
         
         else:
             raise ValueError(f'Invalid phase: {self.phase}')
@@ -127,8 +127,10 @@ class PascalVocDataset(BaseDataset):
         path = self.X[index]
         im = Image.open(path).convert("RGB") # read the image
         X_tensor = self.transform(im)
-        Y_dict = {key: self.Y[key][index] for key in self.Y.keys()}
-        return {'X': X_tensor, 'Y': Y_dict} # return the image and its class
+        Y_dict = {key: self.classes[key][index] for key in self.classes.keys()}
+        Y_class = torch.tensor(list(Y_dict.values()),dtype=torch.float32)
+        Y = [key for key, value in Y_dict.items() if value == 1]
+        return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y, 'Y_dict': Y_dict} # return the image and its class
 
 
     def __len__(self):

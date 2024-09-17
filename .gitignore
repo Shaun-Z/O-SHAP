@@ -4,11 +4,11 @@ wandb/
 # Data directory
 data/*
 !data/
-.vscode/
 
 *.svg
 img_res
 *.npy
+*.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

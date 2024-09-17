@@ -161,12 +161,16 @@ class BhemExplanation(BaseExplanation):
 
     def explain(self, img_index: int):
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
+        Y = self.dataset[img_index]['Y']
         self.initialize_layers(input_img)   # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
         self.print_explanation_info()
 
         indexes = [list(self.layers[i].segment_mapping.keys()) for i in range(1, self.layer_num)]
         scores = np.zeros((1, len(self.dataset.labels), int(input_img.shape[-1]*input_img.shape[-2]/16/16)))
 
+        block_num = (2**(len(indexes[0])+len(indexes[1])+len(indexes[2])+len(indexes[3])))
+
+        cnt = 0
         for f1 in indexes[0]:
             f1s = indexes[0].copy() # copy
             f1s.remove(f1)
@@ -191,18 +195,18 @@ class BhemExplanation(BaseExplanation):
                         s1,s2,s3,s4 = 0,0,0,0
 
                         feature_group_num = (2**(len(f1s)+len(f2s)+len(f3s)+len(f4s)))
+                        total_num = feature_group_num*block_num
                         
                         img1 = torch.zeros_like(input_img)
                         img = torch.zeros_like(input_img)
-                        # cnt = 0
 
                         for subset1 in all_subsets(f1s):
                             for subset2 in all_subsets(f2s):
                                 for subset3 in all_subsets(f3s):
                                     for subset4 in all_subsets(f4s):
                                         # print(f"Feature 4: {subset4}")
-                                        # cnt+=1
-                                        # print(cnt, end='\r')
+                                        cnt+=1
+                                        print(f"{cnt/total_num}", end='\r')
 
                                         img1 += self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])   # Get masked image without f4 (C, H, W) tensor
                                         subset4.append(f4)
@@ -242,7 +246,7 @@ class BhemExplanation(BaseExplanation):
                         P2 = self.predict(img1.unsqueeze(0))
                         scores[:,:,f4] += np.array((P1-P2).cpu().detach().numpy())
         self.scores = scores.reshape(1, len(self.dataset.labels), int(input_img.shape[-1]/16), int(input_img.shape[-2]/16))
-        np.save(f'./scores_{img_index}.npy', self.scores)
+        np.save(f'results/{self.opt.explanation_name}/{self.opt.name}/P{img_index}_{Y}.npy', self.scores)
         return scores
                 
     def plot(self, img_index: int, path: str = None):
@@ -250,7 +254,7 @@ class BhemExplanation(BaseExplanation):
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
         image = self.dataset.inv_transform(input_img).permute(1,2,0)
 
-        exp_result = np.load(f'./scores_{img_index}.npy')
+        exp_result = np.load(f'results/{self.opt.explanation_name}/{self.opt.name}/value_{img_index}.npy')
 
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(40,10), squeeze=False)
 
@@ -265,10 +269,43 @@ class BhemExplanation(BaseExplanation):
 
         plt.colorbar( im, ax=np.ravel(axes).tolist(), label="BHEM value", orientation="horizontal", aspect=40 / 0.2)
 
-        # if savename is not None:
-        #     plt.savefig(savename)
-        # else:
-        #     plt.show()
+        if path is not None:
+            plt.savefig(path)
+        else:
+            plt.show()
+
+    def get_single_aopc_value(self, img_index: int, percents = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]):
+        model = self.predict
+        image = self.dataset[img_index]['X'].unsqueeze(0)   # get the base image CxHxW
+        Y_class = self.dataset[img_index]['Y_class']
+        X_pred = model(image)
+        base_value = X_pred.softmax(dim=-1).flatten()[Y_class].item()
+
+        AOPC = np.array([0.0]*len(percents))
+        for i in range(len(percents)):
+            res = self.delete_top_k_features(percents[i], img_index).unsqueeze(0)
+            AOPC[i] = base_value - model(res).softmax(dim=-1).flatten()[Y_class]
+        np.save(f"results/{self.opt.explanation_name}/{self.opt.name}/aopc_{img_index}.npy", AOPC)
+        return AOPC
+    
+    def delete_top_k_features(self, k, img_index: int):
+        img = self.dataset[img_index]['X']  # get the image CxHxW
+        path_to_value = f"results/{self.opt.explanation_name}/{self.opt.name}/value_{img_index}.npy"    # 1 x classes x H x W
+
+        value = np.load(path_to_value)
+        total_sum = np.sum(value)
+
+        # Sort the values in descending order and get the corresponding indices
+        sorted_indices = np.argsort(-value.flatten())
+
+        index = int(k * len(sorted_indices))
+
+        # Set the values after the index to 0
+        result = img.flatten()
+        result[sorted_indices[:index]] = 0
+        result = result.reshape(img.shape)
+
+        return result
 
     def print_explanation_info(self):
         logging.info(f'''Explanaion Info:

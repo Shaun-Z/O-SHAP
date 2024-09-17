@@ -1,0 +1,41 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            // "args": [
+            //     "--dataroot", "./data/tiny-imagenet",
+            //     "--name", "Resnet50onImageNet",
+            //     "--gpu_ids", "mps",
+            //     "--model", "res_class",
+            //     "--net_name", "resnet50",
+            //     "--dataset_name", "imagenet",
+            //     "--eval",
+            //     "--explanation_name", "shap",
+            //     "--epoch", "15"
+            // ]
+            "args": [ 
+                "--dataroot", "./data/pascal_voc_2007",
+                "--name", "Resnet18onPASCAL",
+                "--gpu_ids", "mps",
+                "--model", "res_class",
+                "--net_name", "resnet18",
+                "--phase", "val",
+                "--dataset_name", "pascalvoc",
+                "--eval",
+                "--batch_size", "4",
+                "--epoch", "40",
+                "--num_classes", "20",
+                "--loss_type", "bcewithlogits"
+            ]
+        }
+    ]
+}

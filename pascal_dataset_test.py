@@ -25,17 +25,17 @@ if __name__ == '__main__':
     for i in range(len(dataset)):
         data = dataset[i]
         Y = data['Y']
-        print(f"X.shape:{data['X'].shape}\tY_class:{data['Y_class']}\tY:{data['Y']}\tY_dict:{data['Y_dict']}")
+        print(f"X.shape:{data['X'].shape}\tY_class:{data['Y_class']}\tY:{data['Y']}")
 
-        plt.figure()
-        plt.subplot(1, 2, 1)
-        plt.imshow(dataset.inv_transform(data['X']).permute(1,2,0))
-        plt.subplot(1, 2, 2)
-        plt.imshow(data['X'].permute(1,2,0))
-        plt.axis('off')
-        plt.show()
+        # plt.figure()
+        # plt.subplot(1, 2, 1)
+        # plt.imshow(dataset.inv_transform(data['X']).permute(1,2,0))
+        # plt.subplot(1, 2, 2)
+        # plt.imshow(data['X'].permute(1,2,0))
+        # plt.axis('off')
+        # plt.show()
 
-        break
+        # break
         # if Y == dataset.labels[index]:
         #     # print(dataset[i]['X'].shape)
         #     print(f'{i}\t{Y}\t{index}')

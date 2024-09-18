@@ -79,5 +79,5 @@ python test.py -d ./data/tiny-imagenet -n Resnet50onImageNet -g -1 -m res_class 
 (Correctness: 5599/10000)
 python test.py -d ./data/tiny-imagenet -n Resnet18onImageNet -g mps -m res_class --dataset_name imagenet --phase val --eval --net_name resnet18 --batch_size 4 --epoch 25
 
-python test.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet18 --batch_size 4 --epoch 40 --num_classes 20 --loss_type bcewithlogits
+python test.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet18 --batch_size 4 --epoch 35 --num_classes 20 --loss_type bcewithlogits
 '''

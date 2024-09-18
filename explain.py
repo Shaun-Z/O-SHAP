@@ -18,10 +18,10 @@ if __name__ == '__main__':
     explainer = create_explanation(opt)
     # img_index = 5
     for img_index in tqdm(range(50)):
-        explainer.explain(img_index) # 1, 5
+        # explainer.explain(img_index) # 1, 5
         explainer.get_single_aopc_value(img_index)
         Y_class = explainer.dataset[img_index]['Y_class']
         Y = explainer.dataset[img_index]['Y']
         print(Y_class, Y)
-        explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/P{img_index}_{Y}.svg")
+        explainer.plot(0, save_path=f"results/{opt.explanation_name}/{opt.name}/P{img_index}_{Y}.svg")
     

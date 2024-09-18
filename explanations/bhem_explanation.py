@@ -143,10 +143,10 @@ class BhemExplanation(BaseExplanation):
     #     self.pred_fn = pred_fn
     #     return explainer
     
-    def explain(self, img_index: int):
-        X = self.dataset[img_index]['X'].unsqueeze(0)
-        input_img = X
-        self.shap_values = self.explainer(input_img, outputs=self.opt.index_explain)
+    # def explain(self, img_index: int):
+    #     X = self.dataset[img_index]['X'].unsqueeze(0)
+    #     input_img = X
+    #     self.shap_values = self.explainer(input_img, outputs=self.opt.index_explain)
     
     def get_current_masked_image(self, image, seg_keys: list):
         '''
@@ -249,12 +249,12 @@ class BhemExplanation(BaseExplanation):
         np.save(f'results/{self.opt.explanation_name}/{self.opt.name}/P{img_index}_{Y}.npy', self.scores)
         return scores
                 
-    def plot(self, img_index: int, path: str = None):
+    def plot(self, img_index: int, save_path: str = None):
         # result = scores.reshape(1,10, 14, 14)
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
         image = self.dataset.inv_transform(input_img).permute(1,2,0)
-
-        exp_result = np.load(f'results/{self.opt.explanation_name}/{self.opt.name}/value_{img_index}.npy')
+        Y = self.dataset[img_index]['Y']
+        exp_result = np.load(f'results/{self.opt.explanation_name}/{self.opt.name}/P{img_index}_{Y}.npy')
 
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(40,10), squeeze=False)
 
@@ -269,8 +269,8 @@ class BhemExplanation(BaseExplanation):
 
         plt.colorbar( im, ax=np.ravel(axes).tolist(), label="BHEM value", orientation="horizontal", aspect=40 / 0.2)
 
-        if path is not None:
-            plt.savefig(path)
+        if save_path is not None:
+            plt.savefig(save_path)
         else:
             plt.show()
 
@@ -280,17 +280,19 @@ class BhemExplanation(BaseExplanation):
         Y_class = self.dataset[img_index]['Y_class']
         X_pred = model(image)
         base_value = X_pred.softmax(dim=-1).flatten()[Y_class].item()
+        Y = self.dataset[img_index]['Y']
 
         AOPC = np.array([0.0]*len(percents))
         for i in range(len(percents)):
             res = self.delete_top_k_features(percents[i], img_index).unsqueeze(0)
             AOPC[i] = base_value - model(res).softmax(dim=-1).flatten()[Y_class]
-        np.save(f"results/{self.opt.explanation_name}/{self.opt.name}/aopc_{img_index}.npy", AOPC)
+        np.save(f"results/{self.opt.explanation_name}/{self.opt.name}/aopc{img_index}_{Y}.npy", AOPC)
         return AOPC
     
     def delete_top_k_features(self, k, img_index: int):
         img = self.dataset[img_index]['X']  # get the image CxHxW
-        path_to_value = f"results/{self.opt.explanation_name}/{self.opt.name}/value_{img_index}.npy"    # 1 x classes x H x W
+        Y = self.dataset[img_index]['Y']
+        path_to_value = f"results/{self.opt.explanation_name}/{self.opt.name}/P{img_index}_{Y}.npy"    # 1 x classes x H x W
 
         value = np.load(path_to_value)
         total_sum = np.sum(value)

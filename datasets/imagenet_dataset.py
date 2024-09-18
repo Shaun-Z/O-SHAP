@@ -3,8 +3,8 @@ import sys
 import numpy as np
 from datasets.base_dataset import BaseDataset, get_transform
 import pandas as pd
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.model_selection import train_test_split
+# from sklearn.preprocessing import OneHotEncoder
+# from sklearn.model_selection import train_test_split
 from PIL import Image
 import torchvision.transforms as transforms
 from glob import glob

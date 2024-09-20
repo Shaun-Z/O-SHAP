@@ -10,7 +10,7 @@ class ExplainOptions(BaseOptions):
     def initialize(self, parser):
         parser = BaseOptions.initialize(self, parser)  # define shared options
         # default values
-        parser.add_argument('--index_explain', type=list, default=[1], help='the index of the class to explain')
+        parser.add_argument('--index_explain', nargs='+', default=[], help='the indexes of the class to explain')
 
         parser.add_argument('--results_dir', type=str, default='./results/', help='saves results here.')
         parser.add_argument('--aspect_ratio', type=float, default=1.0, help='aspect ratio of result images')
@@ -21,4 +21,5 @@ class ExplainOptions(BaseOptions):
         # rewrite devalue values
         parser.set_defaults(model='res_class')
         self.isTrain = False
+        
         return parser

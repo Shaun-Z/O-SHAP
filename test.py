@@ -23,7 +23,7 @@ if __name__ == '__main__':
     if opt.eval:
         model.eval()
 
-    cnt = 0
+    true_cnt = 0
 
     labels = dataloader.dataset.labels   # get the labels so we can search the label
     for i, data in enumerate(dataloader):
@@ -53,8 +53,12 @@ if __name__ == '__main__':
             is_True = [a == b for a,b in zip(data['Y_class'], index_max)] # check if the predicted label is correct
 
             for j in range(len(is_True)):
-                print(f"\033[92m{is_True[j]}\033[0m\t{data['Y'][j]}\t\033[92m{predicted_labels[j]}\033[0m\t{data['Y_class'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}")  # print the true label and the predicted label
-                cnt += is_True[j]
+                print(f"{i*opt.batch_size+j}\t\033[92m{is_True[j]}\033[0m\t{data['Y'][j]}\t\033[92m{predicted_labels[j]}\033[0m\t{data['Y_class'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}")  # print the true label and the predicted label
+
+                with open(f'{opt.name}_log.txt', 'a') as file:
+                    file.write(f"{i*opt.batch_size+j}\t{is_True[j]}\t{data['Y'][j]}\t{predicted_labels[j]}\t{data['Y_class'][j]}\t{indices[j]}\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}\n")
+
+                true_cnt += is_True[j]
         elif opt.loss_type == 'bcewithlogits':   # Multi label classification            
             for i in range(len(y_pred)):
                 index_max = torch.where(y_pred[i] == 1)[0]  # get the index of the max probability
@@ -62,7 +66,7 @@ if __name__ == '__main__':
                 true_index = torch.where(data['Y_class'][i] == 1)[0] # get the index of the max probability
                 if len(index_max) == len(true_index):
                     is_True = torch.all(index_max == true_index)
-                    cnt += is_True
+                    true_cnt += is_True
                 else:
                     is_True = False
                 print(f"\033[92m{is_True}\033[0m\t{index_max}\t{true_index}")
@@ -71,7 +75,7 @@ if __name__ == '__main__':
             
         
     
-    print(f"\033[92m{cnt}\033[0m out of \033[92m{dataset_size}\033[0m are correct")  # print the number of correct predictions
+    print(f"\033[92m{true_cnt}\033[0m out of \033[92m{dataset_size}\033[0m are correct")  # print the number of correct predictions
 '''
 (Correctness: 5598/10000)
 python test.py -d ./data/tiny-imagenet -n Resnet50onImageNet -g -1 -m res_class --dataset_name imagenet --phase val --eval --net_name resnet50 --batch_size 4 --epoch 15

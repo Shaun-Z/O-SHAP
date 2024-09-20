@@ -6,6 +6,7 @@ data/*
 !data/
 
 *.svg
+*.txt
 img_res
 *.npy
 *.ipynb

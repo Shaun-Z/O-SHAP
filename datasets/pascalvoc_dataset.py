@@ -114,6 +114,8 @@ class PascalVocDataset(BaseDataset):
         else:
             raise ValueError(f'Invalid phase: {self.phase}')
 
+    def get_class_list(self, lst):
+        return list(lst)
 
     def __getitem__(self, index):
         """Return a data point and its metadata information.
@@ -130,7 +132,7 @@ class PascalVocDataset(BaseDataset):
         Y_dict = {key: self.labels[key][index] for key in self.labels.keys()}
         Y_class = torch.tensor(list(Y_dict.values()),dtype=torch.float32)
         # return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y_dict} # return the image and its class
-        return {'X': X_tensor, 'Y_class': Y_class, 'Y': list(self.labels.keys())[np.argmax(Y_class==1)]} # return the image and the first class
+        return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y_dict, 'Class_list': list(Y_class)} # return the image and the first class
 
 
     def __len__(self):

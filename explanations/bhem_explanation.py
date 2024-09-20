@@ -2,8 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import logging
 import sys
+import os
 
 import torch
+import torch.nn.functional as F
 
 from util.segmentation import basic_segment
 from util.color import red_transparent_blue
@@ -14,6 +16,8 @@ from .base_explanation import BaseExplanation
 
 from itertools import combinations
 import tqdm
+
+import math
 
 # RC Viz Code
 
@@ -110,6 +114,7 @@ class BhemExplanation(BaseExplanation):
         '''
         image: np.ndarray (C, H, W)
         '''
+        self.image = image
         self.layers = [layer(image, layer_ID=0)]
         self.layers += [layer(image, layer_ID=i) for i in range(1, self.layer_num)]
 
@@ -138,15 +143,6 @@ class BhemExplanation(BaseExplanation):
         self.model.input = img.to(self.device)
         self.model.forward()
         return self.model.output
-
-    # def define_explainer(self, pred_fn, dataset):
-    #     self.pred_fn = pred_fn
-    #     return explainer
-    
-    def explain(self, img_index: int):
-        X = self.dataset[img_index]['X'].unsqueeze(0)
-        input_img = X
-        self.shap_values = self.explainer(input_img, outputs=self.opt.index_explain)
     
     def get_current_masked_image(self, image, seg_keys: list):
         '''
@@ -162,6 +158,7 @@ class BhemExplanation(BaseExplanation):
     def explain(self, img_index: int):
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
         Y = self.dataset[img_index]['Y']
+        Y_class = self.dataset[img_index]['Y_class']
         self.initialize_layers(input_img)   # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
         self.print_explanation_info()
 
@@ -189,123 +186,126 @@ class BhemExplanation(BaseExplanation):
 
                     # for f4 in tqdm.tqdm(f4_idx, desc="Layer 4"):
                     for f4 in f4_idx:
+
+                        total_num = len(indexes[0])+len(f2_idx)+len(f3_idx)+len(f4_idx)
+
                         f4s = list(f4_idx.copy())
-                        f4s.remove(f4)
-                            
-                        s1,s2,s3,s4 = 0,0,0,0
 
-                        feature_group_num = (2**(len(f1s)+len(f2s)+len(f3s)+len(f4s)))
-                        total_num = feature_group_num*block_num
+                        f4s.remove(f4)            
                         
-                        img1 = torch.zeros_like(input_img)
-                        img = torch.zeros_like(input_img)
+                        # img1 = self.get_current_masked_image(input_img, [f1s, [], [], []]) * math.factorial(len(indexes[0])) * math.factorial(total_num - len(indexes[0])-1) / math.factorial(total_num) \
+                        #      + self.get_current_masked_image(input_img, [[], f2s, [], []]) * math.factorial(len(f2_idx)) * math.factorial(total_num - len(f2_idx)-1) / math.factorial(total_num) \
+                        #      + self.get_current_masked_image(input_img, [[], [], f3s, []]) * math.factorial(len(f3_idx)) * math.factorial(total_num - len(f3_idx)-1) / math.factorial(total_num) \
+                        #      + self.get_current_masked_image(input_img, [[], [], [], f4s]) * math.factorial(len(f4_idx)) * math.factorial(total_num - len(f4_idx)-1) / math.factorial(total_num)
+                        
+                        img1 = self.get_current_masked_image(input_img, [f1s, [], [], []]) / 2**(len(indexes[0])-1) \
+                             + self.get_current_masked_image(input_img, [[], f2s, [], []]) / 2**(len(f2_idx)-1) \
+                             + self.get_current_masked_image(input_img, [[], [], f3s, []]) / 2**(len(f3_idx)-1) \
+                             + self.get_current_masked_image(input_img, [[], [], [], f4s]) / 2**(len(f4_idx)-1)
+                        
+                        # img1 = self.get_current_masked_image(input_img, [f1s, [], [], []]) \
+                        #      + self.get_current_masked_image(input_img, [[], f2s, [], []]) \
+                        #      + self.get_current_masked_image(input_img, [[], [], f3s, []]) \
+                        #      + self.get_current_masked_image(input_img, [[], [], [], f4s])
 
-                        for subset1 in all_subsets(f1s):
-                            for subset2 in all_subsets(f2s):
-                                for subset3 in all_subsets(f3s):
-                                    for subset4 in all_subsets(f4s):
-                                        # print(f"Feature 4: {subset4}")
-                                        cnt+=1
-                                        print(f"{cnt/total_num}", end='\r')
+                        img = img1 + self.get_current_masked_image(input_img, [[], [], [], [f4]])
 
-                                        img1 += self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])   # Get masked image without f4 (C, H, W) tensor
-                                        subset4.append(f4)
+                        # plt.figure(figsize=(20, 10))
+                        # plt.subplot(1, 2, 1)
+                        # plt.imshow(self.dataset.inv_transform(img).permute(1,2,0), vmin=0, vmax=255)
+                        # # plt.imshow(img.permute(1,2,0), vmin=0, vmax=255)
+                        # plt.title("Include f4")
+                        # plt.colorbar()
+                        # plt.subplot(1, 2, 2)
+                        # plt.imshow(self.dataset.inv_transform(img1).permute(1,2,0), vmin=0, vmax=255)
+                        # # plt.imshow(img1.permute(1,2,0), vmin=0, vmax=255)
+                        # plt.colorbar()
+                        # plt.title("Exclude f4")
+                        # plt.savefig(f'./img_res/img({f1})({f2})({f3})({f4}).png')
+                        # plt.close()
+                        
+                        feature_group_num = (2**(len(f1s)+len(f2s)+len(f3s)+len(f4s)))
+                        # img1 = torch.zeros_like(input_img)
+                        # img = torch.zeros_like(input_img)
+                        # s1,s2,s3,s4 = 0,0,0,0
+                        # for subset1 in all_subsets(f1s):
+                        #     for subset2 in all_subsets(f2s):
+                        #         for subset3 in all_subsets(f3s):
+                        #             for subset4 in all_subsets(f4s):
+                        #                 # print(f"Feature 4: {subset4}")
+                        #                 cnt+=1
+                        #                 # print(f"{cnt/total_num}", end='\r')
 
-                                        img += self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])    # Get masked image with f4 (C, H, W) tensor
+                        #                 img1 += self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])   # Get masked image without f4 (C, H, W) tensor
+                        #                 subset4.append(f4)
 
-                                        # img1 = self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])   # Get masked image without f4 (C, H, W) tensor
-                                        # subset4.append(f4)
+                        #                 img += self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])    # Get masked image with f4 (C, H, W) tensor
 
-                                        # img = self.get_current_masked_image(input_img, [subset1, subset2, subset3, subset4])    # Get masked image with f4 (C, H, W) tensor
+                        #                 # plt.figure(figsize=(20, 10))
+                        #                 # plt.subplot(1, 2, 1)
+                        #                 # plt.imshow(self.dataset.inv_transform(img).permute(1,2,0), vmin=0, vmax=255)
+                        #                 # plt.title("Include f4")
+                        #                 # plt.colorbar()
+                        #                 # plt.subplot(1, 2, 2)
+                        #                 # plt.imshow(self.dataset.inv_transform(img1).permute(1,2,0), vmin=0, vmax=255)
+                        #                 # plt.colorbar()
+                        #                 # plt.title("Exclude f4")
+                        #                 # plt.savefig(f'./img_res/img({f1}_{s1})({f2}_{s2})({f3}_{s3})({f4}_{s4}).png')
+                        #                 # plt.close()
 
-                                        # plt.figure(figsize=(20, 10))
-                                        # plt.subplot(1, 2, 1)
-                                        # plt.imshow(self.dataset.inv_transform(img).permute(1,2,0), vmin=0, vmax=255)
-                                        # plt.title("Include f4")
-                                        # plt.colorbar()
-                                        # plt.subplot(1, 2, 2)
-                                        # plt.imshow(self.dataset.inv_transform(img1).permute(1,2,0), vmin=0, vmax=255)
-                                        # plt.colorbar()
-                                        # plt.title("Exclude f4")
-                                        # plt.savefig(f'./img_res/img({f1}_{s1})({f2}_{s2})({f3}_{s3})({f4}_{s4}).png')
-                                        # plt.close()
+                        #                 # P1 = self.predict(img.unsqueeze(0))
+                        #                 # P2 = self.predict(img1.unsqueeze(0))
+                        #                 # P1.shape, P2.shape: (1,200)
 
-                                        # P1 = self.predict(img.unsqueeze(0))
-                                        # P2 = self.predict(img1.unsqueeze(0))
-                                        # P1.shape, P2.shape: (1,200)
+                        #                 # scores[:,:,f4] += np.array((P1-P2).cpu().detach().numpy())/feature_group_num
+                        #                 s4 +=1
+                        #             s3 +=1
+                        #         s2 +=1
+                        #     s1 +=1
+                        
+                        # np.save('img1.npy', img1/feature_group_num)
+                        # np.save('img.npy', img/feature_group_num)
+                        # np.save('input_img.npy', input_img)
+                        # print(cnt)
 
-                                        # scores[:,:,f4] += np.array((P1-P2).cpu().detach().numpy())/feature_group_num
-                                        s4 +=1
-                                    s3 +=1
-                                s2 +=1
-                            s1 +=1
-
-                        img /= feature_group_num
-                        img1 /= feature_group_num
+                        # img /= feature_group_num
+                        # img1 /= feature_group_num
                         P1 = self.predict(img.unsqueeze(0))
                         P2 = self.predict(img1.unsqueeze(0))
                         scores[:,:,f4] += np.array((P1-P2).cpu().detach().numpy())
         self.scores = scores.reshape(1, len(self.dataset.labels), int(input_img.shape[-1]/16), int(input_img.shape[-2]/16))
-        np.save(f'results/{self.opt.explanation_name}/{self.opt.name}/P{img_index}_{Y}.npy', self.scores)
+
+        self.scores_to_save = np.expand_dims(self.scores[0, Y_class], axis=-1)
+
+        os.makedirs(f'results/{self.opt.explanation_name}/{self.opt.name}/value', exist_ok=True)
+        np.save(f'results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{Y}.npy', self.scores_to_save)
+        # print(cnt)
         return scores
                 
-    def plot(self, img_index: int, path: str = None):
-        # result = scores.reshape(1,10, 14, 14)
-        input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
-        image = self.dataset.inv_transform(input_img).permute(1,2,0)
+    def plot(self, save_path: str = None):
+        image = self.dataset.inv_transform(self.image).permute(1,2,0)
+        image_show = image.mean(axis=-1)
 
-        exp_result = np.load(f'results/{self.opt.explanation_name}/{self.opt.name}/value_{img_index}.npy')
+        result_show = self.scores_to_save.sum(axis=-1)    # (14, 14, 1)
 
-        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(40,10), squeeze=False)
-
-        axes[0, 0].imshow(image, alpha=0.3)
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8,6), squeeze=False)
+        axes[0,0].imshow(image)
         axes[0][0].axis('off')
-        max_val = np.nanpercentile(exp_result[0], 99.9)
-        for i in range(10):
-            axes[0][i+1].imshow(self.image, alpha=0.3)
-            axes[0][i+1].imshow(exp_result[0][i], cmap=red_transparent_blue, vmin=-np.nanpercentile(exp_result[0], 99.9),vmax=np.nanpercentile(exp_result[0], 99.9))
-            axes[0][i+1].axis('off')
-            im = axes[0, i+1].imshow(exp_result[0][i], cmap=red_transparent_blue, vmin=-max_val, vmax=max_val)
+        max_val = np.nanpercentile(np.abs(result_show), 99.9)
+        axes[0][1].imshow(image_show, cmap=plt.get_cmap('gray'), alpha=0.15)
+        axes[0][1].imshow(result_show, cmap=red_transparent_blue, vmin=-max_val,vmax=max_val)
+        axes[0][1].axis('off')
+        im = axes[0, 1].imshow(result_show, cmap=red_transparent_blue, vmin=-max_val, vmax=max_val)
 
-        plt.colorbar( im, ax=np.ravel(axes).tolist(), label="BHEM value", orientation="horizontal", aspect=40 / 0.2)
+        cb = plt.colorbar(im, ax=np.ravel(axes).tolist(), label="BHEM value", orientation="horizontal", aspect=30)
+        cb.outline.set_visible(False)
 
-        if path is not None:
-            plt.savefig(path)
+        if save_path is not None:
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            # print(f"Saving the image to {save_path}", end='\r')
+            plt.savefig(save_path)
         else:
             plt.show()
-
-    def get_single_aopc_value(self, img_index: int, percents = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]):
-        model = self.predict
-        image = self.dataset[img_index]['X'].unsqueeze(0)   # get the base image CxHxW
-        Y_class = self.dataset[img_index]['Y_class']
-        X_pred = model(image)
-        base_value = X_pred.softmax(dim=-1).flatten()[Y_class].item()
-
-        AOPC = np.array([0.0]*len(percents))
-        for i in range(len(percents)):
-            res = self.delete_top_k_features(percents[i], img_index).unsqueeze(0)
-            AOPC[i] = base_value - model(res).softmax(dim=-1).flatten()[Y_class]
-        np.save(f"results/{self.opt.explanation_name}/{self.opt.name}/aopc_{img_index}.npy", AOPC)
-        return AOPC
-    
-    def delete_top_k_features(self, k, img_index: int):
-        img = self.dataset[img_index]['X']  # get the image CxHxW
-        path_to_value = f"results/{self.opt.explanation_name}/{self.opt.name}/value_{img_index}.npy"    # 1 x classes x H x W
-
-        value = np.load(path_to_value)
-        total_sum = np.sum(value)
-
-        # Sort the values in descending order and get the corresponding indices
-        sorted_indices = np.argsort(-value.flatten())
-
-        index = int(k * len(sorted_indices))
-
-        # Set the values after the index to 0
-        result = img.flatten()
-        result[sorted_indices[:index]] = 0
-        result = result.reshape(img.shape)
-
-        return result
 
     def print_explanation_info(self):
         logging.info(f'''Explanaion Info:

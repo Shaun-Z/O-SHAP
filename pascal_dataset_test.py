@@ -14,18 +14,24 @@ import matplotlib.pyplot as plt
 from options.train_options import TrainOptions
 from options.test_options import TestOptions
 from datasets.pascalvoc_dataset import PascalVocDataset
+from datasets import create_dataloader
 
 if __name__ == '__main__':
     
     opt = TrainOptions().parse()
-    dataset = PascalVocDataset(opt)
+    # dataset = PascalVocDataset(opt)
+    dataloader = create_dataloader(opt)
 
-    print(len(dataset.train), len(dataset.val), len(dataset.test), len(dataset.classes))
+    # print(len(dataset.train), len(dataset.val), len(dataset.test), len(dataset.labels))
 
-    for i in range(len(dataset)):
-        data = dataset[i]
-        Y = data['Y']
-        print(f"X.shape:{data['X'].shape}\tY_class:{data['Y_class']}\tY:{data['Y']}")
+    for i, data in enumerate(dataloader):
+        print(data['Y'])
+        
+
+    # for i in range(len(dataset)):
+    #     data = dataset[i]
+    #     Y = data['Y']
+    #     print(f"X.shape:{data['X'].shape}\tY_class:{data['Y_class']}\tY:{data['Y']}")
 
         # plt.figure()
         # plt.subplot(1, 2, 1)

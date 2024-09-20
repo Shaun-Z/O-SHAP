@@ -304,6 +304,7 @@ class BhemExplanation(BaseExplanation):
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             # print(f"Saving the image to {save_path}", end='\r')
             plt.savefig(save_path)
+            plt.close()
         else:
             plt.show()
 

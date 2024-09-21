@@ -4,6 +4,8 @@ import logging
 import sys
 import os
 
+from scipy.ndimage import zoom
+
 import torch
 import torch.nn.functional as F
 
@@ -157,7 +159,7 @@ class BhemExplanation(BaseExplanation):
 
     def explain(self, img_index: int):
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
-        Y = self.dataset[img_index]['Y']
+        self.Y = self.dataset[img_index]['Y']
         Y_class = self.dataset[img_index]['Y_class']
         self.initialize_layers(input_img)   # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
         self.print_explanation_info()
@@ -273,29 +275,34 @@ class BhemExplanation(BaseExplanation):
                         P1 = self.predict(img.unsqueeze(0))
                         P2 = self.predict(img1.unsqueeze(0))
                         scores[:,:,f4] += np.array((P1-P2).cpu().detach().numpy())
-        self.scores = scores.reshape(1, len(self.dataset.labels), int(input_img.shape[-1]/16), int(input_img.shape[-2]/16))
+        self.scores = scores.reshape(len(self.dataset.labels), int(input_img.shape[-1]/16), int(input_img.shape[-2]/16))
 
-        self.scores_to_save = np.expand_dims(self.scores[0, Y_class], axis=-1)
+        self.scores = np.expand_dims(self.scores[[int(Y_class)]], axis=-1) # Add channel dimension
+
+        zoom_factors = (1, 16, 16, 1)  # (N 维度不变，宽高维度放大 16 倍，通道维度不变)
+
+        self.scores_to_save = zoom(self.scores, zoom_factors, order=0)/16/16
 
         os.makedirs(f'results/{self.opt.explanation_name}/{self.opt.name}/value', exist_ok=True)
-        np.save(f'results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{Y}.npy', self.scores_to_save)
+        np.save(f'results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{self.Y}.npy', self.scores_to_save)
         # print(cnt)
-        return scores
+        return self.scores
                 
     def plot(self, save_path: str = None):
         image = self.dataset.inv_transform(self.image).permute(1,2,0)
         image_show = image.mean(axis=-1)
 
-        result_show = self.scores_to_save.sum(axis=-1)    # (14, 14, 1)
+        result_show = self.scores_to_save.sum(axis=-1)    # (224, 224, 1)
 
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8,6), squeeze=False)
-        axes[0,0].imshow(image)
-        axes[0][0].axis('off')
+        axes[0, 0].imshow(image)
+        axes[0, 0].axis('off')
         max_val = np.nanpercentile(np.abs(result_show), 99.9)
-        axes[0][1].imshow(image_show, cmap=plt.get_cmap('gray'), alpha=0.15)
-        axes[0][1].imshow(result_show, cmap=red_transparent_blue, vmin=-max_val,vmax=max_val)
-        axes[0][1].axis('off')
-        im = axes[0, 1].imshow(result_show, cmap=red_transparent_blue, vmin=-max_val, vmax=max_val)
+        axes[0, 1].set_title(self.Y)
+        axes[0, 1].imshow(image_show, cmap=plt.get_cmap('gray'), alpha=0.15)
+        axes[0, 1].imshow(result_show[0], cmap=red_transparent_blue, vmin=-max_val,vmax=max_val)
+        axes[0, 1].axis('off')
+        im = axes[0, 1].imshow(result_show[0], cmap=red_transparent_blue, vmin=-max_val, vmax=max_val)
 
         cb = plt.colorbar(im, ax=np.ravel(axes).tolist(), label="BHEM value", orientation="horizontal", aspect=30)
         cb.outline.set_visible(False)

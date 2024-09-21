@@ -27,7 +27,7 @@ if __name__ == '__main__':
     opt.index_explain = [int(i) for i in opt.index_explain]
 
     explainer = create_explanation(opt)
-    # img_index = 1
+    img_index = 1
 
     # time_stamp = time.time()
     # explainer.explain(img_index) # 1, 5
@@ -39,13 +39,17 @@ if __name__ == '__main__':
     # print(Y_class, Y)
 
     # explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{Y}.png")
-    # # explainer.plot()
+    # explainer.plot()
 
-    for img_index in tqdm(range(200)):
-        explainer.explain(img_index) # 1, 5
-        aopc.get_single_aopc_value(explainer.predict, explainer.dataset, img_index, opt.explanation_name, opt.name)
-        Y_class = explainer.dataset[img_index]['Y_class']
-        Y = explainer.dataset[img_index]['Y']
-        # print(Y_class, Y)
-        explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{Y}.png")
+
+    # for img_index in tqdm(range(200)):
+    #     Y_class = explainer.dataset[img_index]['Y_class']
+    #     Y = explainer.dataset[img_index]['Y']
+    #     # print(Y_class, Y)
+    #     explainer.explain(img_index)
+    #     explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{Y}.png")
+        
+    #     aopc.get_single_aopc_value(explainer.predict, explainer.dataset, img_index, opt.explanation_name, opt.name)
+        
     
+    aopc.get_average_aopc_value(opt.explanation_name, opt.name)

@@ -114,7 +114,7 @@ class PascalVocDataset(BaseDataset):
         else:
             raise ValueError(f'Invalid phase: {self.phase}')
 
-    def __get_class_list(self, Y_class: torch.Tensor):
+    def get_class_list(self, Y_class: torch.Tensor):
         assert isinstance(Y_class, torch.Tensor), "Y_class should be a tensor"
         class_list = torch.nonzero(Y_class).squeeze().tolist()
         if not isinstance(class_list, list):   
@@ -136,7 +136,7 @@ class PascalVocDataset(BaseDataset):
         Y_dict = {key: self.labels[key][index] for key in self.labels.keys()}
         Y_class = torch.tensor(list(Y_dict.values()),dtype=torch.float32)
         # return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y_dict} # return the image and its class
-        return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y_dict, 'get_class_list': self.__get_class_list} # return the image and the first class
+        return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y_dict} # return the image and the first class
 
     def __len__(self):
         """Return the total number of images in the dataset."""

@@ -104,7 +104,7 @@ class ImageNetDataset(BaseDataset):
         else:
             raise ValueError(f'Invalid phase: {self.phase}')
 
-    def __get_class_list(self, Y_class: torch.Tensor):
+    def get_class_list(self, Y_class: torch.Tensor):
         assert isinstance(Y_class, torch.Tensor), "Y_class should be a tensor"
         Y_class = Y_class.tolist()
         if not isinstance(Y_class, list):   
@@ -128,7 +128,7 @@ class ImageNetDataset(BaseDataset):
         if self.phase == 'test':
             return {'X': X_tensor}
         else:
-            return {'X': X_tensor, 'Y_class': self.Y_class[index], 'Y': self.Y[index], 'get_class_list': self.__get_class_list} # return the image and its class
+            return {'X': X_tensor, 'Y_class': self.Y_class[index], 'Y': self.Y[index]} # return the image and its class
 
     def __len__(self):
         """Return the total number of images in the dataset."""

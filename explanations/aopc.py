@@ -24,7 +24,7 @@ def get_single_aopc_value(model, dataset, img_index, explanation_name, name, per
         image = dataset[img_index]['X']   # get the base image 1xCxHxW
         Y_class = dataset[img_index]['Y_class']
         Y = dataset[img_index]['Y']
-        Class_list = dataset[img_index]['get_class_list'](Y_class)
+        Class_list = dataset.get_class_list(Y_class)
         
         X_pred = model(image.unsqueeze(0))
         base_value = X_pred.softmax(dim=-1).flatten()[Y_class].item()

@@ -161,13 +161,14 @@ class BhemExplanation(BaseExplanation):
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
         self.Y = self.dataset[img_index]['Y']
         Y_class = self.dataset[img_index]['Y_class']
+        Class_list = self.dataset[img_index]['get_class_list'](Y_class)
         self.initialize_layers(input_img)   # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
         self.print_explanation_info()
 
         indexes = [list(self.layers[i].segment_mapping.keys()) for i in range(1, self.layer_num)]
         scores = np.zeros((1, len(self.dataset.labels), int(input_img.shape[-1]*input_img.shape[-2]/16/16)))
 
-        block_num = (2**(len(indexes[0])+len(indexes[1])+len(indexes[2])+len(indexes[3])))
+        # block_num = (2**(len(indexes[0])+len(indexes[1])+len(indexes[2])+len(indexes[3])))
 
         cnt = 0
         for f1 in indexes[0]:
@@ -277,7 +278,7 @@ class BhemExplanation(BaseExplanation):
                         scores[:,:,f4] += np.array((P1-P2).cpu().detach().numpy())
         self.scores = scores.reshape(len(self.dataset.labels), int(input_img.shape[-1]/16), int(input_img.shape[-2]/16))
 
-        self.scores = np.expand_dims(self.scores[[int(Y_class)]], axis=-1) # Add channel dimension
+        self.scores = np.expand_dims(self.scores[Class_list], axis=-1) # Add channel dimension
 
         zoom_factors = (1, 16, 16, 1)  # (N 维度不变，宽高维度放大 16 倍，通道维度不变)
 

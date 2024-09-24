@@ -7,6 +7,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from PIL import Image
 import torchvision.transforms as transforms
+from torchvision import datasets, transforms
+
 from glob import glob
 import random
 import torch
@@ -30,6 +32,8 @@ class SeverstalDataset(BaseDataset):
         Parameters:
             opt (Option class) -- stores all the experiment flags; needs to be a subclass of BaseOptions
         """
+        self.means = [0.34388190507888794, 0.34388190507888794, 0.34388190507888794]
+        self.stds = [0.13965363800525665, 0.13965363800525665, 0.13965363800525665]
         BaseDataset.__init__(self, opt)  # call the default constructor of BaseDataset
         self.dir = os.path.join(opt.dataroot)  # get the image directory: "data/severstal"
         print(self.dir)
@@ -38,6 +42,7 @@ class SeverstalDataset(BaseDataset):
         self.sample_submission = pd.read_csv(os.path.join(self.dir, 'sample_submission.csv'))
         self.load_data()
         self.transform = get_transform(self.opt, grayscale=(self.opt.input_nc == 1))
+
 
     def load_data(self):
         """Load data into memory.(here we only load the path to the data cuz the dataset is too large)"""
@@ -50,7 +55,6 @@ class SeverstalDataset(BaseDataset):
         self.Y_positive = []
         self.Y_positive_class = []
         self.mask_positive = []
-
 
         print(f"Loading \033[92m{self.phase}\033[0m data")
 
@@ -114,6 +118,32 @@ class SeverstalDataset(BaseDataset):
         else:
             raise ValueError(f'Invalid phase: {self.phase}')
 
+        # transform = transforms.Compose([transforms.ToTensor(),])
+        # means = torch.zeros(3)  # RGB三个通道
+        # stds = torch.zeros(3)
+        # num_images = 0
+        # # means = torch.zeros(3)
+        # # stds = torch.zeros(3)
+        # for filename in os.listdir(dir):
+        #     if filename.endswith(('.jpg')):  # 确保只处理图像文件
+        #         img_path = os.path.join(dir, filename)
+        #         image = Image.open(img_path).convert('RGB')  # 确保是 RGB 格式
+        #         image_tensor = transform(image)
+        #
+        #         means += torch.mean(image_tensor, dim=(1, 2))
+        #         stds += torch.std(image_tensor, dim=(1, 2))
+        #         num_images += 1
+        #
+        # means /= num_images
+        # stds /= num_images
+        # # 输出均值和标准差
+        # means_list = means.tolist()
+        # stds_list = stds.tolist()
+        # self.means = means_list
+        # self.stds = stds_list
+        # print(f'Calculated means: {self.means}')
+        # print(f'Calculated stds: {self.stds}')
+
     def __getitem__(self, index):
         """Return a data point and its metadata information.
 
@@ -123,6 +153,24 @@ class SeverstalDataset(BaseDataset):
         Returns:
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
+        # if self.phase == 'train':
+        #     transform = transforms.Compose([
+        #         transforms.Resize(224),
+        #         transforms.RandomRotation(5),
+        #         transforms.RandomHorizontalFlip(0.5),
+        #         transforms.RandomCrop(224, padding=10),
+        #         transforms.ToTensor(),
+        #         transforms.Normalize(mean=[0.485, 0.456, 0.406],
+        #                              std=[0.229, 0.224, 0.225])
+        #     ])
+        # else:
+        #     transform = transforms.Compose([
+        #         transforms.Resize(224),
+        #         transforms.CenterCrop(224),
+        #         transforms.ToTensor(),
+        #         transforms.Normalize(mean=[0.485, 0.456, 0.406],
+        #                              std=[0.229, 0.224, 0.225])
+        #     ])
         if self.phase == 'train':
             transform = transforms.Compose([
                 transforms.Resize(224),
@@ -130,17 +178,16 @@ class SeverstalDataset(BaseDataset):
                 transforms.RandomHorizontalFlip(0.5),
                 transforms.RandomCrop(224, padding=10),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+                transforms.Normalize(mean=self.means, std=self.stds)
             ])
         else:
             transform = transforms.Compose([
                 transforms.Resize(224),
                 transforms.CenterCrop(224),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+                transforms.Normalize(mean=self.means, std=self.stds)
             ])
+
         path = self.X[index]
         im = Image.open(path).convert("RGB")  # read the image
         X_tensor = transform(im)

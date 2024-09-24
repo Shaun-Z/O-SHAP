@@ -28,7 +28,7 @@ def get_single_aopc_value(model, dataset, img_index, explanation_name, name, per
         
         X_pred = model(image.unsqueeze(0))
         # base_value = X_pred.softmax(dim=-1).flatten()[Y_class].item()
-        base_value = X_pred.softmax(dim=-1).flatten()[Class_list].item()
+        base_value = X_pred.softmax(dim=-1).flatten()[Class_list] #.item()
 
         AOPC = np.array([0.0]*len(percents))
         for i in range(len(percents)):

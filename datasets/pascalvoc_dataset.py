@@ -4,10 +4,8 @@ import numpy as np
 from datasets.base_dataset import BaseDataset, get_transform
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.model_selection import train_test_split
 from PIL import Image
 import torchvision.transforms as transforms
-from glob import glob
 import torch
 
 
@@ -18,6 +16,7 @@ class PascalVocDataset(BaseDataset):
 
     @staticmethod
     def modify_commandline_options(parser, is_train):
+        parser.add_argument('--segmentation', action='store_true', help='if specified, load the segmentation dataset')
         return parser
 
     def __init__(self, opt):
@@ -29,36 +28,54 @@ class PascalVocDataset(BaseDataset):
         BaseDataset.__init__(self, opt)  # call the default constructor of BaseDataset
         self.phase = opt.phase # get the phase: train, val, test
         self.dir = os.path.join(opt.dataroot)
-        with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2007/ImageSets/Main/train.txt"), 'r') as file1:
-            content1 = file1.read()
-        self.train = content1.strip().split('\n') # get the list of train images
-        with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2007/ImageSets/Main/val.txt"), 'r') as file2:
-            content2 = file2.read()
-        self.val = content2.strip().split('\n') # get the list of val images
-        with open (os.path.join(self.dir, "test/VOCdevkit/VOC2007/ImageSets/Main/test.txt"), 'r') as file3:
-            content3 = file3.read()
-        self.test = content3.strip().split('\n') # get the list of test images
+
         self.labels = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'] # get the classes of the dataset
 
         self.mean = [0.485, 0.456, 0.406]
         self.std = [0.229, 0.224, 0.225]
+        
+        if opt.segmentation:    # Load the segmentation dataset
+            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2007/ImageSets/Segmentation/train.txt"), 'r') as file_train:
+                content1 = file_train.read()
+            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2007/ImageSets/Segmentation/val.txt"), 'r') as file_val:
+                content2 = file_val.read()
+            with open (os.path.join(self.dir, "test/VOCdevkit/VOC2007/ImageSets/Segmentation/test.txt"), 'r') as file_test:
+                content3 = file_test.read()
+        else:                   # Load the classification dataset
+            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2007/ImageSets/Main/train.txt"), 'r') as file_train:
+                content1 = file_train.read()
+            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2007/ImageSets/Main/val.txt"), 'r') as file_val:
+                content2 = file_val.read()
+            with open (os.path.join(self.dir, "test/VOCdevkit/VOC2007/ImageSets/Main/test.txt"), 'r') as file_test:
+                content3 = file_test.read()
+
+        self.train = content1.strip().split('\n') # get the list of train images
+        self.val = content2.strip().split('\n') # get the list of val images
+        self.test = content3.strip().split('\n') # get the list of test images
 
         if self.phase == 'train':
-            self.transform = transforms.Compose([
+            self.transform_mask = transforms.Compose([  # transform for the mask
                 transforms.Resize(224),
                 transforms.RandomRotation(5),
                 transforms.RandomHorizontalFlip(0.5),
                 transforms.RandomCrop(224, padding = 10),
                 transforms.ToTensor(),
+            ])
+            self.transform = transforms.Compose([   # transform for the image
+                self.transform_mask,
                 transforms.Normalize(mean=self.mean, std=self.std)
             ])
         else:
-            self.transform = transforms.Compose([
+            self.transform_mask = transforms.Compose([
                 transforms.Resize(224),
-                transforms.CenterCrop(224),
+                transforms.CenterCrop(224),     # Please note that some mask values may be cropped out !!!
                 transforms.ToTensor(),
+            ])
+            self.transform = transforms.Compose([
+                self.transform_mask,
                 transforms.Normalize(mean=self.mean, std=self.std)
             ])
+
         self.inv_transform = transforms.Compose([
             transforms.Normalize(
                 mean = (-1 * np.array(self.mean) / np.array(self.std)).tolist(),
@@ -75,12 +92,15 @@ class PascalVocDataset(BaseDataset):
 
         self.X = []
         self.Y = []
+        self.mask = []
         self.dicts = dict.fromkeys(self.labels, [])
 
         print(f"Loading \033[92m{self.phase}\033[0m data")
         
         if self.phase == 'train':
             dir = os.path.join(self.dir, "trainval/VOCdevkit/VOC2007") # directory to the train images
+            if self.opt.segmentation:  # Load the segmentation dataset
+                self.mask = [os.path.join(dir, "SegmentationClass", image + '.png') for image in self.train] 
             for image in self.train:
                 self.X.append(os.path.join(dir, "JPEGImages", image + '.jpg')) # get the list of path to the train images
                 self.Y.append(image)
@@ -88,11 +108,16 @@ class PascalVocDataset(BaseDataset):
             for i, class_ in enumerate(self.dicts): # get the labels of each class for train
                 with open(os.path.join(dir, "ImageSets/Main", class_ + '_train.txt'), 'r') as file:
                     content = file.read()
+                    name = content.strip().split()[0::2]
                     s = content.strip().split()[1::2]
-                    self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0.5 if int(x) == 0 else 0, s))
+                    name_s_dict = dict(zip(name, s))
+                    s_values = [name_s_dict[v] for v in self.train]
+                    self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0.5 if int(x) == 0 else 0, s_values))
 
         elif self.phase == 'val':
             dir = os.path.join(self.dir, "trainval/VOCdevkit/VOC2007") # directory to the val images
+            if self.opt.segmentation:  # Load the segmentation dataset
+                self.mask = [os.path.join(dir, "SegmentationClass", image + '.png') for image in self.val]
             for image in self.val:
                 self.X.append(os.path.join(dir, "JPEGImages", image + '.jpg')) # get the list of path to the val images
                 self.Y.append(image)
@@ -100,11 +125,16 @@ class PascalVocDataset(BaseDataset):
             for i, class_ in enumerate(self.dicts): # get the labels of each class for val
                 with open(os.path.join(dir, "ImageSets/Main", class_ + '_val.txt'), 'r') as file:
                     content = file.read()
+                    name = content.strip().split()[0::2]
                     s = content.strip().split()[1::2]
-                    self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0.5 if int(x) == 0 else 0, s))
+                    name_s_dict = dict(zip(name, s))
+                    s_values = [name_s_dict[v] for v in self.val]
+                    self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0.5 if int(x) == 0 else 0, s_values))
 
         elif self.phase == 'test':
             dir = os.path.join(self.dir, "test/VOCdevkit/VOC2007") # directory to the test images
+            if self.opt.segmentation:  # Load the segmentation dataset
+                self.mask = [os.path.join(dir, "SegmentationClass", image + '.png') for image in self.test]
             for image in self.test:
                 self.X.append(os.path.join(dir, "JPEGImages", image + '.jpg')) # get the list of path to the val images
                 self.Y.append(image)
@@ -112,12 +142,19 @@ class PascalVocDataset(BaseDataset):
             for i, class_ in enumerate(self.dicts): # get the labels of each class for train
                 with open(os.path.join(dir, "ImageSets/Main", class_ + '_test.txt'), 'r') as file:
                     content = file.read()
+                    name = content.strip().split()[0::2]
                     s = content.strip().split()[1::2]
-                    self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0, s))
+                    name_s_dict = dict(zip(name, s))
+                    s_values = [name_s_dict[v] for v in self.test]
+                    self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0, s_values))
         
         else:
             raise ValueError(f'Invalid phase: {self.phase}')
 
+    '''
+    Reminder:
+    Don't call this function from dataloader.dataset.get_class_list(Y_class), because dataloader adds a dimention to the 1st dimension of the tensor.
+    '''
     def get_class_list(self, Y_class: torch.Tensor):
         assert isinstance(Y_class, torch.Tensor), "Y_class should be a tensor"
         class_list = torch.nonzero(Y_class).squeeze().tolist()
@@ -140,8 +177,13 @@ class PascalVocDataset(BaseDataset):
         Y = self.Y[index]
         Y_dict = {key: self.dicts[key][index] for key in self.dicts.keys()}
         Y_class = torch.tensor(list(Y_dict.values()),dtype=torch.float32)
-        # return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y_dict} # return the image and its class
-        return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y} # return the image and the first class
+
+        if self.opt.segmentation:   # return the [image], its [class] and the [mask]
+            mask = Image.open(self.mask[index])
+            mask = self.transform_mask(mask)
+            return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y, 'mask': mask}
+        else:   # return the [image] and its [class]
+            return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y} # return the image and the first class
 
     def __len__(self):
         """Return the total number of images in the dataset."""

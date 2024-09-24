@@ -74,7 +74,8 @@ class PascalVocDataset(BaseDataset):
         # load data from /path/to/data/
 
         self.X = []
-        self.labels = dict.fromkeys(self.labels, [])
+        self.Y = []
+        self.dicts = dict.fromkeys(self.labels, [])
 
         print(f"Loading \033[92m{self.phase}\033[0m data")
         
@@ -82,34 +83,37 @@ class PascalVocDataset(BaseDataset):
             dir = os.path.join(self.dir, "trainval/VOCdevkit/VOC2007") # directory to the train images
             for image in self.train:
                 self.X.append(os.path.join(dir, "JPEGImages", image + '.jpg')) # get the list of path to the train images
+                self.Y.append(image)
 
-            for i, class_ in enumerate(self.labels): # get the labels of each class for train
+            for i, class_ in enumerate(self.dicts): # get the labels of each class for train
                 with open(os.path.join(dir, "ImageSets/Main", class_ + '_train.txt'), 'r') as file:
                     content = file.read()
                     s = content.strip().split()[1::2]
-                    self.labels[class_] = list(map(lambda x: 1 if int(x) == 1 else 0.5 if int(x) == 0 else 0, s))
+                    self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0.5 if int(x) == 0 else 0, s))
 
         elif self.phase == 'val':
             dir = os.path.join(self.dir, "trainval/VOCdevkit/VOC2007") # directory to the val images
             for image in self.val:
                 self.X.append(os.path.join(dir, "JPEGImages", image + '.jpg')) # get the list of path to the val images
+                self.Y.append(image)
 
-            for i, class_ in enumerate(self.labels): # get the labels of each class for val
+            for i, class_ in enumerate(self.dicts): # get the labels of each class for val
                 with open(os.path.join(dir, "ImageSets/Main", class_ + '_val.txt'), 'r') as file:
                     content = file.read()
                     s = content.strip().split()[1::2]
-                    self.labels[class_] = list(map(lambda x: 1 if int(x) == 1 else 0.5 if int(x) == 0 else 0, s))
+                    self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0.5 if int(x) == 0 else 0, s))
 
         elif self.phase == 'test':
             dir = os.path.join(self.dir, "test/VOCdevkit/VOC2007") # directory to the test images
             for image in self.test:
                 self.X.append(os.path.join(dir, "JPEGImages", image + '.jpg')) # get the list of path to the val images
+                self.Y.append(image)
 
-            for i, class_ in enumerate(self.labels): # get the labels of each class for train
+            for i, class_ in enumerate(self.dicts): # get the labels of each class for train
                 with open(os.path.join(dir, "ImageSets/Main", class_ + '_test.txt'), 'r') as file:
                     content = file.read()
                     s = content.strip().split()[1::2]
-                    self.labels[class_] = list(map(lambda x: 1 if int(x) == 1 else 0, s))
+                    self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0, s))
         
         else:
             raise ValueError(f'Invalid phase: {self.phase}')
@@ -119,7 +123,7 @@ class PascalVocDataset(BaseDataset):
         class_list = torch.nonzero(Y_class).squeeze().tolist()
         if not isinstance(class_list, list):   
             class_list = [class_list]
-        return Y_class
+        return class_list
 
     def __getitem__(self, index):
         """Return a data point and its metadata information.
@@ -133,10 +137,11 @@ class PascalVocDataset(BaseDataset):
         path = self.X[index]
         im = Image.open(path).convert("RGB") # read the image
         X_tensor = self.transform(im)
-        Y_dict = {key: self.labels[key][index] for key in self.labels.keys()}
+        Y = self.Y[index]
+        Y_dict = {key: self.dicts[key][index] for key in self.dicts.keys()}
         Y_class = torch.tensor(list(Y_dict.values()),dtype=torch.float32)
         # return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y_dict} # return the image and its class
-        return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y_dict} # return the image and the first class
+        return {'X': X_tensor, 'Y_class': Y_class, 'Y': Y} # return the image and the first class
 
     def __len__(self):
         """Return the total number of images in the dataset."""

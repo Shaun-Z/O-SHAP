@@ -60,16 +60,16 @@ if __name__ == '__main__':
 
                 true_cnt += is_True[j]
         elif opt.loss_type == 'bcewithlogits':   # Multi label classification            
-            for i in range(len(y_pred)):
-                index_max = torch.where(y_pred[i] == 1)[0]  # get the index of the max probability
+            for j in range(len(y_pred)):
+                index_max = torch.where(y_pred[j] == 1)[0]  # get the index of the max probability
                 index_max = index_max.cpu()  # move the tensor to CPU
-                true_index = torch.where(data['Y_class'][i] == 1)[0] # get the index of the max probability
+                true_index = torch.where(data['Y_class'][j] == 1)[0] # get the index of the max probability
                 if len(index_max) == len(true_index):
                     is_True = torch.all(index_max == true_index)
                     true_cnt += is_True
                 else:
                     is_True = False
-                print(f"\033[92m{is_True}\033[0m\t{index_max}\t{true_index}")
+                print(f"{i*opt.batch_size+j}\t\033[92m{is_True}\033[0m\t{index_max}\t{true_index}")
         else:
             raise NotImplementedError(f'Loss type {opt.loss_type} is not implemented')
             

@@ -27,7 +27,8 @@ def get_single_aopc_value(model, dataset, img_index, explanation_name, name, per
         Class_list = dataset.get_class_list(Y_class)
         
         X_pred = model(image.unsqueeze(0))
-        base_value = X_pred.softmax(dim=-1).flatten()[Y_class].item()
+        # base_value = X_pred.softmax(dim=-1).flatten()[Y_class].item()
+        base_value = X_pred.softmax(dim=-1).flatten()[Class_list].item()
 
         AOPC = np.array([0.0]*len(percents))
         for i in range(len(percents)):
@@ -38,7 +39,8 @@ def get_single_aopc_value(model, dataset, img_index, explanation_name, name, per
             plt.axis('off')
             plt.savefig(f"results/{explanation_name}/{name}/delete_image/P{img_index}_{Y}_{percents[i]}.png")
             plt.close()
-            AOPC[i] = base_value - model(res).softmax(dim=-1).flatten()[Y_class]
+            # AOPC[i] = base_value - model(res).softmax(dim=-1).flatten()[Y_class]
+            AOPC[i] = base_value - model(res).softmax(dim=-1).flatten()[Class_list]
         os.makedirs(f"results/{explanation_name}/{name}/AOPC", exist_ok=True)
         np.save(f"results/{explanation_name}/{name}/AOPC/aopc{img_index}_{Y}.npy", AOPC)
         return AOPC

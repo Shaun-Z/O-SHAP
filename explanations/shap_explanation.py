@@ -31,7 +31,8 @@ class ShapExplanation(BaseExplanation):
 
     def explain(self, img_index: int):
         X = self.dataset[img_index]['X'].unsqueeze(0)
-        Class_list = self.dataset[img_index]['Class_list']
+        Y_class = self.dataset[img_index]['Y_class']
+        Class_list = self.dataset.get_class_list(Y_class)
 
         input_img = transform(X)
         

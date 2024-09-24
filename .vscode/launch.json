@@ -31,16 +31,29 @@
             //     "--epoch", "15",
             //     // "--index_explain", "1", "5"
             // ]
+            // "args": [ 
+            //     "--dataroot", "./data/pascal_voc_2007",
+            //     "--name", "Resnet18onPASCAL",
+            //     "--gpu_ids", "mps",
+            //     "--model", "res_class",
+            //     "--net_name", "resnet18",
+            //     "--phase", "val",
+            //     "--dataset_name", "pascalvoc",
+            //     "--eval",
+            //     "--batch_size", "4",
+            //     "--epoch", "35",
+            //     "--num_classes", "20",
+            //     "--loss_type", "bcewithlogits"
+            // ]
             "args": [ 
                 "--dataroot", "./data/pascal_voc_2007",
                 "--name", "Resnet18onPASCAL",
                 "--gpu_ids", "mps",
                 "--model", "res_class",
                 "--net_name", "resnet18",
-                "--phase", "val",
                 "--dataset_name", "pascalvoc",
                 "--eval",
-                "--batch_size", "4",
+                "--explanation_name", "shap",
                 "--epoch", "35",
                 "--num_classes", "20",
                 "--loss_type", "bcewithlogits"

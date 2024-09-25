@@ -161,7 +161,7 @@ class BhemExplanation(BaseExplanation):
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
         self.Y = self.dataset[img_index]['Y']
         Y_class = self.dataset[img_index]['Y_class']
-        Class_list = self.dataset.get_class_list(Y_class)
+        self.class_list = self.dataset.get_class_list(Y_class)
         self.initialize_layers(input_img)   # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
         self.print_explanation_info()
 
@@ -278,7 +278,7 @@ class BhemExplanation(BaseExplanation):
                         scores[:,:,f4] += np.array((P1-P2).cpu().detach().numpy())
         self.scores = scores.reshape(len(self.dataset.labels), int(input_img.shape[-1]/16), int(input_img.shape[-2]/16))
 
-        self.scores = np.expand_dims(self.scores[Class_list], axis=-1) # Add channel dimension
+        self.scores = np.expand_dims(self.scores[self.class_list], axis=-1) # Add channel dimension
 
         zoom_factors = (1, 16, 16, 1)  # (N 维度不变，宽高维度放大 16 倍，通道维度不变)
 
@@ -293,17 +293,20 @@ class BhemExplanation(BaseExplanation):
         image = self.dataset.inv_transform(self.image).permute(1,2,0)
         image_show = image.mean(axis=-1)
 
-        result_show = self.scores_to_save.sum(axis=-1)    # (224, 224, 1)
+        result_show = self.scores_to_save.sum(axis=-1)    # (N, 224, 224, 1)
 
-        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8,6), squeeze=False)
+        labels_to_display = [self.dataset.labels[index] for index in self.class_list]
+
+        fig, axes = plt.subplots(nrows=1, ncols=result_show.shape[0]+1, figsize=(8,6), squeeze=False)
         axes[0, 0].imshow(image)
         axes[0, 0].axis('off')
         max_val = np.nanpercentile(np.abs(result_show), 99.9)
-        axes[0, 1].set_title(self.Y)
-        axes[0, 1].imshow(image_show, cmap=plt.get_cmap('gray'), alpha=0.15)
-        axes[0, 1].imshow(result_show[0], cmap=red_transparent_blue, vmin=-max_val,vmax=max_val)
-        axes[0, 1].axis('off')
-        im = axes[0, 1].imshow(result_show[0], cmap=red_transparent_blue, vmin=-max_val, vmax=max_val)
+        for i in range(result_show.shape[0]):
+            axes[0, i+1].set_title(labels_to_display[i])
+            axes[0, i+1].imshow(image_show, cmap=plt.get_cmap('gray'), alpha=0.15)
+            axes[0, i+1].imshow(result_show[i], cmap=red_transparent_blue, vmin=-max_val,vmax=max_val)
+            axes[0, i+1].axis('off')
+            im = axes[0, i+1].imshow(result_show[i], cmap=red_transparent_blue, vmin=-max_val, vmax=max_val)
 
         cb = plt.colorbar(im, ax=np.ravel(axes).tolist(), label="BHEM value", orientation="horizontal", aspect=30)
         cb.outline.set_visible(False)

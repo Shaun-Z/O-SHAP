@@ -12,7 +12,7 @@ python explain.py -d ./data/tiny-imagenet -n Resnet18onImageNet -g mps -m res_cl
 '''
 # %% Explain Resnet18 on PASCAL_VOC_2007 using SHAP
 '''
-python explain.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class --net_name resnet18 --dataset_name pascalvoc --eval --explanation_name shap --epoch 145 --num_classes 20 --loss_type bcewithlogits
+python explain.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class --net_name resnet18 --dataset_name pascalvoc --eval --explanation_name shap --epoch 145 --num_classes 20 --loss_type bcewithlogits --segmentation
 '''
 
 import time
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # time_stamp = time.time()
     # explainer.explain(img_index) # 1, 5
     # print(f"Computation time: \033[92m{(time.time() - time_stamp)}\033[0m s")
-    # aopc.get_single_aopc_value(explainer.predict, explainer.dataset, img_index, opt.explanation_name, opt.name)
+    # # aopc.get_single_aopc_value(explainer.predict, explainer.dataset, img_index, opt.explanation_name, opt.name)
 
     # Y_class = explainer.dataset[img_index]['Y_class']
     # Y = explainer.dataset[img_index]['Y']

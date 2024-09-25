@@ -111,7 +111,8 @@ def init_net(net, init_type='normal', init_gain=0.02, gpu_ids=[]):
 
     Return an initialized network.
     """
-    init_weights(net, init_type, init_gain=init_gain)
+    if init_type is not None:
+        init_weights(net, init_type, init_gain=init_gain)
     if len(gpu_ids) > 0:
         if gpu_ids == 'mps':
             device = torch.device('mps')

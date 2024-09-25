@@ -1,6 +1,5 @@
 import numpy as np
 import os
-from glob import glob
 import matplotlib.pyplot as plt
 
 # %% get the average AOPC value (It requires the AOPC values to be saved in the results folder)

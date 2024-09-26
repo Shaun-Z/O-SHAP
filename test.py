@@ -7,16 +7,16 @@ python test.py -d ./data/tiny-imagenet -n Resnet50onImageNet -g -1 -m res_class 
 python test.py -d ./data/tiny-imagenet -n Resnet18onImageNet -g mps -m res_class --dataset_name imagenet --phase val --eval --net_name resnet18 --batch_size 4 --epoch 25
 '''
 # %% Test ResNet18 on PASCAL_VOC_2007
-''' (Correctness: 1004/2510)
-python test.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet18 --batch_size 4 --epoch 145 --num_classes 20 --loss_type bcewithlogits
+''' (Correctness: 1201/2510)
+python test.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet18 --batch_size 4 --epoch 75 --num_classes 20 --loss_type bcewithlogits
 '''
 # %% Test ResNet50 on PASCAL_VOC_2007
-''' (Correctness: 859/2510)
-python test.py -d ./data/pascal_voc_2007 -n Resnet50onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet50 --batch_size 4 --epoch 100 --num_classes 20 --loss_type bcewithlogits
+''' (Correctness: 1505/2510)
+python test.py -d ./data/pascal_voc_2007 -n Resnet50onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet50 --batch_size 4 --epoch 80 --num_classes 20 --loss_type bcewithlogits
 '''
 # %% Test ResNet101 on PASCAL_VOC_2007
-''' (Correctness: 855/2510)
-python test.py -d ./data/pascal_voc_2007 -n Resnet101onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet101 --batch_size 4 --epoch 140 --num_classes 20 --loss_type bcewithlogits
+''' (Correctness: 1349/2510)
+python test.py -d ./data/pascal_voc_2007 -n Resnet101onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet101 --batch_size 4 --epoch 75 --num_classes 20 --loss_type bcewithlogits
 '''
 
 from options.test_options import TestOptions

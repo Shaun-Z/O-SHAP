@@ -1,10 +1,10 @@
 # %% Evaluate BHEN on Resnet18 on PASCAL_VOC_2007
 '''
-python evaluate_xai.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class --net_name resnet18 --dataset_name pascalvoc --eval --explanation_name bhem --epoch 145 --num_classes 20 --loss_type bcewithlogits --segmentation --num_test 200
+python evaluate_xai.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class --net_name resnet18 --dataset_name pascalvoc --eval --explanation_name bhem --epoch 75 --num_classes 20 --loss_type bcewithlogits --segmentation --num_test 200
 '''
 # %% Evaluate BHEM on Resnet50 on PASCAL_VOC_2007
 '''
-python evaluate_xai.py -d ./data/pascal_voc_2007 -n Resnet50onPASCAL -g mps -m res_class --net_name resnet50 --dataset_name pascalvoc --eval --explanation_name bhem --epoch 100 --num_classes 20 --loss_type bcewithlogits --segmentation --num_test 200
+python evaluate_xai.py -d ./data/pascal_voc_2007 -n Resnet50onPASCAL -g mps -m res_class --net_name resnet50 --dataset_name pascalvoc --eval --explanation_name bhem --epoch 80 --num_classes 20 --loss_type bcewithlogits --segmentation --num_test 200
 '''
 
 import numpy as np

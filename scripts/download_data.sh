@@ -90,6 +90,16 @@ case $NAME in
     tar -xvf VOCtest_06-Nov-2007.tar -C ./data/pascal_voc_2007/test
     rm VOCtrainval_06-Nov-2007.tar VOCtest_06-Nov-2007.tar
     ;;
+  "pascal_voc_2012")
+    wget -c http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
+    # wget -c http://host.robots.ox.ac.uk:8080/eval/downloads/VOC2012test.tar
+    mkdir -p data/pascal_voc_2012/trainval
+    # mkdir -p data/pascal_voc_2012/test
+    tar -xvf VOCtrainval_11-May-2012.tar -C ./data/pascal_voc_2012/trainval
+    # tar -xvf VOC2012test.tar -C ./data/pascal_voc_2012/test
+    rm VOCtrainval_11-May-2012.tar
+    # rm VOCtrainval_11-May-2012.tar VOC2012test.tar
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

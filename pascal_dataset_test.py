@@ -1,11 +1,11 @@
 '''
 To test this script, run the following command:
 ----------------
-python pascal_dataset_test.py --dataroot ./data/pascal_voc_2007 --gpu_ids -1 --dataset_name pascalvoc --phase val --batch_size 1
+python pascal_dataset_test.py --dataroot ./data/pascal_voc_2012 --gpu_ids -1 --dataset_name pascalvoc --phase val --batch_size 1 --segmentation
 ----------------
 or
 ----------------
-python pascal_dataset_test.py -d ./data/pascal_voc_2007 -g -1 --dataset_name pascalvoc --phase val --batch_size 1
+python pascal_dataset_test.py -d ./data/pascal_voc_2012 -g -1 --dataset_name pascalvoc --phase val --batch_size 1 --segmentation
 ----------------
 '''
 import numpy as np

@@ -10,7 +10,7 @@ import torch
 
 
 class PascalVocDataset(BaseDataset):
-    """A dataset class for pascal_voc_2007 dataset.
+    """A dataset class for pascal_voc_2012 dataset.
 
     """
 
@@ -35,23 +35,23 @@ class PascalVocDataset(BaseDataset):
         self.std = [0.229, 0.224, 0.225]
         
         if opt.segmentation:    # Load the segmentation dataset
-            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2007/ImageSets/Segmentation/train.txt"), 'r') as file_train:
+            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2012/ImageSets/Segmentation/train.txt"), 'r') as file_train:
                 content1 = file_train.read()
-            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2007/ImageSets/Segmentation/val.txt"), 'r') as file_val:
+            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2012/ImageSets/Segmentation/val.txt"), 'r') as file_val:
                 content2 = file_val.read()
-            with open (os.path.join(self.dir, "test/VOCdevkit/VOC2007/ImageSets/Segmentation/test.txt"), 'r') as file_test:
-                content3 = file_test.read()
+            # with open (os.path.join(self.dir, "test/VOCdevkit/VOC2012/ImageSets/Segmentation/test.txt"), 'r') as file_test:
+            #     content3 = file_test.read()
         else:                   # Load the classification dataset
-            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2007/ImageSets/Main/train.txt"), 'r') as file_train:
+            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2012/ImageSets/Main/train.txt"), 'r') as file_train:
                 content1 = file_train.read()
-            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2007/ImageSets/Main/val.txt"), 'r') as file_val:
+            with open (os.path.join(self.dir, "trainval/VOCdevkit/VOC2012/ImageSets/Main/val.txt"), 'r') as file_val:
                 content2 = file_val.read()
-            with open (os.path.join(self.dir, "test/VOCdevkit/VOC2007/ImageSets/Main/test.txt"), 'r') as file_test:
-                content3 = file_test.read()
+            # with open (os.path.join(self.dir, "test/VOCdevkit/VOC2012/ImageSets/Main/test.txt"), 'r') as file_test:
+            #     content3 = file_test.read()
 
         self.train = content1.strip().split('\n') # get the list of train images
         self.val = content2.strip().split('\n') # get the list of val images
-        self.test = content3.strip().split('\n') # get the list of test images
+        # self.test = content3.strip().split('\n') # get the list of test images
 
         if self.phase == 'train':
             self.transform_mask = transforms.Compose([  # transform for the mask
@@ -98,7 +98,7 @@ class PascalVocDataset(BaseDataset):
         print(f"Loading \033[92m{self.phase}\033[0m data")
         
         if self.phase == 'train':
-            dir = os.path.join(self.dir, "trainval/VOCdevkit/VOC2007") # directory to the train images
+            dir = os.path.join(self.dir, "trainval/VOCdevkit/VOC2012") # directory to the train images
             if self.opt.segmentation:  # Load the segmentation dataset
                 self.mask = [os.path.join(dir, "SegmentationClass", image + '.png') for image in self.train] 
             for image in self.train:
@@ -115,7 +115,7 @@ class PascalVocDataset(BaseDataset):
                     self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0.5 if int(x) == 0 else 0, s_values))
 
         elif self.phase == 'val':
-            dir = os.path.join(self.dir, "trainval/VOCdevkit/VOC2007") # directory to the val images
+            dir = os.path.join(self.dir, "trainval/VOCdevkit/VOC2012") # directory to the val images
             if self.opt.segmentation:  # Load the segmentation dataset
                 self.mask = [os.path.join(dir, "SegmentationClass", image + '.png') for image in self.val]
             for image in self.val:
@@ -132,7 +132,7 @@ class PascalVocDataset(BaseDataset):
                     self.dicts[class_] = list(map(lambda x: 1 if int(x) == 1 else 0.5 if int(x) == 0 else 0, s_values))
 
         elif self.phase == 'test':
-            dir = os.path.join(self.dir, "test/VOCdevkit/VOC2007") # directory to the test images
+            dir = os.path.join(self.dir, "test/VOCdevkit/VOC2012") # directory to the test images
             if self.opt.segmentation:  # Load the segmentation dataset
                 self.mask = [os.path.join(dir, "SegmentationClass", image + '.png') for image in self.test]
             for image in self.test:

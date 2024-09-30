@@ -45,7 +45,7 @@ if __name__ == '__main__':
         label_index = np.unique(mask_int)[1:-1]-1
         label = [labels_all[i] for i in label_index]
 
-        file_path = Path(f'results/{opt.explanation_name}/{opt.name}/value/P{img_ID}_{Y}.npy')
+        file_path = next(Path(f'results/{opt.explanation_name}/{opt.name}/value/').glob(f'P{img_ID}_*.npy'))    # May be changed in the future
         xai_result = np.load(file_path)
 
         if isinstance(label_index, int):

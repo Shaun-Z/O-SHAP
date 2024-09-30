@@ -4,7 +4,7 @@ python train.py -d ./data/tiny-imagenet -n Resnet101onImageNet -g 0 -m res_class
 '''
 # %% Train resnet model on pascalvoc dataset
 '''
-python train.py -d ./data/pascal_voc_2012 -n PASCALnew -g mps -m res_class --net_name resnet18 --dataset_name pascalvoc2012 --loss_type bcewithlogits --batch_size 64 --lr 0.0002 --n_epochs 20 --n_epochs_decay 20 --use_wandb
+python train.py -d ./data/pascal_voc_2012 -n Resnet18onPASCAL -g 0 -m res_class --net_name resnet18 --dataset_name pascalvoc2012 --loss_type bcewithlogits --batch_size 64 --lr 0.0002 --n_epochs 20 --n_epochs_decay 20 --use_wandb
 '''
 # %% Train custom model
 '''

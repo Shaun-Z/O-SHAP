@@ -9,7 +9,7 @@ import torchvision.transforms as transforms
 import torch
 
 
-class PascalVocDataset(BaseDataset):
+class PascalVoc2007Dataset(BaseDataset):
     """A dataset class for pascal_voc_2012 dataset.
 
     """
@@ -17,6 +17,7 @@ class PascalVocDataset(BaseDataset):
     @staticmethod
     def modify_commandline_options(parser, is_train):
         parser.add_argument('--segmentation', action='store_true', help='if specified, load the segmentation dataset')
+        parser.set_argument('--num_classes', type=int, default=20, help='number of classes in the dataset')
         return parser
 
     def __init__(self, opt):

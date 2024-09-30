@@ -252,10 +252,7 @@ def define_resnet_classifier(input_nc, num_classes, ngf, net_name, norm='batch',
             net = models.resnet152(weights=models.ResNet152_Weights.DEFAULT)
         else:
             raise NotImplementedError(f'Classifier model name \033[92m[net_name]\033[0m is not recognized')
-        
-        net.conv1 = nn.Conv2d(input_nc, ngf, kernel_size=7, stride=2, padding=3, bias=False)
         net.fc = nn.Linear(net.fc.in_features, num_classes)
-
     return init_net(net, init_type, init_gain, gpu_ids)
 
 

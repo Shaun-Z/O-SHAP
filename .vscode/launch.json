@@ -69,10 +69,10 @@
             "args": [ 
                 "--dataroot", "./data/pascal_voc_2012",
                 "--gpu_ids", "mps",
-                "--dataset_name", "pascalvoc",
+                "--dataset_name", "pascalvoc2012",
                 "--phase", "val",
                 "--batch_size", "1",
-                "--segmentation"
+                // "--segmentation"
             ]
         }
     ]

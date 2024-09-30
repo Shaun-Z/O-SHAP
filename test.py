@@ -15,8 +15,8 @@ python test.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class
 python test.py -d ./data/pascal_voc_2007 -n Resnet50onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet50 --batch_size 4 --epoch 80 --num_classes 20 --loss_type bcewithlogits
 '''
 # %% Test ResNet101 on PASCAL_VOC_2007
-''' (Correctness: 1349/2510)
-python test.py -d ./data/pascal_voc_2007 -n Resnet101onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet101 --batch_size 4 --epoch 75 --num_classes 20 --loss_type bcewithlogits
+''' (Correctness: 4381/5823)
+python test.py -d ./data/pascal_voc_2012 -n Resnet101onPASCAL -g mps -m res_class --dataset_name pascalvoc2012 --phase val --eval --net_name resnet101 --batch_size 4 --epoch best --loss_type bcewithlogits
 '''
 
 from options.test_options import TestOptions

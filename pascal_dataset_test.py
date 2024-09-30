@@ -1,11 +1,11 @@
 '''
 To test this script, run the following command:
 ----------------
-python pascal_dataset_test.py --dataroot ./data/pascal_voc_2012 --gpu_ids -1 --dataset_name pascalvoc --phase val --batch_size 1 --segmentation
+python pascal_dataset_test.py --dataroot ./data/pascal_voc_2012 --gpu_ids -1 --dataset_name pascalvoc2012 --phase val --batch_size 1 --segmentation
 ----------------
 or
 ----------------
-python pascal_dataset_test.py -d ./data/pascal_voc_2012 -g -1 --dataset_name pascalvoc --phase val --batch_size 1 --segmentation
+python pascal_dataset_test.py -d ./data/pascal_voc_2012 -g -1 --dataset_name pascalvoc2012 --phase val --batch_size 1 --segmentation
 ----------------
 '''
 import numpy as np
@@ -35,7 +35,15 @@ if __name__ == '__main__':
         Y_class = data['Y_class']
         mask = data['mask']
         unique_indices = np.unique((np.array(mask)*255).astype(np.uint8))[1:-1]-1
-        print(f"X.shape:{data['X'].shape}\tY:{data['Y']}\t{dataset.get_class_list(Y_class)}\tunique_indices:{unique_indices}\tmask:{(mask*255).unique()}")
+        print(f"X.shape:{data['X'].shape}\tunique_indices:{unique_indices}\tmask:{(mask*255).unique()}\tY:{data['Y']}")
+        plt.figure()
+        plt.subplot(1, 2, 1)
+        plt.imshow(dataset.inv_transform(data['X']).permute(1,2,0))
+        plt.subplot(1, 2, 2)
+        plt.imshow(data['X'].permute(1,2,0))
+        plt.axis('off')
+        plt.show()
+        # print(f"X.shape:{data['X'].shape}Y_class:{data['Y_class']}\tY:{data['Y']}")
         # print(dataset.X[i])
         # print(dataset.mask[i])
 

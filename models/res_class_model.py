@@ -69,6 +69,14 @@ class ResClassModel(BaseModel):
         self.label = input['Y_class'].to(self.device)
         # self.image_paths = input['A_paths' if AtoB else 'B_paths']
 
+    def train(self):
+        """Make models train mode during test time"""
+        for param in self.netResnet_classifier.parameters():
+            param.requires_grad = False
+        for param in self.netResnet_classifier.layer4.parameters():
+            param.requires_grad = True
+        self.netResnet_classifier.fc.requires_grad = True
+
     def validate(self, DataLoader_val):
         loss = 0
         self.eval()

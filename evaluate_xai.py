@@ -4,7 +4,7 @@ python evaluate_xai.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m r
 '''
 # %% Evaluate BHEM on Resnet50 on PASCAL_VOC_2007
 '''
-python evaluate_xai.py -d ./data/pascal_voc_2007 -n Resnet50onPASCAL -g mps -m res_class --net_name resnet50 --dataset_name pascalvoc --eval --explanation_name bhem --epoch 80 --loss_type bcewithlogits --segmentation --num_test 200
+python evaluate_xai.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m res_class --net_name resnet50 --dataset_name pascalvoc2012 --eval --explanation_name bhem --epoch best --loss_type bcewithlogits --segmentation --num_test 200
 '''
 # %% Evaluate BHEM on Resnet101 on PASCAL_VOC_2012
 '''
@@ -73,6 +73,3 @@ if __name__ == '__main__':
                 metric_shap += np.load(metric_shap_list[i]).mean()
             
             print(f"\033[92m{metric_name}\033[0m\nBHEM: {metric_bhem/len(metric_bhem_list)}\nSHAP: {metric_shap/len(metric_shap_list)}")
-        
-    
-        

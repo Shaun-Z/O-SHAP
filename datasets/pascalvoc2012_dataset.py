@@ -110,7 +110,7 @@ class PascalVoc2012Dataset(BaseDataset):
                 image_path = os.path.join(self.image_dir, f'{img_id}.jpg')
                 if not os.path.exists(image_path):
                     raise Exception(f'file {image_path} not found!')
-                self.data.append([image_path, ','.join(list(labels))])
+                self.data.append([image_path, ','.join(sorted(list(labels)))])
                 if self.segmentation:
                     mask_path = os.path.join(self.dataroot, f'trainval/VOCdevkit/VOC2012/SegmentationClass/{img_id}.png')
                     if not os.path.exists(mask_path):
@@ -132,7 +132,7 @@ class PascalVoc2012Dataset(BaseDataset):
                 image_path = os.path.join(self.image_dir, f'{img_id}.jpg')
                 if not os.path.exists(image_path):
                     raise Exception(f'file {image_path} not found!')
-                self.data.append([image_path, ','.join(list(labels))])
+                self.data.append([image_path, ','.join(sorted(list(labels)))])
                 if self.segmentation:
                     mask_path = os.path.join(self.dataroot, f'trainval/VOCdevkit/VOC2012/SegmentationClass/{img_id}.png')
                     if not os.path.exists(mask_path):

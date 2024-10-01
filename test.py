@@ -6,16 +6,16 @@ python test.py -d ./data/tiny-imagenet -n Resnet50onImageNet -g -1 -m res_class 
 ''' (Correctness: 5599/10000)
 python test.py -d ./data/tiny-imagenet -n Resnet18onImageNet -g mps -m res_class --dataset_name imagenet --phase val --eval --net_name resnet18 --batch_size 4 --epoch 25
 '''
-# %% Test ResNet18 on PASCAL_VOC_2007
-''' (Correctness: 1201/2510)
-python test.py -d ./data/pascal_voc_2007 -n Resnet18onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet18 --batch_size 4 --epoch 75 --num_classes 20 --loss_type bcewithlogits
+# %% Test ResNet18 on PASCAL_VOC_2012
+''' (Correctness: 3227/5823)
+python test.py -d ./data/pascal_voc_2012 -n Resnet18onPASCAL -g mps -m res_class --dataset_name pascalvoc2012 --phase val --eval --net_name resnet18 --batch_size 4 --epoch 135 --loss_type bcewithlogits
 '''
-# %% Test ResNet50 on PASCAL_VOC_2007
-''' (Correctness: 1505/2510)
-python test.py -d ./data/pascal_voc_2007 -n Resnet50onPASCAL -g mps -m res_class --dataset_name pascalvoc --phase val --eval --net_name resnet50 --batch_size 4 --epoch 80 --num_classes 20 --loss_type bcewithlogits
+# %% Test ResNet50 on PASCAL_VOC_2012
+''' (Correctness: 4022/5823)
+python test.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m res_class --dataset_name pascalvoc2012 --phase val --eval --net_name resnet50 --batch_size 4 --epoch best  --loss_type bcewithlogits
 '''
-# %% Test ResNet101 on PASCAL_VOC_2007
-''' (Correctness: 4381/5823)
+# %% Test ResNet101 on PASCAL_VOC_2012
+''' (Correctness: 4080/5823)
 python test.py -d ./data/pascal_voc_2012 -n Resnet101onPASCAL -g mps -m res_class --dataset_name pascalvoc2012 --phase val --eval --net_name resnet101 --batch_size 4 --epoch best --loss_type bcewithlogits
 '''
 
@@ -89,7 +89,8 @@ if __name__ == '__main__':
                     predicted_labels = [labels[i] for i in predicted_index.tolist()] # get the predicted labels
                     true_labels = [labels[j] for j in true_index] # get the true labels
 
-                    is_True = set(predicted_index.tolist()).issubset(set(true_index.tolist())) and len(predicted_index.tolist()) != 0
+                    # is_True = set(predicted_index.tolist()).issubset(set(true_index.tolist())) and len(predicted_index.tolist()) != 0
+                    is_True = predicted_index.tolist() == true_index.tolist()
                     true_cnt += is_True
                     # if len(index_predicted) == len(true_index):
                     #     is_True = torch.all(index_predicted == true_index)

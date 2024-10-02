@@ -1,10 +1,14 @@
-# %% Test ResNet50 on ImageNet
-''' (Correctness: 5598/10000)
-python test.py -d ./data/tiny-imagenet -n Resnet50onImageNet -g -1 -m res_class --dataset_name imagenet --phase val --eval --net_name resnet50 --batch_size 4 --epoch 15
-'''
 # %% Test ResNet18 on ImageNet
-''' (Correctness: 5599/10000)
-python test.py -d ./data/tiny-imagenet -n Resnet18onImageNet -g mps -m res_class --dataset_name imagenet --phase val --eval --net_name resnet18 --batch_size 4 --epoch 25
+''' (Correctness: 7162/10000)
+python test.py -d ./data/tiny-imagenet -n Resnet18onImageNet -g mps -m res_class --dataset_name imagenet --phase val --eval --net_name resnet18 --batch_size 4 --epoch best
+'''
+# %% Test ResNet50 on ImageNet
+''' (Correctness: 7806/10000)
+python test.py -d ./data/tiny-imagenet -n Resnet50onImageNet -g mps -m res_class --dataset_name imagenet --phase val --eval --net_name resnet50 --batch_size 4 --epoch best
+'''
+# %% Test ResNet101 on ImageNet
+''' (Correctness: 8602/10000)
+python test.py -d ./data/tiny-imagenet -n Resnet101onImageNet -g mps -m res_class --dataset_name imagenet --phase val --eval --net_name resnet101 --batch_size 4 --epoch best
 '''
 # %% Test ResNet18 on PASCAL_VOC_2012
 ''' (Correctness: 3227/5823)
@@ -79,7 +83,7 @@ if __name__ == '__main__':
 
                     file.write(f"{i*opt.batch_size+j}\t{is_True[j]}\t{data['Y'][j]}\t{predicted_labels[j]}\t{data['Y_class'][j]}\t{indices[j]}\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}\n")
 
-                true_cnt += is_True[j]
+                    true_cnt += is_True[j]
             elif opt.loss_type == 'bcewithlogits':   # Multi label classification                
                 for j in range(len(y_pred)):
                     predicted_index = torch.where(y_pred[j] == 1)[0]  # get the index of the predicted labels

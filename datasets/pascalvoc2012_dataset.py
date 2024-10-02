@@ -162,7 +162,7 @@ class PascalVoc2012Dataset(BaseDataset):
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
         image_path, image_label = self.data[index]
-        label_indices = [self.label2id[l] for l in image_label.split(',')]
+        label_indices = [self.label2id[l] for l in image_label.split(',') if l]
         
         image_data = Image.open(image_path).convert("RGB") # read the image
 

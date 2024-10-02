@@ -11,11 +11,11 @@ python test.py -d ./data/tiny-imagenet -n Resnet18onImageNet -g mps -m res_class
 python test.py -d ./data/pascal_voc_2012 -n Resnet18onPASCAL -g mps -m res_class --dataset_name pascalvoc2012 --phase val --eval --net_name resnet18 --batch_size 4 --epoch 135 --loss_type bcewithlogits
 '''
 # %% Test ResNet50 on PASCAL_VOC_2012
-''' (Correctness: 4022/5823)
+''' (Correctness: 4022/5823, 1027/1449)
 python test.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m res_class --dataset_name pascalvoc2012 --phase val --eval --net_name resnet50 --batch_size 4 --epoch best  --loss_type bcewithlogits
 '''
 # %% Test ResNet101 on PASCAL_VOC_2012
-''' (Correctness: 4080/5823)
+''' (Correctness: 4080/5823, 1044/1449)
 python test.py -d ./data/pascal_voc_2012 -n Resnet101onPASCAL -g mps -m res_class --dataset_name pascalvoc2012 --phase val --eval --net_name resnet101 --batch_size 4 --epoch best --loss_type bcewithlogits
 '''
 

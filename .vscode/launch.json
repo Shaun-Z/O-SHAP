@@ -31,20 +31,20 @@
             //     "--epoch", "15",
             //     // "--index_explain", "1", "5"
             // ]
-            // "args": [ // Test
-            //     "--dataroot", "./data/pascal_voc_2007",
-            //     "--name", "Resnet18onPASCAL",
-            //     "--gpu_ids", "mps",
-            //     "--model", "res_class",
-            //     "--net_name", "resnet18",
-            //     "--phase", "val",
-            //     "--dataset_name", "pascalvoc",
-            //     "--eval",
-            //     "--batch_size", "4",
-            //     "--epoch", "35",
-            //     "--num_classes", "20",
-            //     "--loss_type", "bcewithlogits"
-            // ]
+            "args": [ // Test
+                "--dataroot", "./data/pascal_voc_2012",
+                "--name", "Resnet101onPASCAL",
+                "--gpu_ids", "mps",
+                "--model", "res_class",
+                "--net_name", "resnet101",
+                "--phase", "val",
+                "--dataset_name", "pascalvoc2012",
+                "--explanation_name", "bhem",
+                "--eval",
+                "--epoch", "best",
+                "--loss_type", "bcewithlogits",
+                "--segmentation"
+            ]
             // "args": [ 
             //     "--dataroot", "./data/pascal_voc_2007",
             //     "--name", "Resnet18onPASCAL",
@@ -66,14 +66,14 @@
             //     "--phase", "val",
             //     "--batch_size", "2"
             // ]
-            "args": [ 
-                "--dataroot", "./data/pascal_voc_2012",
-                "--gpu_ids", "mps",
-                "--dataset_name", "pascalvoc2012",
-                "--phase", "val",
-                "--batch_size", "1",
-                // "--segmentation"
-            ]
+            // "args": [ 
+            //     "--dataroot", "./data/pascal_voc_2012",
+            //     "--gpu_ids", "mps",
+            //     "--dataset_name", "pascalvoc2012",
+            //     "--phase", "val",
+            //     "--batch_size", "1",
+            //     // "--segmentation"
+            // ]
         }
     ]
 }

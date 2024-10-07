@@ -83,7 +83,7 @@ class basic_segment:
     #     return self.seg
 
 class hierarchical_segment:
-    def __init__(self, img, n_segments=196):
+    def __init__(self, img, n_segments=400):
         H = img.shape[-2]
         W = img.shape[-1]
         self.W = W

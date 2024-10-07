@@ -7,7 +7,7 @@ def calculate_ebpg(xai_result, mask, class_index):
     class_index: 指定类别的索引（1-20）
     返回：平均EBPG
     """
-    energy_in_mask = []
+    energy_true_rate = []
     
     # 只计算mask中等于class_index的区域
     target_mask = (mask == class_index)
@@ -16,14 +16,25 @@ def calculate_ebpg(xai_result, mask, class_index):
     for xai_map in xai_result:
         # 计算XAI结果的L1范数能量
         total_energy = np.sum(np.abs(xai_map))
+        total_energy_p = np.sum(xai_map[xai_map >= 0])
+        total_energy_n = -np.sum(xai_map[xai_map < 0])
         
         # 计算mask区域内的能量
-        mask_energy = np.sum(np.abs(xai_map[target_mask]))
+        xai_map_mask = xai_map[target_mask]
+        # 计算非mask区域内的能量
+        xai_map_unmask = xai_map[~target_mask]
+        
+        # True Positive and False Negative
+        energy_TP = np.sum(xai_map_mask[xai_map_mask >= 0])
+        energy_FN = -np.sum(xai_map_mask[xai_map_mask < 0])
+        # False Positive and True Negative
+        energy_FP = np.sum(xai_map_unmask[xai_map_unmask >= 0])
+        energy_TN = -np.sum(xai_map_unmask[xai_map_unmask < 0])
         
         # 计算EBPG (能量集中于mask的比例)
-        energy_in_mask.append(mask_energy / total_energy if total_energy > 0 else 0)
+        energy_true_rate.append((energy_TP+energy_TN) / total_energy)
     
-    return np.mean(energy_in_mask)
+    return np.mean(energy_true_rate)
 
 # # 调用函数
 # ebpg_score = calculate_ebpg(xai_result, mask)
@@ -47,23 +58,21 @@ def calculate_miou(xai_result, mask, class_index, threshold=0.8):
         saliency_map = np.mean(xai_map, axis=-1)
         
         # 获取前20%像素的阈值
-        sorted_pixels = np.sort(saliency_map.flatten())
-        top_threshold = sorted_pixels[int(len(sorted_pixels) * (1 - threshold))]
+        flat_saliency = saliency_map.flatten()
+        top_pixels_threshold = np.percentile(flat_saliency, 100 * (1 - threshold))
         
         # 生成前20%最重要像素的二值化掩码
-        pred_mask = saliency_map >= top_threshold
+        pred_mask = saliency_map >= top_pixels_threshold
         
-        # 计算mIoU
+        # 计算交集和并集的像素数量
         intersection = np.sum((pred_mask & target_mask))
-        union = np.sum(pred_mask | target_mask)
+        union = np.sum((pred_mask | target_mask))
+        
+        # 计算mIoU (像素数量的比值)
         iou = intersection / union if union > 0 else 0
         iou_scores.append(iou)
     
     return np.mean(iou_scores)
-
-# # 调用函数
-# miou_score = calculate_miou(xai_result, mask)
-# print(f"mIoU Score: {miou_score}")
 
 def calculate_bbox(xai_result, mask, class_index):
     """
@@ -84,20 +93,16 @@ def calculate_bbox(xai_result, mask, class_index):
         # 将XAI解释图降到2D
         saliency_map = np.mean(xai_map, axis=-1)
         
-        # 选取前N个重要像素
-        sorted_pixels = np.argsort(saliency_map.flatten())[::-1]
-        top_n_pixels = sorted_pixels[:num_mask_pixels]
+        # 获取前N个最重要的像素索引
+        sorted_indices = np.argsort(saliency_map.flatten())[::-1]
+        top_n_pixels = sorted_indices[:num_mask_pixels]
         
-        # 创建预测的bbox掩码
+        # 创建预测的bbox掩码（仅保留前N个像素）
         pred_mask = np.zeros_like(saliency_map, dtype=bool)
         pred_mask[np.unravel_index(top_n_pixels, saliency_map.shape)] = True
         
-        # 计算Bounding Box得分
+        # 计算交集和目标区域的重合率
         intersection = np.sum((pred_mask & target_mask))
-        bbox_scores.append(intersection / num_mask_pixels if num_mask_pixels > 0 else 0)
+        bbox_scores.append(intersection / num_mask_pixels)
     
     return np.mean(bbox_scores)
-
-# 调用函数
-# bbox_score = calculate_bbox(xai_result, mask)
-# print(f"Bbox Score: {bbox_score}")

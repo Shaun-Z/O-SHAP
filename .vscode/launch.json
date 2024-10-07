@@ -43,7 +43,8 @@
                 "--eval",
                 "--epoch", "best",
                 "--loss_type", "bcewithlogits",
-                "--segmentation"
+                "--segmentation",
+                "--num_test", "200"
             ]
             // "args": [ 
             //     "--dataroot", "./data/pascal_voc_2007",

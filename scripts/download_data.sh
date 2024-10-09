@@ -69,9 +69,9 @@ case $NAME in
     ;;
   "cub200")
     kaggle datasets download veeralakrishna/200-bird-species-with-11788-images --unzip
-    mkdir -p data/CUB_200_2011
-    tar -xvzf CUB_200_2011.tgz -C ./data
-    tar -xvzf segmentations.tgz -C ./data/CUB_200_2011
+    mkdir -p data/cub200
+    tar -xvzf CUB_200_2011.tgz -C ./data/cub200
+    tar -xvzf segmentations.tgz -C ./data/cub200
     rm CUB_200_2011.tgz
     rm segmentations.tgz
     ;;

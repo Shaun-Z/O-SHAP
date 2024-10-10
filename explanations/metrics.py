@@ -40,7 +40,7 @@ def calculate_ebpg(xai_result, mask, class_index):
 # ebpg_score = calculate_ebpg(xai_result, mask)
 # print(f"EBPG Score: {ebpg_score}")
 
-def calculate_miou(xai_result, mask, class_index, threshold=0.8):
+def calculate_miou(xai_result, mask, class_index, threshold=0.001):
     """
     xai_result: shape (N, 224, 224, 3), N个解释图
     mask: shape (224, 224)，目标区域的mask，类别对应为1-20
@@ -57,9 +57,14 @@ def calculate_miou(xai_result, mask, class_index, threshold=0.8):
         # 将XAI解释图降到2D (只使用灰度)
         saliency_map = np.mean(xai_map, axis=-1)
         
-        # 获取前20%像素的阈值
+        # 将saliency_map展平为一维数组
         flat_saliency = saliency_map.flatten()
-        top_pixels_threshold = np.percentile(flat_saliency, 100 * (1 - threshold))
+        
+        # 计算前20%像素的数量
+        num_top_pixels = int(len(flat_saliency) * threshold)
+        
+        # 获取前20%像素值的阈值
+        top_pixels_threshold = np.partition(flat_saliency, -num_top_pixels)[-num_top_pixels]
         
         # 生成前20%最重要像素的二值化掩码
         pred_mask = saliency_map >= top_pixels_threshold
@@ -87,7 +92,7 @@ def calculate_bbox(xai_result, mask, class_index):
     target_mask = (mask == class_index)
     
     # 计算mask中目标类别的像素数
-    num_mask_pixels = np.sum(target_mask)
+    num_mask_pixels = np.sum(target_mask) // 8
     
     for xai_map in xai_result:
         # 将XAI解释图降到2D

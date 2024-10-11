@@ -10,7 +10,7 @@ python explain.py -d ./data/tiny-imagenet -n Resnet50onImageNet -g mps -m res_cl
 '''
 python explain.py -d ./data/tiny-imagenet -n Resnet18onImageNet -g mps -m res_class --net_name resnet18 --dataset_name imagenet --eval --explanation_name shap --epoch 25
 '''
-# %% Explain Resnet101 on PASCAL_VOC_2012 using BHEM
+# %% Explain Resnet50 on PASCAL_VOC_2012 using BHEM
 '''
 python explain.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m res_class --net_name resnet50 --dataset_name pascalvoc2012 --eval --explanation_name bhem --epoch best --loss_type bcewithlogits --segmentation --approx
 '''

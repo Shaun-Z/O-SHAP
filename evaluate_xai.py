@@ -8,7 +8,7 @@ python evaluate_xai.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m r
 '''
 # %% Evaluate BHEM on Resnet101 on PASCAL_VOC_2012
 '''
-python evaluate_xai.py -d ./data/pascal_voc_2012 -n Resnet101onPASCAL -g mps -m res_class --net_name resnet101 --phase val --dataset_name pascalvoc2012 --eval --explanation_name bhem --epoch best --loss_type bcewithlogits --segmentation --num_test 200
+python evaluate_xai.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m res_class --net_name resnet50 --phase val --dataset_name pascalvoc2012 --eval --explanation_name bhem --epoch best --loss_type bcewithlogits --segmentation --num_test 200
 '''
 
 import numpy as np

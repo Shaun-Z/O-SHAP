@@ -92,7 +92,7 @@ def calculate_bbox(xai_result, mask, class_index):
     target_mask = (mask == class_index)
     
     # 计算mask中目标类别的像素数
-    num_mask_pixels = np.sum(target_mask) // 8
+    num_mask_pixels = np.sum(target_mask)
     
     for xai_map in xai_result:
         # 将XAI解释图降到2D

@@ -32,7 +32,7 @@ def all_subsets(lst):
         for subset in combinations(lst, r):
             yield list(subset)
 
-def n_of_all_subsets(lst, n=2):
+def n_of_all_subsets(lst, n=1):
     total_subsets = 2 ** len(lst)
     n = total_subsets if n > total_subsets else n
     

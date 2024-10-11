@@ -40,7 +40,7 @@ def calculate_ebpg(xai_result, mask, class_index):
 # ebpg_score = calculate_ebpg(xai_result, mask)
 # print(f"EBPG Score: {ebpg_score}")
 
-def calculate_miou(xai_result, mask, class_index, threshold=0.001):
+def calculate_miou(xai_result, mask, class_index, threshold=0.005):
     """
     xai_result: shape (N, 224, 224, 3), N个解释图
     mask: shape (224, 224)，目标区域的mask，类别对应为1-20

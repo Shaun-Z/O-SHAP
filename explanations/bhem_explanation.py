@@ -32,13 +32,20 @@ def all_subsets(lst):
         for subset in combinations(lst, r):
             yield list(subset)
 
-def n_of_all_subsets(lst, n=1):
-    if len(lst) <= n:
-        return [lst]
-    else:
-        subset = random.sample(lst, n)
-        return [subset]
-
+def n_of_all_subsets(lst, n=2):
+    total_subsets = 2 ** len(lst)
+    n = total_subsets if n > total_subsets else n
+    
+    subsets = set()
+    lst = list(lst)
+    while len(subsets) < n:
+        subset = []
+        for item in lst:
+            if random.choice([True, False]):
+                subset.append(item)
+        subsets.add(tuple(subset))  # 使用 tuple 使其可哈希
+    
+    return [list(s) for s in subsets]
 
 class layer:
     def __init__(self, image, layer_ID):
@@ -248,11 +255,12 @@ class BhemExplanation(BaseExplanation):
                             img1 = torch.zeros_like(input_img)
                             img = torch.zeros_like(input_img)
                             s1,s2,s3,s4 = 0,0,0,0
+                            # print(f"{len(f1s)}\t{len(f2s)}\t{len(f3s)}\t{len(f4s)}")
                             for subset1 in n_of_all_subsets(f1s):
                                 for subset2 in n_of_all_subsets(f2s):
                                     for subset3 in n_of_all_subsets(f3s):
                                         for subset4 in n_of_all_subsets(f4s):
-                                            # print(f"Feature 4: {subset4}")
+                                            # print(subset4)
                                             cnt+=1
                                             # print(f"{cnt/total_num}", end='\r')
 
@@ -280,7 +288,7 @@ class BhemExplanation(BaseExplanation):
                                             mask = self.layers[4].segment_mapping.get(f4)
                                             if mask is not None:
                                                 for x,y in zip(mask[0], mask[1]):
-                                                    scores[:,:,x,y] += np.array((P1-P2).cpu().detach().numpy())/len(mask[0])
+                                                    scores[:,:,x,y] += np.array((P1-P2).cpu().detach().numpy())/(len(subset1)+len(subset2)+len(subset3)+len(subset4))
                                             s4 +=1
                                         s3 +=1
                                     s2 +=1

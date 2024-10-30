@@ -56,7 +56,8 @@ class layer:
         self.image = image
         self.layer_ID = layer_ID
 
-        basic_seg = hierarchical_segment(image)
+        # basic_seg = hierarchical_segment(image)
+        basic_seg = basic_segment(image)
         seg_func = lambda img: basic_seg.get_mask(feature_ID=layer_ID)
             
         self.seg_func = seg_func    # Segmentation function

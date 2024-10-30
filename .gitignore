@@ -10,6 +10,7 @@ data/*
 img_res
 *.npy
 *.ipynb
+image_folder
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

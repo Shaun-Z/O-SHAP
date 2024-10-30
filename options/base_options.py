@@ -21,8 +21,9 @@ class BaseOptions():
     def initialize(self, parser):
         """Define the common options that are used in both training and test."""
         # basic parameters
+        parser.add_argument('--config', type=str, default=None, help='path to the config file that will be used to overwrite other options')
         # parser.add_argument('--dataroot', '-d', required=True, help='path to the data directory')
-        parser.add_argument('--dataroot', '-d', type=str, default='./data/tiny-imagenet', help='path to the data directory')
+        parser.add_argument('--dataroot', '-d', type=str, default=None, help='path to the data directory')
         parser.add_argument('--name', '-n', type=str, default='experiment_name', help='name of the experiment. It decides where to store samples and models')
         parser.add_argument('--gpu_ids', '-g', type=str, default='mps', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
@@ -60,7 +61,7 @@ class BaseOptions():
         parser.add_argument('--use_wandb', action='store_true', help='if specified, then init wandb logging')
         parser.add_argument('--wandb_project_name', type=str, default='ML-Testbench', help='specify wandb project name')
         self.initialized = True
-        return parser
+        return parser        
 
     def gather_options(self):
         """Initialize our parser with basic options(only once).
@@ -90,6 +91,11 @@ class BaseOptions():
         explanation_name = opt.explanation_name
         explanation_option_setter = explanations.get_option_setter(explanation_name)
         parser = explanation_option_setter(parser)
+
+        # load config file and merge with the options
+        if opt.config is not None:
+            config = util.load_yaml_config(opt.config)
+            parser.set_defaults(**config)
 
         # save and return the parser
         self.parser = parser

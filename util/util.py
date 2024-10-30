@@ -4,7 +4,12 @@ import torch
 import numpy as np
 from PIL import Image
 import os
+import yaml
 
+def load_yaml_config(yaml_file):
+    with open(yaml_file, 'r') as file:
+        config = yaml.safe_load(file)
+    return config
 
 def tensor2im(input_image, imtype=np.uint8):
     """"Converts a Tensor array into a numpy image array.

@@ -1,23 +1,29 @@
+from tqdm import tqdm
 from .base_model import BaseModel
 from .unet.unet_parts import *
-from util.dice_score import dice_loss
+from util.dice_score import dice_loss, multiclass_dice_coeff, dice_coeff
+from . import networks
 
 class UNet1DModel(BaseModel):
     @staticmethod
     def modify_commandline_options(parser, is_train=True):
         parser.add_argument('--weight_decay', type=float, default=1e-8, help='weight decay (L2 penalty)')
         parser.add_argument('--momentum', type=float, default=0.999, help='momentum term of RMSprop')
-        parser.set_defaults(lr=1e-4)  # default learning rate
+        parser.add_argument('--amp', action='store_true', help='use mixed precision training')
+        parser.add_argument('--weight_decay', type=float, default=1e-8, help='weight decay (L2 penalty)')
+        parser.add_argument('--momentum', type=float, default=0.999, help='momentum term of RMSprop')
+        parser.add_argument('--num_classes', type=int, default=2, help='number of classes')
         return parser
     
     def __init__(self, opt):
         super(UNet1DModel, self).__init__(opt)
         self.loss_names = ['UNet']
-        self.visual_names = ['data', 'mask']
+        self.visual_names = ['data', 'true_masks']
         self.model_names = ['UNet']
         
-        n_classes = 2
-        self.netUNet = UNet_1D(n_channels=1, n_classes=n_classes, bilinear=False)
+        self.n_classes = 2
+        self.amp = opt.amp
+        self.netUNet = networks.define_unet_masker(opt.input_nc, opt.num_classes, False, opt.init_type, opt.init_gain, self.gpu_ids)
 
         if self.isTrain:
             # define loss functions
@@ -29,9 +35,10 @@ class UNet1DModel(BaseModel):
                               lr=opt.lr, weight_decay=opt.weight_decay, momentum=opt.momentum, foreach=True)
             self.optimizers.append(self.optimizer)
 
-            # TODO: schedulers will be overwritten by function <BaseModel.setup>.
+            # Function <BaseModel.setup> has been overwritten by <UNet1DModel.setup>
             self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'max', patience=5)
-            self.grad_scaler = torch.amp.GradScaler(device=self.device)
+            # Disable AMP if using MPS
+            self.grad_scaler = torch.amp.GradScaler(enabled = False) if opt.gpu_ids == 'mps' else torch.amp.GradScaler(device=self.device)
 
     def set_input(self, input):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
@@ -45,28 +52,43 @@ class UNet1DModel(BaseModel):
         self.data = input['data'].to(self.device)
         self.true_masks = input['mask'].to(self.device)
 
-    # TODO: Implement the train function
     def train(self):
         """Make models train mode during test time"""
         for param in self.netUNet.parameters():
-            param.requires_grad = False
-        for param in self.netUNet.layer4.parameters():
             param.requires_grad = True
-        self.netUNet.fc.requires_grad = True
 
-    # TODO: Implement the validate function
+    
     def validate(self, DataLoader_val):
-        loss = 0
+        # Set model to evaluation mode
         self.eval()
-        with torch.no_grad():
-            for i, data in enumerate(DataLoader_val):
-                self.set_input(data)
-                self.forward()
-                loss += self.criterion(self.output, self.label)
-        self.loss_Resnet_val = loss / i
+        num_val_batches = len(DataLoader_val)
+        dice_score = 0
+
+        # iterate over the validation set
+        with torch.autocast(self.device.type, enabled=self.amp):
+            for batch in tqdm(DataLoader_val, total=num_val_batches, desc='Validation round', unit='batch', leave=False):
+                data, mask_true = batch['data'].to(self.device), batch['mask'].to(self.device)
+
+                # predict the mask
+                mask_pred = self.netUNet(data)
+
+                if self.netUNet.n_classes == 1:
+                    assert mask_true.min() >= 0 and mask_true.max() <= 1, 'True mask indices should be in [0, 1]'
+                    mask_pred = (F.sigmoid(mask_pred) > 0.5).float()
+                    # compute the Dice score
+                    dice_score += dice_coeff(mask_pred, mask_true, reduce_batch_first=False)
+                else:
+                    assert mask_true.min() >= 0 and mask_true.max() < self.netUNet.n_classes, 'True mask indices should be in [0, n_classes['
+                    # convert to one-hot format
+                    mask_true = F.one_hot(mask_true, self.netUNet.n_classes).permute(0, 2, 1).float()
+                    mask_pred = F.one_hot(mask_pred.argmax(dim=1), self.netUNet.n_classes).permute(0, 2, 1).float()
+                    # compute the Dice score, ignoring background
+                    dice_score += multiclass_dice_coeff(mask_pred[:, 1:], mask_true[:, 1:], reduce_batch_first=False)
+        val_score = dice_score / max(num_val_batches, 1)
+        self.metric = val_score
+        # Set model back to training mode
         self.train()
 
-    # TODO: Implement the forward function
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
         self.masks_pred = self.netUNet(self.data)  # model(data)
@@ -80,7 +102,7 @@ class UNet1DModel(BaseModel):
                     F.softmax(self.masks_pred, dim=1).float(),
                     F.one_hot(self.true_masks, self.netUNet.n_classes).permute(0, 2, 1).float(),
                     multiclass=True)
-        self.grad_scaler.scale(self.loss_Resnet).backward()
+        self.grad_scaler.scale(self.loss_UNet).backward()
         
     # Overwrite <BaseModel.optimize_parameters> function
     def optimize_parameters(self):
@@ -110,50 +132,14 @@ class UNet1DModel(BaseModel):
             self.load_networks(load_suffix)
         self.print_networks(opt.verbose)
 
-    # TODO: Overwrite <BaseModel.update_learning_rate> function
+    # Overwrite <BaseModel.update_learning_rate> function
     def update_learning_rate(self):
         """Update learning rates for all the networks; called at the end of every epoch"""
         old_lr = self.optimizers[0].param_groups[0]['lr']
         for scheduler in self.schedulers:
             scheduler.step(self.metric)
+            # scheduler.step()
 
         lr = self.optimizers[0].param_groups[0]['lr']
         print('learning rate %.7f -> %.7f' % (old_lr, lr))
 
-class UNet_1D(nn.Module):
-    def __init__(self, n_channels, n_classes, bilinear=False):
-        super(UNet_1D, self).__init__()
-        self.n_channels = n_channels
-        self.n_classes = n_classes
-        self.bilinear = bilinear
-
-        self.inc = (DoubleConv_1D(n_channels, 32))
-        self.down1 = (Down_1D(32, 64))
-        self.down2 = (Down_1D(64, 128))
-        factor = 2 if bilinear else 1
-        self.down3 = (Down_1D(128, 256 // factor))
-        self.up1 = (Up_1D(256, 128 // 1, bilinear))
-        self.up2 = (Up_1D(128, 64 // 1, bilinear))
-        self.up3 = (Up_1D(64, 32 // 1, bilinear))
-        self.outc = (OutConv_1D(32, n_classes))
-
-    def forward(self, x):
-        x1 = self.inc(x)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x4 = self.down3(x3)
-        x = self.up1(x4, x3)
-        x = self.up2(x, x2)
-        x = self.up3(x, x1)
-        logits = self.outc(x)
-        return logits
-
-    def use_checkpointing(self):
-        self.inc = torch.utils.checkpoint(self.inc)
-        self.down1 = torch.utils.checkpoint(self.down1)
-        self.down2 = torch.utils.checkpoint(self.down2)
-        self.down3 = torch.utils.checkpoint(self.down3)
-        self.up1 = torch.utils.checkpoint(self.up1)
-        self.up2 = torch.utils.checkpoint(self.up2)
-        self.up3 = torch.utils.checkpoint(self.up3)
-        self.outc = torch.utils.checkpoint(self.outc)

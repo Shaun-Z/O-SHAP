@@ -1,0 +1,22 @@
+dataroot: ./data/sgcc
+name: SGCC
+gpu_ids: '0'
+model: unet_1d
+dataset_name: sgcc
+
+input_nc: 1
+num_classes: 2
+batch_size: 5
+lr: 0.0001
+n_epochs: 40
+n_epochs_decay: 200
+use_wandb: False
+
+normalize: False
+val_percent: 0.1
+amp: False
+weight_decay: 0.00000001
+momentum: 0.999
+
+datafile_name: combined_dfx.csv
+maskfile_name: combined_dfy_pseudo.csv

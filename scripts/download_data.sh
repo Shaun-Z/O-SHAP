@@ -100,6 +100,12 @@ case $NAME in
     rm VOCtrainval_11-May-2012.tar
     # rm VOCtrainval_11-May-2012.tar VOC2012test.tar
     ;;
+  "sgcc")
+    git clone https://github.com/henryRDlab/ElectricityTheftDetection.git
+    mkdir -p data/sgcc
+    7z x ./ElectricityTheftDetection/data.zip -o./data/sgcc
+    rm -rf ./ElectricityTheftDetection
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

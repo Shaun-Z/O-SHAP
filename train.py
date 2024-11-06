@@ -21,8 +21,8 @@ from util.visualizer import Visualizer
 if __name__ == '__main__':
     opt = TrainOptions().parse()   # get training options
     dataloader = create_dataloader(opt)  # create a dataset given opt.dataset_mode and other options
-    dataset_size = len(dataloader)    # get the number of images in the dataset.
-    print(f'The number of training images = \033[92m{dataset_size}\033[0m')
+    dataset_size = len(dataloader)    # get the number of items in the dataset.
+    print(f'The number of training items = \033[92m{dataset_size}\033[0m')
 
     model = create_model(opt)      # create a model given opt.model and other options
     model.setup(opt)               # regular setup: load and print networks; create schedulers
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     opt.phase = 'val'
     dataloader_val = create_dataloader(opt)  # create a dataset given opt.dataset_mode and other options
-    print(f'The number of validation images = \033[92m{len(dataloader_val)}\033[0m')
+    print(f'The number of validation items = \033[92m{len(dataloader_val)}\033[0m')
 
     for epoch in tqdm(range(opt.epoch_count, opt.n_epochs + opt.n_epochs_decay + 1)):    # outer loop for different epochs; we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>
         epoch_start_time = time.time()  # timer for entire epoch
@@ -39,8 +39,8 @@ if __name__ == '__main__':
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
         visualizer.reset()              # reset the visualizer: make sure it saves the results to HTML at least once every epoch
 
-        '''Validation'''
-        model.validate(dataloader_val)
+        # '''Validation'''
+        # model.validate(dataloader_val)
 
         for i, data in enumerate(dataloader):  # inner loop within one epoch
             iter_start_time = time.time()  # timer for computation per iteration
@@ -55,7 +55,7 @@ if __name__ == '__main__':
             if total_iters % opt.display_freq == 0:   # display images on visdom and save images to a HTML file
                 save_result = total_iters % opt.update_html_freq == 0
                 model.compute_visuals()
-                visualizer.display_current_results(model.get_current_visuals(), epoch, save_result)
+                # visualizer.display_current_results(model.get_current_visuals(), epoch, save_result)
 
             if total_iters % opt.print_freq == 0:    # print training losses and save logging information to the disk
                 losses = model.get_current_losses()
@@ -70,6 +70,9 @@ if __name__ == '__main__':
                 model.save_networks(save_suffix)
 
             iter_data_time = time.time()
+        
+        '''Validation'''
+        model.validate(dataloader_val)
         
         model.update_learning_rate()    # update learning rates in the end of every epoch.
 

@@ -8,8 +8,8 @@ from sklearn.model_selection import train_test_split
 from datasets.base_dataset import BaseDataset
 
 class SgccDataset(BaseDataset):
-    """A dataset class for SGCC Theft dataset.
-
+    """
+    A dataset class for SGCC Theft dataset.
     """
     @staticmethod
     def modify_commandline_options(parser, is_train):
@@ -281,13 +281,14 @@ def prepare_data_rolling_window(data_path: str = "./data/sgcc/data.csv"):
             label_df.iloc[i, start_index:end_index] = 1
 
     zy = label_df[(label_df != 0).any(axis=1)] 
-    zx = attack_df[attack_df.index.isin(zy.index)] 
+    zx = attack_df[attack_df.index.isin(zy.index)]
 
     # 将攻击的结果和标签存储为两个CSV文件
     # zx.to_csv('zx3.csv', index=False)
     zy.to_csv('./data/sgcc/label_attack3.csv', index=False)
 
     from sklearn.preprocessing import MinMaxScaler
+
     # Initialize the MinMaxScaler
     scaler = MinMaxScaler()
     # Apply MinMaxScaler to each row
@@ -319,12 +320,11 @@ def prepare_data_rolling_window(data_path: str = "./data/sgcc/data.csv"):
 
     combined_dfx = pd.concat([zx3_normalized, normal3_normalized], ignore_index=True)#
     combined_dfy = pd.concat([zy3, normal3_normalized_label], ignore_index=True)#
+
     combined_dfx.to_csv('./data/sgcc/combined_dfx.csv', index=False)
     combined_dfy.to_csv('./data/sgcc/combined_dfy.csv', index=False)
 
-    normal3_normalized_sudolabel = pd.read_csv(f'./data/sgcc/label_pseudo_normal3.csv')
-    normal3_normalized_sudolabel.columns = zy3.columns
-    combined_dfy_sudo = pd.concat([zy3, normal3_normalized_sudolabel], ignore_index=True)#
-    combined_dfy_sudo.to_csv('./data/sgcc/combined_dfy_pseudo.csv', index=False)
-
-
+    normal3_normalized_pseudolabel = pd.read_csv(f'./data/sgcc/label_pseudo_normal3.csv')
+    normal3_normalized_pseudolabel.columns = zy3.columns
+    combined_dfy_pseudo = pd.concat([zy3, normal3_normalized_pseudolabel], ignore_index=True)#
+    combined_dfy_pseudo.to_csv('./data/sgcc/combined_dfy_pseudo.csv', index=False)

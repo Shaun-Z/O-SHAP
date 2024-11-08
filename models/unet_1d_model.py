@@ -38,7 +38,7 @@ class UNet1DModel(BaseModel):
             # Function <BaseModel.setup> has been overwritten by <UNet1DModel.setup>
             self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'max', patience=5)
             # Disable AMP if using MPS
-            self.grad_scaler = torch.amp.GradScaler(enabled = False) if opt.gpu_ids == 'mps' else torch.amp.GradScaler(device=self.device)
+            self.grad_scaler = torch.amp.GradScaler(device=self.device, enabled=self.amp)
 
     def set_input(self, input):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
@@ -66,11 +66,16 @@ class UNet1DModel(BaseModel):
 
         # iterate over the validation set
         with torch.autocast(self.device.type, enabled=self.amp):
-            for batch in tqdm(DataLoader_val, total=num_val_batches, desc='Validation round', unit='batch', leave=False):
-                data, mask_true = batch['data'].to(self.device), batch['mask'].to(self.device)
+            for i, data in enumerate(DataLoader_val):
+                
+                # data, mask_true = batch['data'].to(self.device), batch['mask'].to(self.device)
+                # # predict the mask
+                # mask_pred = self.netUNet(data)
 
-                # predict the mask
-                mask_pred = self.netUNet(data)
+                self.set_input(data)
+                self.forward()
+                mask_pred = self.masks_pred
+                mask_true = self.true_masks
 
                 if self.netUNet.n_classes == 1:
                     assert mask_true.min() >= 0 and mask_true.max() <= 1, 'True mask indices should be in [0, 1]'
@@ -93,7 +98,7 @@ class UNet1DModel(BaseModel):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
         self.masks_pred = self.netUNet(self.data)  # model(data)
 
-    # TODO: Implement the backward function
+    #
     def backward(self):
         """Calculate the loss for back propagation"""
         # First, G_A should fake the discriminator

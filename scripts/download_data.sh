@@ -111,6 +111,13 @@ case $NAME in
     unzip -o icons50.zip -d data/icons50
     rm icons50.zip
     ;;
+  "brain_mri_tumor")
+    curl -L -o brain-mri-images-for-brain-tumor-detection.zip https://www.kaggle.com/api/v1/datasets/download/navoneel/brain-mri-images-for-brain-tumor-detection
+    mkdir -p data/brain_mri_tumor
+    unzip brain-mri-images-for-brain-tumor-detection.zip -d data/brain_mri_tumor
+    rm brain-mri-images-for-brain-tumor-detection.zip
+    rm -r data/brain_mri_tumor/brain_tumor_dataset
+    ;;
   "sgcc")
     git clone https://github.com/henryRDlab/ElectricityTheftDetection.git
     mkdir -p data/sgcc

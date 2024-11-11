@@ -128,7 +128,7 @@ class ImageNetDataset(BaseDataset):
         if self.phase == 'test':
             return {'X': X_tensor}
         else:
-            return {'X': X_tensor, 'Y_class': self.Y_class[index], 'Y': self.Y[index]} # return the image and its class
+            return {'X': X_tensor, 'label': self.Y_class[index], 'Y': self.Y[index]} # return the image and its class
 
     def __len__(self):
         """Return the total number of images in the dataset."""

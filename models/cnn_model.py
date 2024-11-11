@@ -5,7 +5,7 @@ from .base_model import BaseModel
 from . import networks
 
 class CnnModel(BaseModel):
-    """A simple CNN model for MNIST dataset.
+    """A simple CNN model for classification task.
     """
     @staticmethod
     def modify_commandline_options(parser, is_train):
@@ -16,6 +16,8 @@ class CnnModel(BaseModel):
     
     def __init__(self, opt):
         BaseModel.__init__(self, opt)
+
+        self.loss_CNN_val = 0
 
         self.loss_names = ['CNN', 'CNN_val']
         self.visual_names = ['input']

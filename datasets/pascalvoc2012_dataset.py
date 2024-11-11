@@ -173,9 +173,9 @@ class PascalVoc2012Dataset(BaseDataset):
         if self.segmentation:   # return the [image], its [class] and the [mask]
             mask = Image.open(self.mask[index])
             mask = self.transform_mask(mask)
-            return {'X': x, 'Y_class': y, 'Y': image_label, 'mask': mask}
+            return {'X': x, 'label': y, 'Y': image_label, 'mask': mask}
         else:   # return the [image] and its [class]
-            return {'X': x, 'Y_class': y, 'Y': image_label} # return the image and the first class
+            return {'X': x, 'label': y, 'Y': image_label} # return the image and the first class
 
     def __len__(self):
         """Return the total number of images in the dataset."""

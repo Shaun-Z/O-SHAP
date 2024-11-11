@@ -182,7 +182,7 @@ class BhemExplanation(BaseExplanation):
     def explain(self, img_index: int):
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
         self.Y = self.dataset[img_index]['Y']
-        Y_class = self.dataset[img_index]['Y_class']
+        Y_class = self.dataset[img_index]['label']
         self.class_list = [self.dataset.label2id[l] for l in self.Y.split(',')]
         self.initialize_layers(input_img)   # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
         self.print_explanation_info()

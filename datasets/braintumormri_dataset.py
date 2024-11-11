@@ -58,6 +58,7 @@ class BrainTumorMRIDataset(BaseDataset):
             raise ValueError(f"Invalid phase: {self.phase}")
         
         self.dataset = ImageFolder(data_path, transform=self.transform)
+        self.labels = self.dataset.classes
 
     def __getitem__(self, index):
         """

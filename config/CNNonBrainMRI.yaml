@@ -1,6 +1,6 @@
 dataroot: ./data/brain_tumor_mri
 name: CNNonBrainMRI
-gpu_ids: '-1'
+gpu_ids: '0'
 model: cnn
 dataset_name: braintumormri
 

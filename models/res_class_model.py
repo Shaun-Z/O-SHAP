@@ -66,7 +66,7 @@ class ResClassModel(BaseModel):
         The option 'direction' can be used to swap domain A and domain B.
         """
         self.input = input['X'].to(self.device)
-        self.label = input['Y_class'].to(self.device)
+        self.label = input['label'].to(self.device)
         # self.image_paths = input['A_paths' if AtoB else 'B_paths']
 
     def train(self):

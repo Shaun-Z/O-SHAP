@@ -22,6 +22,10 @@ python test.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m res_class
 ''' (Correctness: 4080/5823, 1044/1449)
 python test.py -d ./data/pascal_voc_2012 -n Resnet101onPASCAL -g mps -m res_class --dataset_name pascalvoc2012 --phase val --eval --net_name resnet101 --batch_size 4 --epoch best --loss_type bcewithlogits
 '''
+# %% Test CNN on Brain-Tumor-MRI
+''' (Correctness: 1279/1311, 97.56%)
+python test.py --config config/CNNonBrainMRI.yaml --phase val --eval --epoch 20
+'''
 
 from options.test_options import TestOptions
 from options.train_options import TrainOptions
@@ -76,19 +80,23 @@ if __name__ == '__main__':
                 index_max = torch.argmax(y_prob, 1) # get the index of the max probability
                 indices = index_max.tolist() # convert the tensor to list
                 predicted_labels = [labels[i] for i in indices] # get the predicted labels
-                is_True = [a == b for a,b in zip(data['Y_class'], index_max)] # check if the predicted label is correct
+                # is_True = [a == b for a,b in zip(data['Y_class'], index_max)] # check if the predicted label is correct
+                is_True = [a == b for a,b in zip(data['label'], index_max)] # check if the predicted label is correct
 
                 for j in range(len(is_True)):
-                    print(f"{i*opt.batch_size+j}\t\033[92m{is_True[j]}\033[0m\t{data['Y'][j]}\t\033[92m{predicted_labels[j]}\033[0m\t{data['Y_class'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}")  # print the true label and the predicted label
+                    # print(f"{i*opt.batch_size+j}\t\033[92m{is_True[j]}\033[0m\t{data['Y'][j]}\t\033[92m{predicted_labels[j]}\033[0m\t{data['Y_class'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}")  # print the true label and the predicted label
+                    print(f"{i*opt.batch_size+j}\t\033[92m{is_True[j]}\033[0m\t\033[92m{predicted_labels[j]}\033[0m\t{data['label'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}")  # print the true label and the predicted label
 
-                    file.write(f"{i*opt.batch_size+j}\t{is_True[j]}\t{data['Y'][j]}\t{predicted_labels[j]}\t{data['Y_class'][j]}\t{indices[j]}\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}\n")
+                    # file.write(f"{i*opt.batch_size+j}\t{is_True[j]}\t{data['Y'][j]}\t{predicted_labels[j]}\t{data['Y_class'][j]}\t{indices[j]}\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}\n")
+                    file.write(f"{i*opt.batch_size+j}\t{is_True[j]}\t{predicted_labels[j]}\t{data['label'][j]}\t{indices[j]}\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}\n")
 
                     true_cnt += is_True[j]
             elif opt.loss_type == 'bcewithlogits':   # Multi label classification                
                 for j in range(len(y_pred)):
                     predicted_index = torch.where(y_pred[j] == 1)[0]  # get the index of the predicted labels
                     predicted_index = predicted_index.cpu()  # move the tensor to CPU
-                    true_index = torch.where(data['Y_class'][j] == 1)[0] # get the index of the max probability
+                    # true_index = torch.where(data['Y_class'][j] == 1)[0] # get the index of the max probability
+                    true_index = torch.where(data['label'][j] == 1)[0] # get the index of the max probability
 
                     predicted_labels = [labels[i] for i in predicted_index.tolist()] # get the predicted labels
                     true_labels = [labels[j] for j in true_index] # get the true labels

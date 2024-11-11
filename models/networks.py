@@ -366,6 +366,34 @@ def cal_gradient_penalty(netD, real_data, fake_data, device, type='mixed', const
     else:
         return 0.0, None
 
+def define_cnn_classifier(input_nc, num_classes, init_type='normal', init_gain=0.02, gpu_ids=[]):
+
+    net = None
+    net = CnnClassifier(input_nc, num_classes)
+    return init_net(net, init_type, init_gain, gpu_ids)
+
+class CnnClassifier(nn.Module):
+    def __init__(self, input_nc, num_classes):
+        super(CnnClassifier, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(input_nc, 16, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(16, 32, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(32 * 56 * 56, 128),
+            nn.ReLU(inplace=True),
+            nn.Linear(128, num_classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
 
 class ResnetGenerator(nn.Module):
     """Resnet-based generator that consists of Resnet blocks between a few downsampling/upsampling operations.
@@ -616,48 +644,6 @@ class ResnetBlock(nn.Module):
         out = x + self.conv_block(x)  # add skip connections
         out = nn.ReLU(inplace = True)(out)
         return out
-
-def define_unet_masker(input_nc=1, num_classes=2, bilinear=False, init_type = None, init_gain=0.02, gpu_ids=[]):
-    net = UNet_1D(n_channels=input_nc, n_classes=num_classes, bilinear=bilinear)
-    return init_net(net, init_type, init_gain, gpu_ids)
-
-class UNet_1D(nn.Module):
-    def __init__(self, n_channels, n_classes, bilinear=False):
-        super(UNet_1D, self).__init__()
-        self.n_channels = n_channels
-        self.n_classes = n_classes
-        self.bilinear = bilinear
-
-        self.inc = (DoubleConv_1D(n_channels, 32))
-        self.down1 = (Down_1D(32, 64))
-        self.down2 = (Down_1D(64, 128))
-        factor = 2 if bilinear else 1
-        self.down3 = (Down_1D(128, 256 // factor))
-        self.up1 = (Up_1D(256, 128 // 1, bilinear))
-        self.up2 = (Up_1D(128, 64 // 1, bilinear))
-        self.up3 = (Up_1D(64, 32 // 1, bilinear))
-        self.outc = (OutConv_1D(32, n_classes))
-
-    def forward(self, x):
-        x1 = self.inc(x)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x4 = self.down3(x3)
-        x = self.up1(x4, x3)
-        x = self.up2(x, x2)
-        x = self.up3(x, x1)
-        logits = self.outc(x)
-        return logits
-
-    def use_checkpointing(self):
-        self.inc = torch.utils.checkpoint(self.inc)
-        self.down1 = torch.utils.checkpoint(self.down1)
-        self.down2 = torch.utils.checkpoint(self.down2)
-        self.down3 = torch.utils.checkpoint(self.down3)
-        self.up1 = torch.utils.checkpoint(self.up1)
-        self.up2 = torch.utils.checkpoint(self.up2)
-        self.up3 = torch.utils.checkpoint(self.up3)
-        self.outc = torch.utils.checkpoint(self.outc)
 
 class UnetGenerator(nn.Module):
     """Create a Unet-based generator"""

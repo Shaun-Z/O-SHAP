@@ -1,0 +1,13 @@
+dataroot: ./data/brain_tumor_mri
+name: CNNonBrainMRI
+gpu_ids: '-1'
+model: cnn
+dataset_name: braintumormri
+
+input_nc: 3
+num_classes: 4
+batch_size: 16
+lr: 0.001
+n_epochs: 20
+n_epochs_decay: 20
+use_wandb: True

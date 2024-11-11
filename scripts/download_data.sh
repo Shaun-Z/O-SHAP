@@ -100,6 +100,15 @@ case $NAME in
     rm VOCtrainval_11-May-2012.tar
     # rm VOCtrainval_11-May-2012.tar VOC2012test.tar
     ;;
+  "icons50")
+    kaggle datasets download danhendrycks/icons50
+    mkdir -p data/icons50
+    unzip -o icons50.zip -d . 
+    mv Icons-50/Icons-50/* data/icons50
+    mv Icons-50.npy data/icons50
+    rm icons50.zip
+    rm -r Icons-50
+    ;;
   "sgcc")
     git clone https://github.com/henryRDlab/ElectricityTheftDetection.git
     mkdir -p data/sgcc

@@ -2,24 +2,26 @@
 
 NAME=$1
 
-if [[ ! -f ~/.kaggle/kaggle.json ]]; then
-  echo -n "Kaggle username: "
-  read USERNAME
-  echo
-  echo -n "Kaggle API key: "
-  read APIKEY
-
-  mkdir -p ~/.kaggle
-  echo "{\"username\":\"$USERNAME\",\"key\":\"$APIKEY\"}" > ~/.kaggle/kaggle.json
-  chmod 600 ~/.kaggle/kaggle.json
-fi
-
-pip install kaggle --upgrade
-
 echo $NAME
+
+function kaggle_diagnose() {
+  if [[ ! -f ~/.kaggle/kaggle.json ]]; then
+    echo -n "Kaggle username: "
+    read USERNAME
+    echo
+    echo -n "Kaggle API key: "
+    read APIKEY
+
+    mkdir -p ~/.kaggle
+    echo "{\"username\":\"$USERNAME\",\"key\":\"$APIKEY\"}" > ~/.kaggle/kaggle.json
+    chmod 600 ~/.kaggle/kaggle.json
+  fi
+  # pip install kaggle --upgrade
+}
 
 case $NAME in
   "carvana")
+    kaggle_diagnose
     kaggle competitions download -c carvana-image-masking-challenge -f train_hq.zip
     mkdir -p data/carvana/imgs
     unzip train_hq.zip
@@ -35,6 +37,7 @@ case $NAME in
     rm train_masks.zip
     ;;
   "mnist_csv")
+    kaggle_diagnose
     kaggle competitions download -c digit-recognizer
     mkdir -p data/mnist_csv
     unzip digit-recognizer.zip
@@ -68,6 +71,7 @@ case $NAME in
     rm -r tiny-imagenet-200
     ;;
   "cub200")
+    kaggle_diagnose
     kaggle datasets download veeralakrishna/200-bird-species-with-11788-images --unzip
     mkdir -p data/cub200
     tar -xvzf CUB_200_2011.tgz -C ./data/cub200
@@ -76,6 +80,7 @@ case $NAME in
     rm segmentations.tgz
     ;;
   "serverstal")
+    kaggle_diagnose
     kaggle competitions download -c severstal-steel-defect-detection
     mkdir -p data/severstal
     tar -xvzf severstal-steel-defect-detection.zip -C ./data/severstal
@@ -101,13 +106,10 @@ case $NAME in
     # rm VOCtrainval_11-May-2012.tar VOC2012test.tar
     ;;
   "icons50")
-    kaggle datasets download danhendrycks/icons50
+    curl -L -o icons50.zip https://www.kaggle.com/api/v1/datasets/download/danhendrycks/icons50
     mkdir -p data/icons50
-    unzip -o icons50.zip -d . 
-    mv Icons-50/Icons-50/* data/icons50
-    mv Icons-50.npy data/icons50
+    unzip -o icons50.zip -d data/icons50
     rm icons50.zip
-    rm -r Icons-50
     ;;
   "sgcc")
     git clone https://github.com/henryRDlab/ElectricityTheftDetection.git

@@ -13,6 +13,7 @@ This is a testbench for ML algorithms and explanation methods.
 >   - [X] Resnet Classifier
 
 - [ML-Testbench](#ml-testbench)
+- [Configuration YAML Files](#configuration-yaml-files)
 - [Download Datasets](#download-datasets)
 - [Models](#models)
   - [ResNet Classifier](#resnet-classifier)
@@ -24,6 +25,23 @@ This is a testbench for ML algorithms and explanation methods.
   - [Model](#model)
   - [Dataset](#dataset)
 - [Acknowledgements](#acknowledgements)
+
+# Configuration YAML Files
+This is a newly added function and has not been fully tested.
+
+The configuration files are stored as `./config/<config>.yaml`. They provide arguments for each python commands you run
+
+```bash
+python <filename>.py --config <path_to_yaml>
+```
+
+After specifying `--config`, you can also add other arguments, e.g.
+
+```bash
+python <filename>.py --config <path_to_yaml> --eval
+```
+
+> The priority of arguments in YAML files are higher than that of manually specified arguments. In other words, if you specify the argument `dataroot` in both **YAML** and **command line**, the final value of `dataroot` will be the value in YAML.
 
 # Download Datasets
 

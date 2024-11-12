@@ -4,14 +4,16 @@ from datasets.base_dataset import BaseDataset
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
 
-class BrainTumorMRIDataset(BaseDataset):
+from sklearn.model_selection import train_test_split
+
+class Icons50Dataset(BaseDataset):
     """
-    A dataset class for brain_tumor_mri dataset.
+    A dataset class for Icons-50 dataset.
     """
 
     @staticmethod
     def modify_commandline_options(parser, is_train):
-        parser.set_defaults(num_classes=4)
+        parser.set_defaults(num_classes=50)
         return parser
     
     def __init__(self, opt):
@@ -24,14 +26,15 @@ class BrainTumorMRIDataset(BaseDataset):
         BaseDataset.__init__(self, opt)
         self.phase = opt.phase
         self.dataroot = os.path.join(opt.dataroot)
-        self.train_set_path = os.path.join(self.dataroot, "Training")
-        self.val_set_path = os.path.join(self.dataroot, "Testing")
+        self.dataset_path = os.path.join(self.dataroot, "Icons-50/Icons-50")
+        # self.train_set_path = os.path.join(self.dataroot, "Training")
+        # self.val_set_path = os.path.join(self.dataroot, "val")
 
-        self.mean = [0.485, 0.456, 0.406]
-        self.std = [0.229, 0.224, 0.225]
+        self.mean = [0.801, 0.760, 0.710]
+        self.std = [0.272, 0.258, 0.301]
 
         self.transform = transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize((32, 32)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomRotation(10),
             transforms.ToTensor(),
@@ -50,34 +53,20 @@ class BrainTumorMRIDataset(BaseDataset):
         """
         Load data from the dataset.
         """
+        dataset_full = ImageFolder(self.dataset_path, transform=self.transform)
+
         if self.phase == 'train':
-            data_path = self.train_set_path
+            self.dataset, _ = train_test_split(dataset_full, test_size=0.2, random_state=42)
         elif self.phase == 'val':
-            data_path = self.val_set_path
+            _, self.dataset = train_test_split(dataset_full, test_size=0.2, random_state=42)
         else:
             raise ValueError(f"Invalid phase: {self.phase}")
-        
-        self.dataset = ImageFolder(data_path, transform=self.transform)
-        self.labels = self.dataset.classes
+
+        self.labels = dataset_full.classes
 
     def __getitem__(self, index):
-        """
-        Return a data point and its metadata information.
+        img, label = self.dataset[index]
+        return {'X': img, 'label': label}
 
-        Parameters:
-            index - - a random integer for data indexing
-
-        Returns:
-            a dictionary of data with their names. It usually contains the data itself and its metadata information.
-        """
-        image, label = self.dataset[index]
-        return {'X': image, 'label': label, 'indices': [label]} # {image, label (directly used for loss calculation), class (indices of label)}
-    
     def __len__(self):
-        """
-        Return the total number of images in the dataset.
-
-        Returns:
-            the total number of images in the dataset.
-        """
         return len(self.dataset)

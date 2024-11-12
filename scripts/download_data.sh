@@ -106,10 +106,10 @@ case $NAME in
     # rm VOCtrainval_11-May-2012.tar VOC2012test.tar
     ;;
   "icons50")
-    curl -L -o icons50.zip https://www.kaggle.com/api/v1/datasets/download/danhendrycks/icons50
+    curl -L -o Icons50.zip https://www.kaggle.com/api/v1/datasets/download/danhendrycks/icons50
     mkdir -p data/icons50
-    unzip -o icons50.zip -d data/icons50
-    rm icons50.zip
+    unzip -o Icons50.zip -d data/icons50
+    rm Icons50.zip
     ;;
   "brain_tumor_mri")
     curl -L -o brain-tumor-mri.zip https://www.kaggle.com/api/v1/datasets/download/masoudnickparvar/brain-tumor-mri-dataset

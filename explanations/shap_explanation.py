@@ -29,19 +29,37 @@ class ShapExplanation(BaseExplanation):
         self.dataset = create_dataset(opt)
         self.explainer = self.define_explainer(self.predict, self.dataset)
 
+        self.transform= [
+            # transforms.Resize(224),
+            # transforms.Lambda(lambda x: x*(1/255)),
+            # transforms.Normalize(mean=mean, std=std),
+            transforms.Lambda(nchw_to_nhwc),
+        ]
+        self.inv_transform= [
+            transforms.Lambda(nhwc_to_nchw),
+            transforms.Normalize(
+                mean = (-1 * np.array(self.dataset.mean) / np.array(self.dataset.std)).tolist(),
+                std = (1 / np.array(self.dataset.std)).tolist()
+            ),
+            transforms.Lambda(nchw_to_nhwc),
+        ]
+
+        transform = torchvision.transforms.Compose(transform)
+        inv_transform = torchvision.transforms.Compose(inv_transform)
+
     def explain(self, img_index: int):
         X = self.dataset[img_index]['X'].unsqueeze(0)
-        Y_class = self.dataset[img_index]['label']
-        Y = self.dataset[img_index]['Y']
+        label = self.dataset[img_index]['label']
+        # Y = self.dataset[img_index]['Y']
+        Y = self.dataset.labels[label]
         Class_list = [self.dataset.label2id[l] for l in Y.split(',')]
 
-        input_img = transform(X)
+        input_img = self.transform(X)
         
         output_indexes = Class_list if len(self.opt.index_explain)==0 else self.opt.index_explain
         
         self.shap_values = self.explainer(input_img, max_evals=self.opt.n_evals, batch_size=self.opt.batch_size, outputs=output_indexes)
         
-        Y = self.dataset[img_index]['Y']
         os.makedirs(f"results/{self.opt.explanation_name}/{self.opt.name}/value", exist_ok=True)
         np.save(f"results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{Y}.npy", np.moveaxis(self.shap_values.values[0],-1, 0))
 
@@ -52,7 +70,7 @@ class ShapExplanation(BaseExplanation):
         return self.model.output
 
     def define_explainer(self, pred_fn, dataset):
-        Xtr = transform(dataset[0]['X'])
+        Xtr = self.transform(dataset[0]['X'])
         # out = predict(Xtr[0:1])
         masker_blur = shap.maskers.Image("blur(64, 64)", Xtr.shape)
 
@@ -60,7 +78,7 @@ class ShapExplanation(BaseExplanation):
         return explainer
 
     def plot(self, save_path: str = None):
-        data = inv_transform(self.shap_values.data).cpu().numpy()[0] # 原图
+        data = self.inv_transform(self.shap_values.data).cpu().numpy()[0] # 原图
         values = [val for val in np.moveaxis(self.shap_values.values[0],-1, 0)] # shap值热力图
 
         if save_path:
@@ -90,25 +108,3 @@ def nchw_to_nhwc(x: torch.Tensor) -> torch.Tensor:
     elif x.dim() == 3:
         x = x if x.shape[2] == 3 else x.permute(1, 2, 0)
     return x 
-
-mean = [0.485, 0.456, 0.406]
-std = [0.229, 0.224, 0.225]
-
-transform= [
-    # transforms.Resize(224),
-    # transforms.Lambda(lambda x: x*(1/255)),
-    # transforms.Normalize(mean=mean, std=std),
-    transforms.Lambda(nchw_to_nhwc),
-]
-
-inv_transform= [
-    transforms.Lambda(nhwc_to_nchw),
-    transforms.Normalize(
-        mean = (-1 * np.array(mean) / np.array(std)).tolist(),
-        std = (1 / np.array(std)).tolist()
-    ),
-    transforms.Lambda(nchw_to_nhwc),
-]
-
-transform = torchvision.transforms.Compose(transform)
-inv_transform = torchvision.transforms.Compose(inv_transform)

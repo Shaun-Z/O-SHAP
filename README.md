@@ -4,18 +4,22 @@ This is a testbench for ML algorithms and explanation methods.
 
 > These have already been achieved
 > - Dataset
->   - [X] MNIST
+>   - [ ] MNIST
 >   - [X] Tiny-ImageNet
+>   - [X] Brain-Tumor-MRI
 >   - [ ] CUB-200-2011
 > - Model
+>   - [X] CNN Classifier
 >   - [X] Resnet Classifier
 
 - [ML-Testbench](#ml-testbench)
 - [Download Datasets](#download-datasets)
 - [Models](#models)
   - [ResNet Classifier](#resnet-classifier)
+  - [CNN Classifier](#cnn-classifier)
 - [Training](#training)
   - [ImageNet](#imagenet)
+  - [Brain Tumor MRI](#brain-tumor-mri)
 - [How to add your work](#how-to-add-your-work)
   - [Model](#model)
   - [Dataset](#dataset)
@@ -71,6 +75,10 @@ bash scripts/download_data.sh pascal_voc_2007
 
 `./models/res_class_model.py`
 
+## CNN Classifier
+
+`./models/cnn_model.py`
+
 # Training
 
 ## ImageNet
@@ -90,6 +98,11 @@ python train.py -d ./data/tiny-imagenet -n Restnet101Classifier -g -1 -m res_cla
 > - `--load_iter`: specify which iteration to load
 > - `--save_by_iter`: save model by iteration
 > - `--use_wandb`: use wandb for visualization
+
+## Brain Tumor MRI
+```bash
+python train.py --config ./config/CNNonBrainMRI.yaml
+```
 
 # How to add your work
 

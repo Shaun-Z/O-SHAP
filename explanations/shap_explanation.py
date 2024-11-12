@@ -27,32 +27,31 @@ class ShapExplanation(BaseExplanation):
         self.model.setup(opt)
         self.model.eval()
         self.dataset = create_dataset(opt)
-        self.explainer = self.define_explainer(self.predict, self.dataset)
 
-        self.transform= [
+        self.transform= torchvision.transforms.Compose([
             # transforms.Resize(224),
             # transforms.Lambda(lambda x: x*(1/255)),
             # transforms.Normalize(mean=mean, std=std),
             transforms.Lambda(nchw_to_nhwc),
-        ]
-        self.inv_transform= [
+        ])
+        self.inv_transform= torchvision.transforms.Compose([
             transforms.Lambda(nhwc_to_nchw),
             transforms.Normalize(
                 mean = (-1 * np.array(self.dataset.mean) / np.array(self.dataset.std)).tolist(),
                 std = (1 / np.array(self.dataset.std)).tolist()
             ),
             transforms.Lambda(nchw_to_nhwc),
-        ]
+        ])
 
-        transform = torchvision.transforms.Compose(transform)
-        inv_transform = torchvision.transforms.Compose(inv_transform)
+        self.explainer = self.define_explainer(self.predict, self.dataset)
 
     def explain(self, img_index: int):
         X = self.dataset[img_index]['X'].unsqueeze(0)
-        label = self.dataset[img_index]['label']
+        indices = self.dataset[img_index]['indices']
         # Y = self.dataset[img_index]['Y']
-        Y = self.dataset.labels[label]
-        Class_list = [self.dataset.label2id[l] for l in Y.split(',')]
+        Y = [self.dataset.labels[i] for i in indices]
+        # Class_list = [self.dataset.label2id[l] for l in Y.split(',')]
+        Class_list = self.dataset[img_index]['indices']
 
         input_img = self.transform(X)
         
@@ -61,7 +60,8 @@ class ShapExplanation(BaseExplanation):
         self.shap_values = self.explainer(input_img, max_evals=self.opt.n_evals, batch_size=self.opt.batch_size, outputs=output_indexes)
         
         os.makedirs(f"results/{self.opt.explanation_name}/{self.opt.name}/value", exist_ok=True)
-        np.save(f"results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{Y}.npy", np.moveaxis(self.shap_values.values[0],-1, 0))
+        # np.save(f"results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{Y}.npy", np.moveaxis(self.shap_values.values[0],-1, 0))
+        np.save(f"results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{Class_list}.npy", np.moveaxis(self.shap_values.values[0],-1, 0))
 
     def predict(self, img: np.ndarray) -> torch.Tensor:
         self.model.input = nhwc_to_nchw(torch.Tensor(img)).to(self.device)
@@ -87,7 +87,7 @@ class ShapExplanation(BaseExplanation):
                         pixel_values=data,
                         labels=self.shap_values.output_names,
                         show=False)
-            print(f"Saving the image to {save_path}", end='\r')
+            print(f"Saving the image to {save_path}")
             plt.savefig(save_path)
             plt.close()
         else:

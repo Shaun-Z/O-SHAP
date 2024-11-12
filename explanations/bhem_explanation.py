@@ -181,10 +181,12 @@ class BhemExplanation(BaseExplanation):
 
     def explain(self, img_index: int):
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
-        self.Y = self.dataset[img_index]['Y']
-        Y_class = self.dataset[img_index]['label']
-        self.class_list = [self.dataset.label2id[l] for l in self.Y.split(',')]
-        self.initialize_layers(input_img)   # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
+        # self.Y = self.dataset[img_index]['Y']
+        indices = self.dataset[img_index]['indices']
+        # self.class_list = [self.dataset.label2id[l] for l in self.Y.split(',')]
+        self.class_list = self.dataset[img_index]['indices']
+        self.initialize_layers(input_img)   
+        # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
         self.print_explanation_info()
 
         indexes = [list(self.layers[i].segment_mapping.keys()) for i in range(1, self.layer_num)]
@@ -313,7 +315,7 @@ class BhemExplanation(BaseExplanation):
         self.scores_to_save = self.scores
 
         os.makedirs(f'results/{self.opt.explanation_name}/{self.opt.name}/value', exist_ok=True)
-        np.save(f'results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{self.Y}.npy', self.scores_to_save)
+        np.save(f'results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{indices}.npy', self.scores_to_save)
         # print(cnt)
         return self.scores
                 

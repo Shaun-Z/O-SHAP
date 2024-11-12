@@ -15,6 +15,10 @@ python explain.py -d ./data/tiny-imagenet -n Resnet18onImageNet -g mps -m res_cl
 python explain.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m res_class --net_name resnet50 --dataset_name pascalvoc2012 --eval --explanation_name bhem --epoch best --loss_type bcewithlogits --segmentation --approx
 '''
 
+'''
+python explain.py --config config/CNNonBrainMRI.yaml --eval --phase val --epoch 20 --explanation shap
+'''
+
 import time
 from tqdm import tqdm
 from options.explain_options import ExplainOptions
@@ -42,12 +46,14 @@ if __name__ == '__main__':
     # explainer.plot()
 
 
-    for img_index in tqdm(range(200)):
-        Y_class = explainer.dataset[img_index]['Y_class']
-        Y = explainer.dataset[img_index]['Y']
-        # print(Y_class, Y)
+    for img_index in tqdm(range(1,800,4)):
+        indices = explainer.dataset[img_index]['indices']
+        print(indices)
+        Y = [explainer.dataset.labels[i] for i in indices]
+        # print(indices, Y)
         explainer.explain(img_index)
-        explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{Y}.png")
+        # explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{Y}.png")
+        explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{indices}.png")
         
         # aopc.get_single_aopc_value(explainer.predict, explainer.dataset, img_index, opt.explanation_name, opt.name)
         

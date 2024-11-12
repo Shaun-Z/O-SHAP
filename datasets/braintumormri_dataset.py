@@ -43,6 +43,12 @@ class BrainTumorMRIDataset(BaseDataset):
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.std)
         ])
+        self.inv_transform = transforms.Compose([
+            transforms.Normalize(
+                mean = (-1 * np.array(self.mean) / np.array(self.std)).tolist(),
+                std = (1 / np.array(self.std)).tolist()
+            ),
+        ])
 
         self.load_data()
 
@@ -71,7 +77,7 @@ class BrainTumorMRIDataset(BaseDataset):
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
         image, label = self.dataset[index]
-        return {'image': image, 'label': label}
+        return {'X': image, 'label': label, 'indices': [label]} # {image, label (directly used for loss calculation), class (indices of label)}
     
     def __len__(self):
         """

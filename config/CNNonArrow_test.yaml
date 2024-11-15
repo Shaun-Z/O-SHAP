@@ -1,0 +1,17 @@
+# Global configurations
+dataroot: ./data/arrow_fake
+name: CNNonArrow
+gpu_ids: '0'
+model: cnn
+dataset_name: arrow
+
+# Model configurations
+input_nc: 3
+num_classes: 2
+phase: test
+eval: True
+serial_batches: True
+
+# Evaluation configurations
+use_wandb: False
+epoch: 225

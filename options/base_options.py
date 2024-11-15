@@ -76,6 +76,12 @@ class BaseOptions():
         # get the basic options
         opt, _ = parser.parse_known_args()
 
+        # load config file and overwrite some options (model, dataset, explanation) with values in the config file
+        if opt.config is not None:
+            config = util.load_yaml_config(opt.config)
+            parser.set_defaults(**config)
+            opt, _ = parser.parse_known_args()  # parse again with new defaults
+
         # modify model-related parser options
         model_name = opt.model
         model_option_setter = models.get_option_setter(model_name)
@@ -92,9 +98,8 @@ class BaseOptions():
         explanation_option_setter = explanations.get_option_setter(explanation_name)
         parser = explanation_option_setter(parser)
 
-        # load config file and merge with the options
+        # merge newly added options with values in the config file
         if opt.config is not None:
-            config = util.load_yaml_config(opt.config)
             parser.set_defaults(**config)
 
         # save and return the parser

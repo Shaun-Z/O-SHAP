@@ -384,7 +384,7 @@ class CnnClassifier(nn.Module):
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
         self.classifier = nn.Sequential(
-            nn.Linear(32 * 8 * 8, 128) if num_classes == 50 else nn.Linear(32 * 56 * 56, 128), # 32 * 8 * 8 for Icons-50, 32 * 56 * 56 for others. (Temporary solution)
+            nn.Linear(32 * 56 * 56, 128) if num_classes == 4 else nn.Linear(32 * 8 * 8, 128), # 32 * 56 * 56 for (3*224*224) clip, 32 * 8 * 8 for (3*32*32) Icons-50. (Temporary solution)
             nn.ReLU(inplace=True),
             nn.Linear(128, num_classes)
         )

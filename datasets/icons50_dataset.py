@@ -1,5 +1,7 @@
 import os
 import numpy as np
+import random
+
 from datasets.base_dataset import BaseDataset
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
@@ -33,13 +35,21 @@ class Icons50Dataset(BaseDataset):
         self.mean = [0.801, 0.760, 0.710]
         self.std = [0.272, 0.258, 0.301]
 
-        self.transform = transforms.Compose([
-            transforms.Resize((32, 32)),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(10),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=self.mean, std=self.std)
-        ])
+        if self.phase == 'train':
+            self.transform = transforms.Compose([
+                transforms.Resize((32, 32)),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomRotation(10),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=self.mean, std=self.std)
+            ])
+        else:
+            self.transform = transforms.Compose([
+                transforms.Resize((32, 32)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=self.mean, std=self.std)
+            ])
+            
         self.inv_transform = transforms.Compose([
             transforms.Normalize(
                 mean = (-1 * np.array(self.mean) / np.array(self.std)).tolist(),
@@ -53,6 +63,7 @@ class Icons50Dataset(BaseDataset):
         """
         Load data from the dataset.
         """
+        random.seed(0)
         dataset_full = ImageFolder(self.dataset_path, transform=self.transform)
 
         if self.phase == 'train':
@@ -66,7 +77,7 @@ class Icons50Dataset(BaseDataset):
 
     def __getitem__(self, index):
         img, label = self.dataset[index]
-        return {'X': img, 'label': label}
+        return {'X': img, 'label': label, 'indices': [label]}
 
     def __len__(self):
         return len(self.dataset)

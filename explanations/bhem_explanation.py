@@ -56,8 +56,8 @@ class layer:
         self.image = image
         self.layer_ID = layer_ID
 
-        # basic_seg = hierarchical_segment(image)
-        basic_seg = basic_segment(image)
+        basic_seg = hierarchical_segment(image)
+        # basic_seg = basic_segment(image)
         seg_func = lambda img: basic_seg.get_mask(feature_ID=layer_ID)
             
         self.seg_func = seg_func    # Segmentation function
@@ -184,7 +184,8 @@ class BhemExplanation(BaseExplanation):
         # self.Y = self.dataset[img_index]['Y']
         indices = self.dataset[img_index]['indices']
         # self.class_list = [self.dataset.label2id[l] for l in self.Y.split(',')]
-        self.class_list = self.dataset[img_index]['indices']
+        # self.class_list = self.dataset[img_index]['indices']
+        self.class_list = self.dataset[img_index]['indices'] if len(self.opt.index_explain)==0 else self.opt.index_explain
         self.initialize_layers(input_img)   
         # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
         self.print_explanation_info()

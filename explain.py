@@ -19,6 +19,10 @@ python explain.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m res_cl
 python explain.py --config config/CNNonBrainMRI.yaml --eval --phase val --epoch 20 --explanation shap
 '''
 
+'''
+python explain.py --config config/CNNonIcons50.yaml --eval --phase val --epoch 24 --explanation shap
+'''
+
 import time
 from tqdm import tqdm
 from options.explain_options import ExplainOptions
@@ -31,24 +35,24 @@ if __name__ == '__main__':
     opt.index_explain = [int(i) for i in opt.index_explain]
 
     explainer = create_explanation(opt)
-    # img_index = 1
 
+    # img_index = 209
     # time_stamp = time.time()
     # explainer.explain(img_index) # 1, 5
     # print(f"Computation time: \033[92m{(time.time() - time_stamp)}\033[0m s")
     # # aopc.get_single_aopc_value(explainer.predict, explainer.dataset, img_index, opt.explanation_name, opt.name)
 
-    # Y_class = explainer.dataset[img_index]['Y_class']
-    # Y = explainer.dataset[img_index]['Y']
-    # print(Y_class, Y)
+    # Y_class = explainer.dataset[img_index]['label']
+    # indices = explainer.dataset[img_index]['indices']
+    # print(Y_class, indices)
 
     # # explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{Y}.png")
     # explainer.plot()
 
 
-    for img_index in tqdm(range(1,800,4)):
+    for img_index in tqdm(range(len(explainer.dataset))):
         indices = explainer.dataset[img_index]['indices']
-        print(indices)
+        # print(indices)
         Y = [explainer.dataset.labels[i] for i in indices]
         # print(indices, Y)
         explainer.explain(img_index)

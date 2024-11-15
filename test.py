@@ -27,8 +27,8 @@ python test.py -d ./data/pascal_voc_2012 -n Resnet101onPASCAL -g mps -m res_clas
 python test.py --config config/CNNonBrainMRI.yaml --phase val --eval --epoch 20
 '''
 # %% Test CNN on Icons-50
-''' (Correctness: 1552/2000, 77.60%)
-python test.py --config config/CNNonIcons50.yaml --phase val --eval --epoch 22
+''' (Correctness: 1564/2000, 78.20%)
+python test.py --config config/CNNonIcons50.yaml --phase val --eval --epoch 24
 '''
 
 from options.test_options import TestOptions

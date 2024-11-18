@@ -48,7 +48,7 @@ def n_of_all_subsets(lst, n=1):
     return [list(s) for s in subsets]
 
 class layer:
-    def __init__(self, image, layer_ID):
+    def __init__(self, image, layer_ID, n_segments=10):
         '''
         image: np.ndarray (C, H, W)
         layer_ID: int
@@ -56,7 +56,7 @@ class layer:
         self.image = image
         self.layer_ID = layer_ID
 
-        basic_seg = hierarchical_segment(image)
+        basic_seg = hierarchical_segment(image, n_segments=n_segments)
         # basic_seg = basic_segment(image)
         seg_func = lambda img: basic_seg.get_mask(feature_ID=layer_ID)
             
@@ -122,6 +122,7 @@ class BhemExplanation(BaseExplanation):
     def modify_commandline_options(parser):
         parser.add_argument('--layer_num', type=int, default=4, help='the number of layers')
         parser.add_argument('--approx', action='store_true', help='use approximation (model linearity and feature independence)')
+        parser.add_argument('--n_segments', type=int, default=10, help='the number of segments')
         return parser
     
     def __init__(self, opt):
@@ -134,13 +135,15 @@ class BhemExplanation(BaseExplanation):
         self.approx = opt.approx
         # self.explainer = self.define_explainer(self.predict, self.dataset)
 
+        self.n_segments = opt.n_segments
+
     def initialize_layers(self, image):
         '''
         image: np.ndarray (C, H, W)
         '''
         self.image = image
-        self.layers = [layer(image, layer_ID=0)]
-        self.layers += [layer(image, layer_ID=i) for i in range(1, self.layer_num)]
+        self.layers = [layer(image, layer_ID=0, n_segments=self.n_segments)]
+        self.layers += [layer(image, layer_ID=i, n_segments=self.n_segments) for i in range(1, self.layer_num)]
 
         self.mappings = {}
     

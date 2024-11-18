@@ -1,24 +1,18 @@
-dataroot: ./data/arrow_fake
-name: CNNonArrow
+dataroot: ./data/brain_tumor_mri
+name: CNNonBrainMRI
 gpu_ids: '0'
 model: cnn
-dataset_name: arrow
+dataset_name: braintumormri
 
 input_nc: 3
 num_classes: 2
 batch_size: 2
-lr: 0.0001
-n_epochs: 40
-n_epochs_decay: 40
-save_epoch_freq: 1
-
-loss_type: cross_entropy
 
 use_wandb: False
 
-phase: test
+phase: val
 eval: True 
-epoch: 225
+epoch: 20
 
 # Explanation configurations
 explanation_name: bhem

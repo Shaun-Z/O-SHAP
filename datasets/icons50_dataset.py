@@ -70,6 +70,8 @@ class Icons50Dataset(BaseDataset):
             self.dataset, _ = train_test_split(dataset_full, test_size=0.2, random_state=42)
         elif self.phase == 'val':
             _, self.dataset = train_test_split(dataset_full, test_size=0.2, random_state=42)
+        elif self.phase == 'test':
+            self.dataset = dataset_full
         else:
             raise ValueError(f"Invalid phase: {self.phase}")
 

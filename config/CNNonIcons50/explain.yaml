@@ -1,0 +1,24 @@
+# Global configurations
+dataroot: ./data/icons50
+name: CNNonIcons50
+gpu_ids: '0'
+model: cnn
+dataset_name: icons50
+use_wandb: False
+
+# Model configurations
+input_nc: 3
+num_classes: 50
+phase: test 
+eval: True
+serial_batches: True
+
+# Evaluation configurations
+epoch: 24
+
+# Explanation configurations
+explanation_name: bhem
+# index_explain: [0,1]
+# Configuration for BHEM
+n_segments: 10
+approx: True

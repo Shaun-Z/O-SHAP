@@ -1,17 +1,19 @@
+# Global configurations
 dataroot: ./data/arrow
 name: CNNonArrow
 gpu_ids: '0'
 model: cnn
 dataset_name: arrow
+use_wandb: True
 
+# Model configurations
 input_nc: 3
 num_classes: 2
+
+# Training configurations
 batch_size: 20
 lr: 0.0001
 n_epochs: 200
 n_epochs_decay: 200
-save_epoch_freq: 5
-
 loss_type: cross_entropy
-
-use_wandb: True
+save_epoch_freq: 5

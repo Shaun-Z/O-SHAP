@@ -30,13 +30,21 @@ class BrainTumorMRIDataset(BaseDataset):
         self.mean = [0.485, 0.456, 0.406]
         self.std = [0.229, 0.224, 0.225]
 
-        self.transform = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(10),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=self.mean, std=self.std)
-        ])
+        if self.phase == 'train':
+            self.transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomRotation(10),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=self.mean, std=self.std)
+            ])
+        else:
+            self.transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=self.mean, std=self.std)
+            ])
+
         self.inv_transform = transforms.Compose([
             transforms.Normalize(
                 mean = (-1 * np.array(self.mean) / np.array(self.std)).tolist(),
@@ -53,6 +61,8 @@ class BrainTumorMRIDataset(BaseDataset):
         if self.phase == 'train':
             data_path = self.train_set_path
         elif self.phase == 'val':
+            data_path = self.val_set_path
+        elif self.phase == 'test':
             data_path = self.val_set_path
         else:
             raise ValueError(f"Invalid phase: {self.phase}")

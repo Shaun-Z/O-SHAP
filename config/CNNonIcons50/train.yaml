@@ -1,17 +1,19 @@
+# Global configurations
 dataroot: ./data/icons50
 name: CNNonIcons50
 gpu_ids: '0'
 model: cnn
 dataset_name: icons50
+use_wandb: True
 
+# Model configurations
 input_nc: 3
 num_classes: 50
+
+# Training configurations
 batch_size: 16
 lr: 0.0001
 n_epochs: 20
 n_epochs_decay: 20
-save_epoch_freq: 1
-
 loss_type: cross_entropy
-
-use_wandb: True
+save_epoch_freq: 1

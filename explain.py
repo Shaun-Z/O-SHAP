@@ -15,12 +15,10 @@ python explain.py -d ./data/tiny-imagenet -n Resnet18onImageNet -g mps -m res_cl
 python explain.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m res_class --net_name resnet50 --dataset_name pascalvoc2012 --eval --explanation_name bhem --epoch best --loss_type bcewithlogits --segmentation --approx
 '''
 
+# %% The following explanations have been implemented in config files
 '''
-python explain.py --config config/CNNonBrainMRI.yaml --eval --phase val --epoch 20 --explanation shap
-'''
-
-'''
-python explain.py --config config/CNNonIcons50.yaml --eval --phase val --epoch 24 --explanation shap
+python explain.py --config config/CNNonBrainMRI/explain.yaml
+python explain.py --config config/CNNonIcons50/explain.yaml
 '''
 
 import time

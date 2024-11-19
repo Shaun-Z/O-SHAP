@@ -1,16 +1,19 @@
+# Global configurations
 dataroot: ./data/brain_tumor_mri
 name: CNNonBrainMRI
 gpu_ids: '0'
 model: cnn
 dataset_name: braintumormri
+use_wandb: True
 
+# Model configurations
 input_nc: 3
 num_classes: 4
+
+# Training configurations
 batch_size: 16
 lr: 0.001
 n_epochs: 20
 n_epochs_decay: 20
-
 loss_type: cross_entropy
-
-use_wandb: True
+save_epoch_freq: 1

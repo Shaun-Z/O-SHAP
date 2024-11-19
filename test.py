@@ -24,11 +24,11 @@ python test.py -d ./data/pascal_voc_2012 -n Resnet101onPASCAL -g mps -m res_clas
 '''
 # %% Test CNN on Brain-Tumor-MRI
 ''' (Correctness: 1279/1311, 97.56%)
-python test.py --config config/CNNonBrainMRI.yaml --phase val --eval --epoch 20
+python test.py --config config/CNNonBrainMRI/test.yaml
 '''
 # %% Test CNN on Icons-50
-''' (Correctness: 1564/2000, 78.20%)
-python test.py --config config/CNNonIcons50.yaml --phase val --eval --epoch 24
+''' (Correctness: 1564/2000, 8639/10000, 78.20%)
+python test.py --config config/CNNonIcons50/test.yaml
 '''
 
 from options.test_options import TestOptions
@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
                 for j in range(len(is_True)):
                     # print(f"{i*opt.batch_size+j}\t\033[92m{is_True[j]}\033[0m\t{data['Y'][j]}\t\033[92m{predicted_labels[j]}\033[0m\t{data['Y_class'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}")  # print the true label and the predicted label
-                    print(f"{i*opt.batch_size+j}\t\033[92m{is_True[j]}\033[0m\t\033[92m{predicted_labels[j]}\033[0m\t{data['label'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]:.4f}\t{predict_result[j,index_max[j]]:.4f}")  # print the true label and the predicted label
+                    print(f"{i*opt.batch_size+j}\t\033[92m{is_True[j]}\033[0m\t\033[92m{predicted_labels[j]}\033[0m\t{data['label'][j]}\t\033[92m{indices[j]}\t{y_prob[j,index_max[j]]:.4f}\t{predict_result[j,index_max[j]]:.4f}\033[0m")  # print the true label and the predicted label
 
                     # file.write(f"{i*opt.batch_size+j}\t{is_True[j]}\t{data['Y'][j]}\t{predicted_labels[j]}\t{data['Y_class'][j]}\t{indices[j]}\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}\n")
                     file.write(f"{i*opt.batch_size+j}\t{is_True[j]}\t{predicted_labels[j]}\t{data['label'][j]}\t{indices[j]}\t{y_prob[j,index_max[j]]:.4f}\t{predict_result[j,index_max[j]]:.4f}\n")

@@ -89,10 +89,10 @@ if __name__ == '__main__':
 
                 for j in range(len(is_True)):
                     # print(f"{i*opt.batch_size+j}\t\033[92m{is_True[j]}\033[0m\t{data['Y'][j]}\t\033[92m{predicted_labels[j]}\033[0m\t{data['Y_class'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}")  # print the true label and the predicted label
-                    print(f"{i*opt.batch_size+j}\t\033[92m{is_True[j]}\033[0m\t\033[92m{predicted_labels[j]}\033[0m\t{data['label'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}")  # print the true label and the predicted label
+                    print(f"{i*opt.batch_size+j}\t\033[92m{is_True[j]}\033[0m\t\033[92m{predicted_labels[j]}\033[0m\t{data['label'][j]}\t\033[92m{indices[j]}\033[0m\t{y_prob[j,index_max[j]]:.4f}\t{predict_result[j,index_max[j]]:.4f}")  # print the true label and the predicted label
 
                     # file.write(f"{i*opt.batch_size+j}\t{is_True[j]}\t{data['Y'][j]}\t{predicted_labels[j]}\t{data['Y_class'][j]}\t{indices[j]}\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}\n")
-                    file.write(f"{i*opt.batch_size+j}\t{is_True[j]}\t{predicted_labels[j]}\t{data['label'][j]}\t{indices[j]}\t{y_prob[j,index_max[j]]}\t{predict_result[j,index_max[j]]}\n")
+                    file.write(f"{i*opt.batch_size+j}\t{is_True[j]}\t{predicted_labels[j]}\t{data['label'][j]}\t{indices[j]}\t{y_prob[j,index_max[j]]:.4f}\t{predict_result[j,index_max[j]]:.4f}\n")
 
                     true_cnt += is_True[j]
             elif opt.loss_type == 'bcewithlogits':   # Multi label classification                

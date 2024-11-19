@@ -1,6 +1,6 @@
 # Global configurations
-dataroot: ./data/processed_brain_tumor_mri
-name: CNNonProcBrainMRI
+dataroot: ./data/brain_tumor_mri_crop
+name: CNNonBrainMRI_Crop
 gpu_ids: '0'
 model: cnn
 dataset_name: braintumormri

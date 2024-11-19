@@ -27,8 +27,10 @@ class BrainTumorMRIDataset(BaseDataset):
         self.train_set_path = os.path.join(self.dataroot, "Training")
         self.val_set_path = os.path.join(self.dataroot, "Testing")
 
-        self.mean = [0.485, 0.456, 0.406]
-        self.std = [0.229, 0.224, 0.225]
+        # self.mean = [0.485, 0.456, 0.406]
+        # self.std = [0.229, 0.224, 0.225]
+        self.mean = [0.1738,  0.1738, 0.1738]
+        self.std = [0.1894,  0.1894, 0.1894]
 
         if self.phase == 'train':
             self.transform = transforms.Compose([

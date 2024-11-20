@@ -1,6 +1,6 @@
 # Global configurations
-dataroot: ./data/brain_tumor_mri_crop
-name: CNNonBrainMRI_Crop
+dataroot: ./data/brain_tumor_mri_enhance
+name: CNNonBrainMRI_Enhance
 gpu_ids: '0'
 model: cnn
 dataset_name: braintumormri
@@ -14,11 +14,11 @@ eval: True
 serial_batches: True
 
 # Evaluation configurations
-epoch: 91
+epoch: 29
 
 # Explanation configurations
-explanation_name: shap
+explanation_name: bhem
 # index_explain: [0,1]
 # Configuration for BHEM
-n_segments: 50
+n_segments: 100
 approx: True

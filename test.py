@@ -23,7 +23,7 @@ python test.py -d ./data/pascal_voc_2012 -n Resnet50onPASCAL -g mps -m res_class
 python test.py -d ./data/pascal_voc_2012 -n Resnet101onPASCAL -g mps -m res_class --dataset_name pascalvoc2012 --phase val --eval --net_name resnet101 --batch_size 4 --epoch best --loss_type bcewithlogits
 '''
 # %% Test CNN on Brain-Tumor-MRI
-''' (Correctness: 1279/1311, 97.56%)
+''' (Correctness: 1284/1311, 97.94%)
 python test.py --config config/CNNonBrainMRI/test.yaml
 '''
 # %% Test CNN on Icons-50

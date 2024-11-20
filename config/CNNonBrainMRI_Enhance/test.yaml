@@ -1,6 +1,6 @@
 # Global configurations
-dataroot: ./data/brain_tumor_mri_crop
-name: CNNonBrainMRI_Crop
+dataroot: ./data/brain_tumor_mri_enhance
+name: CNNonBrainMRI_Enhance
 gpu_ids: '0'
 model: cnn
 dataset_name: braintumormri
@@ -17,4 +17,4 @@ serial_batches: True
 batch_size: 16
 
 # Evaluation configurations
-epoch: 91
+epoch: 29

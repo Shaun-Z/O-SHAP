@@ -142,8 +142,9 @@ class BhemExplanation(BaseExplanation):
         image: np.ndarray (C, H, W)
         '''
         self.image = image
-        self.layers = [layer(image, layer_ID=0, n_segments=self.n_segments)]
-        self.layers += [layer(image, layer_ID=i, n_segments=self.n_segments) for i in range(1, self.layer_num)]
+        inv_transform = self.dataset.inv_transform
+        self.layers = [layer(inv_transform(image), layer_ID=0, n_segments=self.n_segments)]
+        self.layers += [layer(inv_transform(image), layer_ID=i, n_segments=self.n_segments) for i in range(1, self.layer_num)]
 
         self.mappings = {}
     
@@ -184,13 +185,12 @@ class BhemExplanation(BaseExplanation):
 
     def explain(self, img_index: int):
         input_img = self.dataset[img_index]['X']    # Get input image (C, H, W)
-        inv_transform = self.dataset.inv_transform
         # self.Y = self.dataset[img_index]['Y']
         indices = self.dataset[img_index]['indices']
         # self.class_list = [self.dataset.label2id[l] for l in self.Y.split(',')]
         # self.class_list = self.dataset[img_index]['indices']
         self.class_list = self.dataset[img_index]['indices'] if len(self.opt.index_explain)==0 else self.opt.index_explain
-        self.initialize_layers(inv_transform(input_img))
+        self.initialize_layers(input_img)
         # Initialize layers. The class will have the following attributes: layers, mappings. Each layer will have the following attributes: segment, segment_num, masked_image, seg_active, segment_mapping
         self.print_explanation_info()
 

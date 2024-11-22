@@ -1,0 +1,24 @@
+# Global configurations
+dataroot: ./data/brain_tumor_mri_fake/brain_tumor_mri_cir_gray
+name: CNNonBrainMRI_Cir_Gray
+gpu_ids: '0'
+model: cnn
+dataset_name: braintumormri
+use_wandb: False
+
+# Model configurations
+input_nc: 3
+num_classes: 2
+phase: val
+eval: True
+serial_batches: True
+
+# Evaluation configurations
+epoch: 112
+
+# Explanation configurations
+explanation_name: shap
+# index_explain: [0,1]
+# Configuration for BHEM
+n_segments: 10
+approx: True

@@ -9,7 +9,7 @@ use_wandb: False
 # Model configurations
 input_nc: 3
 num_classes: 4
-phase: test
+phase: val
 eval: True 
 serial_batches: True
 
@@ -20,5 +20,5 @@ epoch: 23
 explanation_name: bhem
 # index_explain: [0,1]
 # Configuration for BHEM
-n_segments: 100
+n_segments: 200
 approx: True

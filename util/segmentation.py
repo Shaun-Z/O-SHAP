@@ -181,3 +181,203 @@ class hierarchical_segment:
         else:
             plt.show()
 
+class hierarchical_segment_V2:
+    def __init__(self, img, n_segments=10):
+        H = img.shape[-2]
+        W = img.shape[-1]
+        self.W = W
+        self.H = H
+        self.img = img
+
+        img = self.__preprocess_image(img)
+        # 初始过分割
+        segments = self.initial_segmentation(img, n_segments)
+        # 层次化区域合并
+        self.features_list = self.hierarchical_segmentation(img, segments, num_levels=4)
+        self.features_list.append(np.zeros((H, W), dtype=int))
+        self.features_list.reverse()
+
+    def __preprocess_image(self, img):
+        if isinstance(img, torch.Tensor):
+            img = img.detach().cpu().numpy()
+        # 转换图像维度
+        if len(img.shape) == 3 and img.shape[0] in [1, 3]:  # (C, H, W) 转换为 (H, W, C)
+            img = np.transpose(img, (1, 2, 0))
+        # 如果图像是浮点型，确保在0-1之间
+        if img.dtype in [np.float32, np.float64]:
+            img = np.clip(img, 0, 1)
+        else:
+            img = img.astype(np.float64) / 255.0  # 转换为浮点型
+        return img
+
+    def initial_segmentation(self, img, n_segments=196):
+        """
+        初始超像素分割，并根据背景颜色进一步优化。
+        """
+        # 使用 SLIC 进行初始超像素分割
+        segments = segmentation.slic(img, n_segments=n_segments, compactness=10, start_label=0)
+
+        # 提取背景区域的颜色统计
+        background_mask = self.__detect_background(img)
+        background_color = img[background_mask].mean(axis=0)
+
+        # 优化背景分割：将颜色接近背景的区域标记为背景
+        for seg_id in np.unique(segments):
+            mask = segments == seg_id
+            mean_color = img[mask].mean(axis=0)
+            if np.linalg.norm(mean_color - background_color) < 0.4:  # 阈值可调整
+                segments[mask] = -1  # 将背景标记为 -1
+
+        # 重标号，确保分割区域连续
+        segments = self.__relabel_segments(segments)
+        return segments
+
+    def __detect_background(self, img):
+        """
+        检测背景区域：假设图像四周为背景。
+        """
+        h, w, _ = img.shape
+        margin = 10  # 检测边界的宽度
+        mask = np.zeros((h, w), dtype=bool)
+        mask[:margin, :] = True  # 上边
+        mask[-margin:, :] = True  # 下边
+        mask[:, :margin] = True  # 左边
+        mask[:, -margin:] = True  # 右边
+        return mask
+    
+    def __relabel_segments(self, segments):
+        """
+        重标号分割区域，确保标签连续。
+        """
+        unique_labels, relabeled_segments = np.unique(segments, return_inverse=True)
+        return relabeled_segments.reshape(segments.shape)
+
+    def __build_rag(self, img, segments):
+        segments = segments.astype(int)
+        # 构建区域邻接图（RAG）
+        rag = graph.rag_mean_color(img, segments, mode='similarity')
+        return rag
+
+    def hierarchical_segmentation(self, img, segments, num_levels=4, background_thresh=0.02):
+        """
+        层次分割逻辑，背景在第一次合并时单独处理。
+        """
+        # 记录每一层的分割结果
+        segments_list = [segments]
+        current_segments = segments.copy()
+
+        # 标记背景区域
+        background_segments = set()
+        unique_segments = np.unique(current_segments)
+
+        # 检测背景区域：颜色方差低于背景阈值
+        for seg_id in unique_segments:
+            mask = current_segments == seg_id
+            segment_pixels = img[mask]
+            if np.var(segment_pixels, axis=0).mean() < background_thresh:
+                background_segments.add(seg_id)
+
+        for level in range(1, num_levels):
+            if np.unique(current_segments).shape[0] == 1:
+                break  # 如果所有区域已合并为一个，则停止
+
+            # 构建 RAG
+            rag = self.__build_rag(img, current_segments)
+
+            if level == 1:
+                # 第一次合并时，优先合并背景区域
+                def weight_func(graph_, src, dst, n):
+                    """
+                    自定义权重函数：只允许背景区域之间互相合并
+                    """
+                    if src in background_segments and dst in background_segments:
+                        diff = graph_.nodes[dst]['mean color'] * 255 - graph_.nodes[n]['mean color'] * 255
+                        return {'weight': np.linalg.norm(diff)}
+                    return {'weight': np.inf}  # 禁止非背景区域合并
+
+                current_segments = graph.merge_hierarchical(
+                    current_segments, rag, thresh=np.inf, rag_copy=False,
+                    in_place_merge=False, merge_func=self.__merge_mean_color,
+                    weight_func=weight_func
+                )
+            else:
+                # 后续合并按正常逻辑进行
+                thresh = 15 * level * np.percentile(
+                    [data['weight'] for u, v, data in rag.edges(data=True)], 98
+                )
+
+                current_segments = graph.merge_hierarchical(
+                    current_segments, rag, thresh=thresh, rag_copy=False,
+                    in_place_merge=False, merge_func=self.__merge_mean_color,
+                    weight_func=self.__weight_mean_color
+                )
+
+            segments_list.append(current_segments.copy())
+
+        # 如果生成的层数不足 num_levels，则填充
+        while len(segments_list) < num_levels:
+            segments_list.append(segments_list[-1].copy())  # 复制最后一层填充
+
+        return segments_list
+
+    def __merge_mean_color(self, graph_, src, dst):
+        # 定义合并后的区域属性更新方式
+        graph_.nodes[dst]['total color'] += graph_.nodes[src]['total color']
+        graph_.nodes[dst]['pixel count'] += graph_.nodes[src]['pixel count']
+        graph_.nodes[dst]['mean color'] = (
+            graph_.nodes[dst]['total color'] / graph_.nodes[dst]['pixel count']
+        )
+
+    def __weight_mean_color(self, graph_, src, dst, n):
+        # 定义区域之间的权重计算方式
+        diff = graph_.nodes[dst]['mean color'] * 255 - graph_.nodes[n]['mean color'] * 255
+        diff = np.linalg.norm(diff)
+        return {'weight': diff}
+
+    def __display_segments(self, img, segments, title):
+        # 确保图像是 numpy 数组
+        if isinstance(img, torch.Tensor):
+            img = img.detach().cpu().numpy()
+
+        # 检查图像是否为 (H, W, C)，如果不是则转换
+        if len(img.shape) == 3 and img.shape[0] in [1, 3]:  # (C, H, W) 转换为 (H, W, C)
+            img = np.transpose(img, (1, 2, 0))
+
+        # 检查转换后的图像维度是否正确
+        if len(img.shape) != 3 or img.shape[2] not in [1, 3]:
+            raise ValueError(f"Image shape must be (H, W, C), but got {img.shape}")
+
+        # 确保图像是浮点类型
+        if img.dtype not in [np.float32, np.float64]:
+            img = img.astype(np.float64)
+
+        # 确保分割标签维度为 (H, W)
+        if len(segments.shape) != 2:
+            raise ValueError(f"Segments shape must be (H, W), but got {segments.shape}")
+
+        # 绘制分割边界
+        boundary = segmentation.mark_boundaries(img, segments)
+        plt.figure(figsize=(8, 8))
+        plt.imshow(boundary)
+        plt.title(title)
+        plt.axis('off')
+
+    def get_mask(self, feature_ID=5):
+        if feature_ID >= len(self.features_list):
+            raise IndexError(f"Requested feature ID {feature_ID} is out of range. "
+                             f"Available range: 0 to {len(self.features_list) - 1}.")
+        return self.features_list[feature_ID]
+
+    def plot_segments(self, feature_ID, savename=None):
+        feature = self.get_mask(feature_ID=feature_ID)
+
+        self.__display_segments(
+            self.img,
+            feature,
+            f'Hierarchical Segmentation - Level {feature_ID}'
+        )
+
+        if savename is not None:
+            plt.savefig(savename)
+        else:
+            plt.show()

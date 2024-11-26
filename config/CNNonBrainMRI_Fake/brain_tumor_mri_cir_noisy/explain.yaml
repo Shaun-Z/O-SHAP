@@ -1,6 +1,6 @@
 # Global configurations
-dataroot: ./data/brain_tumor_mri_fake/brain_tumor_mri_pol_white
-name: CNNonBrainMRI_Pol_White
+dataroot: ./data/brain_tumor_mri_fake/brain_tumor_mri_cir_noisy
+name: CNNonBrainMRI_Cir_Noisy
 gpu_ids: '0'
 model: cnn
 dataset_name: braintumormri
@@ -9,12 +9,12 @@ use_wandb: False
 # Model configurations
 input_nc: 3
 num_classes: 2
-phase: test
-eval: True 
+phase: val
+eval: True
 serial_batches: True
 
 # Evaluation configurations
-epoch: 188
+epoch: 76
 
 # Explanation configurations
 explanation_name: bhem

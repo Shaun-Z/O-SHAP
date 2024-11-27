@@ -1,5 +1,5 @@
 # Global configurations
-dataroot: ./data/brain_tumor_mri_fake/brain_tumor_mri_cir_white
+dataroot: ./data/brain_tumor_mri_fake/brain_tumor_mri_circle_white
 name: CNNonBrainMRI_Cir_White
 gpu_ids: '0'
 model: cnn

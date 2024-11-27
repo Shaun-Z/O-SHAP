@@ -32,37 +32,8 @@
             //     // "--index_explain", "1", "5"
             // ]
             "args": [ // Test
-                "--config", "./config/CNNonArrow_explain.yaml",
+                "--config", "./config/CNNonBrainMRI_Fake/brain_tumor_mri_cir_white/test.yaml",
             ]
-            // "args": [ 
-            //     "--dataroot", "./data/pascal_voc_2007",
-            //     "--name", "Resnet18onPASCAL",
-            //     "--gpu_ids", "mps",
-            //     "--model", "res_class",
-            //     "--net_name", "resnet18",
-            //     "--dataset_name", "pascalvoc",
-            //     "--eval",
-            //     "--explanation_name", "bhem",
-            //     "--epoch", "145",
-            //     "--num_classes", "20",
-            //     "--loss_type", "bcewithlogits",
-            //     "--segmentation"
-            // ]
-            // "args": [ 
-            //     "--dataroot", "./data/pascal_voc_2007",
-            //     "--gpu_ids", "mps",
-            //     "--dataset_name", "pascalvoc",
-            //     "--phase", "val",
-            //     "--batch_size", "2"
-            // ]
-            // "args": [ 
-            //     "--dataroot", "./data/pascal_voc_2012",
-            //     "--gpu_ids", "mps",
-            //     "--dataset_name", "pascalvoc2012",
-            //     "--phase", "val",
-            //     "--batch_size", "1",
-            //     // "--segmentation"
-            // ]
         }
     ]
 }

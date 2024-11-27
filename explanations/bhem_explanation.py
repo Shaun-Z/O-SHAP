@@ -9,7 +9,7 @@ from scipy.ndimage import zoom
 import torch
 import torch.nn.functional as F
 
-from util.segmentation import basic_segment, hierarchical_segment
+from util.segmentation import basic_segment, hierarchical_segment, hierarchical_segment_V2
 from util.color import red_transparent_blue
 
 from models import create_model
@@ -48,7 +48,7 @@ def n_of_all_subsets(lst, n=1):
     return [list(s) for s in subsets]
 
 class layer:
-    def __init__(self, image, layer_ID, n_segments=10):
+    def __init__(self, image, layer_ID, seg_method, n_segments=10):
         '''
         image: np.ndarray (C, H, W)
         layer_ID: int
@@ -56,8 +56,13 @@ class layer:
         self.image = image
         self.layer_ID = layer_ID
 
-        basic_seg = hierarchical_segment(image, n_segments=n_segments)
-        # basic_seg = basic_segment(image)
+        if seg_method == 'slic':
+            basic_seg = hierarchical_segment_V2(image, n_segments=n_segments)
+        elif seg_method == 'basic':
+            basic_seg = basic_segment(image)
+        else:
+            raise ValueError(f"Segmentation method {seg_method} is not supported.")
+
         seg_func = lambda img: basic_seg.get_mask(feature_ID=layer_ID)
             
         self.seg_func = seg_func    # Segmentation function
@@ -122,7 +127,9 @@ class BhemExplanation(BaseExplanation):
     def modify_commandline_options(parser):
         parser.add_argument('--layer_num', type=int, default=4, help='the number of layers')
         parser.add_argument('--approx', action='store_true', help='use approximation (model linearity and feature independence)')
-        parser.add_argument('--n_segments', type=int, default=10, help='the number of segments')
+        
+        parser.add_argument('--seg_method', type=str, default='slic', help='segmentation method')
+        parser.add_argument('--n_segments', type=int, default=10, help='the number of segments or SLIC')
         return parser
     
     def __init__(self, opt):
@@ -133,9 +140,10 @@ class BhemExplanation(BaseExplanation):
         self.dataset = create_dataset(opt)
         self.layer_num = opt.layer_num+1
         self.approx = opt.approx
-        # self.explainer = self.define_explainer(self.predict, self.dataset)
 
+        self.seg_method = opt.seg_method
         self.n_segments = opt.n_segments
+        
 
     def initialize_layers(self, image):
         '''
@@ -143,8 +151,9 @@ class BhemExplanation(BaseExplanation):
         '''
         self.image = image
         inv_transform = self.dataset.inv_transform
-        self.layers = [layer(inv_transform(image), layer_ID=0, n_segments=self.n_segments)]
-        self.layers += [layer(inv_transform(image), layer_ID=i, n_segments=self.n_segments) for i in range(1, self.layer_num)]
+
+        self.layers = [layer(inv_transform(image), layer_ID=0, seg_method = self.seg_method, n_segments=self.n_segments)]
+        self.layers += [layer(inv_transform(image), layer_ID=i, seg_method = self.seg_method, n_segments=self.n_segments) for i in range(1, self.layer_num)]
 
         self.mappings = {}
     
@@ -220,8 +229,6 @@ class BhemExplanation(BaseExplanation):
                     # for f4 in tqdm.tqdm(f4_idx, desc="Layer 4"):
                     for f4 in f4_idx:
 
-                        total_num = len(indexes[0])+len(f2_idx)+len(f3_idx)+len(f4_idx)
-
                         f4s = list(f4_idx.copy())
 
                         f4s.remove(f4)            
@@ -230,6 +237,10 @@ class BhemExplanation(BaseExplanation):
                         #      + self.get_current_masked_image(input_img, [[], f2s, [], []]) * math.factorial(len(f2_idx)) * math.factorial(total_num - len(f2_idx)-1) / math.factorial(total_num) \
                         #      + self.get_current_masked_image(input_img, [[], [], f3s, []]) * math.factorial(len(f3_idx)) * math.factorial(total_num - len(f3_idx)-1) / math.factorial(total_num) \
                         #      + self.get_current_masked_image(input_img, [[], [], [], f4s]) * math.factorial(len(f4_idx)) * math.factorial(total_num - len(f4_idx)-1) / math.factorial(total_num)
+                        denominator = np.float64(math.factorial(len(f4s)+1)) \
+                                    * np.float64(math.factorial(len(f3s)+1)) \
+                                    * np.float64(math.factorial(len(f2s)+1)) \
+                                    * np.float64(math.factorial(len(f1s)+1))
 
                         if self.approx:
                             img1 = self.get_current_masked_image(input_img, [f1s, [], [], []]) / safe_division(2**(len(indexes[0])-1), 1) \
@@ -268,6 +279,10 @@ class BhemExplanation(BaseExplanation):
                                 for subset2 in n_of_all_subsets(f2s):
                                     for subset3 in n_of_all_subsets(f3s):
                                         for subset4 in n_of_all_subsets(f4s):
+                                            numerator =  float(math.factorial(len(subset4)))*float(math.factorial(len(f4s)-len(subset4))) \
+                                                        *float(math.factorial(len(subset3)))*float(math.factorial(len(f3s)-len(subset3))) \
+                                                        *float(math.factorial(len(subset2)))*float(math.factorial(len(f2s)-len(subset2))) \
+                                                        *float(math.factorial(len(subset1)))*float(math.factorial(len(f1s)-len(subset1)))
                                             # print(subset4)
                                             cnt+=1
                                             # print(f"{cnt/total_num}", end='\r')
@@ -294,9 +309,10 @@ class BhemExplanation(BaseExplanation):
                                             # P1.shape, P2.shape: (1,200)
 
                                             mask = self.layers[4].segment_mapping.get(f4)
+                                            number_of_pixels = len(mask[0]) if mask is not None else 1
                                             if mask is not None:
                                                 for x,y in zip(mask[0], mask[1]):
-                                                    scores[:,:,x,y] += np.array((P1-P2).cpu().detach().numpy())/(len(subset1)+len(subset2)+len(subset3)+len(subset4))
+                                                    scores[:,:,x,y] += np.array((P1-P2).cpu().detach().numpy())/number_of_pixels*numerator/denominator   # Power index
                                             s4 +=1
                                         s3 +=1
                                     s2 +=1

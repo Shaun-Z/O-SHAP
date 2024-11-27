@@ -1,0 +1,19 @@
+# Global configurations
+dataroot: ./data/brain_tumor_mri_fake/brain_tumor_mri_cir_gray
+name: CNNonBrainMRI_Cir_Gray
+gpu_ids: '0'
+model: cnn
+dataset_name: braintumormri
+use_wandb: True
+
+# Model configurations
+input_nc: 3
+num_classes: 2
+
+# Training configurations
+batch_size: 100
+lr: 0.0001
+n_epochs: 100
+n_epochs_decay: 100
+loss_type: cross_entropy
+save_epoch_freq: 4

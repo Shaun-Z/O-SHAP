@@ -9,7 +9,7 @@ use_wandb: False
 # Model configurations
 input_nc: 3
 num_classes: 2
-phase: val
+phase: test
 eval: True
 serial_batches: True
 
@@ -17,7 +17,7 @@ serial_batches: True
 epoch: latest
 
 # Explanation configurations
-explanation_name: bhem
+explanation_name: shap
 # index_explain: [0,1]
 # Configuration for BHEM
 n_segments: 200

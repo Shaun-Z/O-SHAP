@@ -250,6 +250,6 @@ I would like to express my sincere gratitude to the following individuals and pr
 
 - [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix): The structure of this repository references this project.
 
-I am truly thankful for the open-source community and the invaluable resources they provide.
-
 - [pytorch-image-classification](https://github.com/bentrevett/pytorch-image-classification): Some methods from this repository are used.
+
+I am truly thankful for the open-source community and the invaluable resources they provide.

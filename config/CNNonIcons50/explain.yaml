@@ -21,4 +21,4 @@ explanation_name: bhem
 # index_explain: [0,1]
 # Configuration for BHEM
 n_segments: 10
-approx: True
+approx: False

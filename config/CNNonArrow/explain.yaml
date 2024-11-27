@@ -20,5 +20,6 @@ epoch: 225
 explanation_name: bhem
 # index_explain: [0,1]
 # Configuration for BHEM
+seg_method: slic
 n_segments: 200
-approx: True
+approx: False

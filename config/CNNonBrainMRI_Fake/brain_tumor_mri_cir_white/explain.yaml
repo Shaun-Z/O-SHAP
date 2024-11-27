@@ -14,7 +14,7 @@ eval: True
 serial_batches: True
 
 # Evaluation configurations
-epoch: latest
+epoch: best
 
 # Explanation configurations
 explanation_name: shap

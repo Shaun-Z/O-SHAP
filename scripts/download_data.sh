@@ -123,6 +123,12 @@ case $NAME in
     7z x ./ElectricityTheftDetection/data.zip -o./data/sgcc
     rm -rf ./ElectricityTheftDetection
     ;;
+  "eurosat")
+    wget -c http://madm.dfki.de/files/sentinel/EuroSAT.zip
+    mkdir -p data/eurosat
+    unzip EuroSAT.zip -d data/eurosat
+    rm EuroSAT.zip
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

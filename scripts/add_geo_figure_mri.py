@@ -4,6 +4,7 @@ import os
 
 dataset_name = "brain_tumor_mri"
 set_types = ["Training", "Testing"]
+suffix = ""
 
 def draw_shapes(img, shape, color_type):
     """
@@ -16,9 +17,10 @@ def draw_shapes(img, shape, color_type):
     """
     h, w = img.shape[:2]
     center = (w // 2, h // 2 - h // 8)  # Center slightly above the middle
+    # center = (w // 2, h // 2)
 
-    tumor_height = h // 8
-    tumor_width = w // 8
+    tumor_radius_h = h // 8
+    tumor_radius_w = w // 8
 
     # Create a copy to avoid modifying the original image
     img_copy = img.copy()
@@ -56,19 +58,22 @@ def draw_shapes(img, shape, color_type):
         apply_shape(points)
 
     elif shape == "circle":
+        noise_x = np.random.randint(-tumor_radius_w//2, tumor_radius_w//2+1)
+        noise_y = np.random.randint(-tumor_radius_h//2, tumor_radius_h//2+1)
+        # noise_x = 0
+        # noise_y = 0
         if color_type == 'noise':
             # Fill the circular region with grayscale noise
             mask = np.zeros((h, w), dtype=np.uint8)
-            cv2.circle(mask, center, 10, 255, thickness=-1)
+            noisy_center = (center[0] + noise_x, center[1] + noise_y)
+            cv2.circle(mask, noisy_center, (tumor_radius_h+tumor_radius_w)//2, 255, thickness=-1)
             noise = np.random.randint(0, 256, (h, w), dtype=np.uint8)  # Generate grayscale noise
             img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             img_gray[mask > 0] = noise[mask > 0]
             img_copy[:, :, 0] = img_copy[:, :, 1] = img_copy[:, :, 2] = img_gray
         else:
-            noise_x = np.random.randint(-tumor_width//2, tumor_width//2+1)
-            noise_y = np.random.randint(-tumor_height//2, tumor_height//2+1)
             noisy_center = (center[0] + noise_x, center[1] + noise_y)
-            cv2.circle(img_copy, noisy_center, (tumor_height+tumor_width)//2, fill_color, thickness=-1)
+            cv2.circle(img_copy, noisy_center, (tumor_radius_h+tumor_radius_w)//2, fill_color, thickness=-1)
 
     elif shape == "concave_polygon":
         points = np.array([
@@ -93,7 +98,7 @@ def process_images_with_shapes(set_type, shape, color_type):
     #         os.makedirs(folder, exist_ok=True)
 
     input_folder = os.path.join("data", f"{dataset_name}", f"{set_type}", "notumor")
-    output_folder = os.path.join("data", f"{dataset_name}_fake", f"{dataset_name}_{shape}_{color_type}", f"{set_type}")
+    output_folder = os.path.join("data", f"{dataset_name}_fake", f"{dataset_name}_{shape}_{color_type}{suffix}", f"{set_type}")
 
     os.makedirs(os.path.join(output_folder, "notumor"), exist_ok=True)
     os.makedirs(os.path.join(output_folder, f"tumor_{shape}_{color_type}"), exist_ok=True)
@@ -128,5 +133,5 @@ def process_images_with_shapes(set_type, shape, color_type):
 if __name__ == "__main__":
 
     for set_type in set_types:  # set_types = ["Training", "Testing"]
-        process_images_with_shapes(set_type, "circle", "white")
+        process_images_with_shapes(set_type, "circle", "noise")
 

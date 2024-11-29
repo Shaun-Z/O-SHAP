@@ -20,5 +20,5 @@ epoch: best
 explanation_name: bhem
 # index_explain: [0,1]
 # Configuration for BHEM
-n_segments: 64
+n_segments: 16
 approx: False

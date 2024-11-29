@@ -1,6 +1,6 @@
 # Global configurations
-dataroot: ./data/brain_tumor_mri_fake/brain_tumor_mri_circle_gray
-name: CNNonBrainMRI_Cir_Gray
+dataroot: ./data/brain_tumor_mri_fake/brain_tumor_mri_circle_noise
+name: CNNonBrainMRI_Cir_Noisy
 gpu_ids: '0'
 model: cnn
 dataset_name: braintumormri
@@ -9,7 +9,7 @@ use_wandb: False
 # Model configurations
 input_nc: 3
 num_classes: 2
-phase: test
+phase: val
 eval: True
 serial_batches: True
 
@@ -17,7 +17,7 @@ serial_batches: True
 epoch: best
 
 # Explanation configurations
-explanation_name: shap
+explanation_name: bhem
 # index_explain: [0,1]
 # Configuration for BHEM
 n_segments: 16

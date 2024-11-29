@@ -1,5 +1,5 @@
 # Global configurations
-dataroot: ./data/brain_tumor_mri_fake/brain_tumor_mri_cir_noisy
+dataroot: ./data/brain_tumor_mri_fake/brain_tumor_mri_circle_noise
 name: CNNonBrainMRI_Cir_Noisy
 gpu_ids: '0'
 model: cnn
@@ -17,4 +17,4 @@ serial_batches: True
 batch_size: 16
 
 # Evaluation configurations
-epoch: 76
+epoch: best

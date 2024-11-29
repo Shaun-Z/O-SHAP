@@ -217,10 +217,21 @@ class BaseModel(ABC):
             if isinstance(name, str):
                 net = getattr(self, 'net' + name)
                 num_params = 0
+
+                has_uninitialized_params = False
+
                 for param in net.parameters():
+                    if isinstance(param, torch.nn.parameter.UninitializedParameter):
+                        has_uninitialized_params = True
+                        print(f'Network {name} has uninitialized parameters')
+                        break
                     num_params += param.numel()
+                    
                 if verbose:
                     print(net)
+
+                if has_uninitialized_params:
+                    continue
                 print('[Network %s] Total number of parameters : \033[92m%.3f M\033[0m' % (name, num_params / 1e6))
         print('-----------------------------------------------')
 

@@ -1,0 +1,21 @@
+# Global configurations
+dataroot: ./data/pascal_voc_2012
+name: Resnet50onPASCAL
+gpu_ids: '0'
+model: res_class
+dataset_name: pascalvoc2012
+use_wandb: True
+
+# Model configurations
+net_name: resnet50
+input_nc: 3
+num_classes: 20
+phase: train
+
+# Training configurations
+batch_size: 64
+lr: 0.0002
+n_epochs: 20
+n_epochs_decay: 20
+loss_type: bcewithlogits
+save_epoch_freq: 1

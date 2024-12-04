@@ -18,7 +18,9 @@ epoch: best
 
 # Explanation configurations
 explanation_name: bhem
+seg_method: edge
 # index_explain: [0,1]
-# Configuration for BHEM
-n_segments: 16
 approx: False
+
+# Configuration for SLIC
+n_segments: 16

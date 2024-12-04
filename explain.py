@@ -58,6 +58,5 @@ if __name__ == '__main__':
         explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{indices}.png")
         
         # aopc.get_single_aopc_value(explainer.predict, explainer.dataset, img_index, opt.explanation_name, opt.name)
-        
-    
+
     # aopc.get_average_aopc_value(opt.explanation_name, opt.name)

@@ -57,6 +57,8 @@ class ResClassModel(BaseModel):
             self.optimizer = torch.optim.Adam(self.netResnet_classifier.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
             self.optimizers.append(self.optimizer)
 
+            self.loss_Resnet_val = 0
+
     def set_input(self, input):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
 
@@ -74,8 +76,9 @@ class ResClassModel(BaseModel):
         for param in self.netResnet_classifier.parameters():
             param.requires_grad = False
         for param in self.netResnet_classifier.layer4.parameters():
+            param.requires_grad = False
+        for param in self.netResnet_classifier.fc.parameters():
             param.requires_grad = True
-        self.netResnet_classifier.fc.requires_grad = True
 
     def validate(self, DataLoader_val):
         loss = 0

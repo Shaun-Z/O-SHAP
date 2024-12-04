@@ -1,0 +1,21 @@
+# Global configurations
+dataroot: ./data/eurosat
+name: ResNet50onEuroSAT
+gpu_ids: '0'
+model: res_class
+dataset_name: eurosat
+use_wandb: False
+
+# Model configurations
+net_name: resnet50
+input_nc: 3
+num_classes: 10
+phase: val
+eval: True
+
+# Evaluation configurations
+serial_batches: True
+epoch: best
+
+# Test configurations
+batch_size: 16

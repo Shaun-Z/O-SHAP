@@ -1,0 +1,20 @@
+# Global configurations
+dataroot: ./data/eurosat
+name: ResNet50onEuroSAT
+gpu_ids: '0'
+model: res_class
+dataset_name: eurosat
+use_wandb: True
+
+# Model configurations
+net_name: resnet50
+input_nc: 3
+num_classes: 10
+
+# Training configurations
+batch_size: 32
+lr: 0.0001
+n_epochs: 15
+n_epochs_decay: 0
+loss_type: cross_entropy
+save_epoch_freq: 1

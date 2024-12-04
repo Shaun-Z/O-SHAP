@@ -117,7 +117,7 @@ class PascalVoc2012Dataset(BaseDataset):
                         raise Exception(f'file {mask_path} not found!')
                     self.mask.append(mask_path)
 
-        elif self.phase == 'val':
+        elif self.phase == 'val' or self.phase == 'test':
             for img_id in self.val_imgIDs:
                 xml_path = os.path.join(self.anno_dir, f'{img_id}.xml')
                 dom_tree = parse(xml_path)
@@ -173,9 +173,23 @@ class PascalVoc2012Dataset(BaseDataset):
         if self.segmentation:   # return the [image], its [class] and the [mask]
             mask = Image.open(self.mask[index])
             mask = self.transform_mask(mask)
-            return {'X': x, 'label': y, 'indices': label_indices, 'mask': mask}
+            if self.phase == 'train':
+                return {'X': x, 'label': y, 'mask': mask}
+            elif self.phase == 'val':
+                return {'X': x, 'label': y, 'mask': mask}
+            elif self.phase == 'test':
+                return {'X': x, 'label': y, 'indices': label_indices, 'mask': mask}
+            else:
+                raise ValueError(f'Invalid phase: {self.phase}')
         else:   # return the [image] and its [class]
-            return {'X': x, 'label': y, 'indices': label_indices} # {image, label (directly used for loss calculation), indices (indices of label)}
+            if self.phase == 'train':
+                return {'X': x, 'label': y}
+            elif self.phase == 'val':
+                return {'X': x, 'label': y}
+            elif self.phase == 'test':
+                return {'X': x, 'label': y, 'indices': label_indices}
+            else:
+                raise ValueError(f'Invalid phase: {self.phase}')
 
     def __len__(self):
         """Return the total number of images in the dataset."""

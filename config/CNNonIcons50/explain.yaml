@@ -20,5 +20,6 @@ epoch: 24
 explanation_name: bhem
 # index_explain: [0,1]
 # Configuration for BHEM
+seg_method: edge
 n_segments: 10
 approx: False

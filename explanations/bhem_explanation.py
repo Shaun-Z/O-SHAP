@@ -9,7 +9,7 @@ from scipy.ndimage import zoom
 import torch
 import torch.nn.functional as F
 
-from util.segmentation import basic_segment, hierarchical_segment, hierarchical_segment_V2
+from util.segmentation import basic_segment, hierarchical_segment, hierarchical_segment_V2, hierarchical_segment_edge
 from util.color import red_transparent_blue
 
 from models import create_model
@@ -60,6 +60,10 @@ class layer:
             basic_seg = hierarchical_segment_V2(image, n_segments=n_segments)
         elif seg_method == 'basic':
             basic_seg = basic_segment(image)
+        elif seg_method == 'slic_v1':
+            basic_seg = hierarchical_segment(image, n_segments=n_segments)
+        elif seg_method == 'edge':
+            basic_seg = hierarchical_segment_edge(image)
         else:
             raise ValueError(f"Segmentation method {seg_method} is not supported.")
 
@@ -237,10 +241,14 @@ class BhemExplanation(BaseExplanation):
                         #      + self.get_current_masked_image(input_img, [[], f2s, [], []]) * math.factorial(len(f2_idx)) * math.factorial(total_num - len(f2_idx)-1) / math.factorial(total_num) \
                         #      + self.get_current_masked_image(input_img, [[], [], f3s, []]) * math.factorial(len(f3_idx)) * math.factorial(total_num - len(f3_idx)-1) / math.factorial(total_num) \
                         #      + self.get_current_masked_image(input_img, [[], [], [], f4s]) * math.factorial(len(f4_idx)) * math.factorial(total_num - len(f4_idx)-1) / math.factorial(total_num)
-                        denominator = np.float64(math.factorial(len(f4s)+1)) \
-                                    * np.float64(math.factorial(len(f3s)+1)) \
-                                    * np.float64(math.factorial(len(f2s)+1)) \
-                                    * np.float64(math.factorial(len(f1s)+1))
+                        # denominator = np.float64(math.factorial(len(f4s)+1)) \
+                        #             * np.float64(math.factorial(len(f3s)+1)) \
+                        #             * np.float64(math.factorial(len(f2s)+1)) \
+                        #             * np.float64(math.factorial(len(f1s)+1))
+                        denominator = math.factorial(len(f4s)+1) \
+                                    * math.factorial(len(f3s)+1) \
+                                    * math.factorial(len(f2s)+1) \
+                                    * math.factorial(len(f1s)+1)
 
                         if self.approx:
                             img1 = self.get_current_masked_image(input_img, [f1s, [], [], []]) / safe_division(2**(len(indexes[0])-1), 1) \
@@ -279,10 +287,14 @@ class BhemExplanation(BaseExplanation):
                                 for subset2 in n_of_all_subsets(f2s):
                                     for subset3 in n_of_all_subsets(f3s):
                                         for subset4 in n_of_all_subsets(f4s):
-                                            numerator =  float(math.factorial(len(subset4)))*float(math.factorial(len(f4s)-len(subset4))) \
-                                                        *float(math.factorial(len(subset3)))*float(math.factorial(len(f3s)-len(subset3))) \
-                                                        *float(math.factorial(len(subset2)))*float(math.factorial(len(f2s)-len(subset2))) \
-                                                        *float(math.factorial(len(subset1)))*float(math.factorial(len(f1s)-len(subset1)))
+                                            # numerator =  float(math.factorial(len(subset4)))*float(math.factorial(len(f4s)-len(subset4))) \
+                                            #             *float(math.factorial(len(subset3)))*float(math.factorial(len(f3s)-len(subset3))) \
+                                            #             *float(math.factorial(len(subset2)))*float(math.factorial(len(f2s)-len(subset2))) \
+                                            #             *float(math.factorial(len(subset1)))*float(math.factorial(len(f1s)-len(subset1)))
+                                            numerator =  math.factorial(len(subset4))*math.factorial(len(f4s)-len(subset4)) \
+                                                        *math.factorial(len(subset3))*math.factorial(len(f3s)-len(subset3)) \
+                                                        *math.factorial(len(subset2))*math.factorial(len(f2s)-len(subset2)) \
+                                                        *math.factorial(len(subset1))*math.factorial(len(f1s)-len(subset1))
                                             # print(subset4)
                                             cnt+=1
                                             # print(f"{cnt/total_num}", end='\r')
@@ -312,7 +324,7 @@ class BhemExplanation(BaseExplanation):
                                             number_of_pixels = len(mask[0]) if mask is not None else 1
                                             if mask is not None:
                                                 for x,y in zip(mask[0], mask[1]):
-                                                    scores[:,:,x,y] += np.array((P1-P2).cpu().detach().numpy())/number_of_pixels*numerator/denominator   # Power index
+                                                    scores[:,:,x,y] += np.array((P1-P2).cpu().detach().numpy())/np.float64(number_of_pixels*numerator/denominator)   # Power index
                                             s4 +=1
                                         s3 +=1
                                     s2 +=1

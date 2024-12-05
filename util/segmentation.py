@@ -533,3 +533,163 @@ class hierarchical_segment_edge:
             plt.savefig(savename)
         else:
             plt.show()
+
+
+class hierarchical_segment_updated:
+    def __init__(self, img):
+        H = img.shape[-2]
+        W = img.shape[-1]
+        self.W = W
+        self.H = H
+        self.img = img
+
+        img = self.__preprocess_image(img)
+
+        # 初始过分割，改为基于 Canny 的分割
+        segments = self.initial_segmentation(img)
+        # 层次化区域合并
+        self.features_list = self.hierarchical_segmentation(img, segments, num_levels=4)
+        self.features_list.append(np.zeros((self.H, self.W), dtype=int))
+        self.features_list.reverse()
+
+    def __preprocess_image(self, img):
+        if isinstance(img, torch.Tensor):
+            img = img.detach().cpu().numpy()
+        # 转换图像维度
+        img = np.transpose(img, (1, 2, 0))
+        # 如果图像是浮点型，确保在0-1之间
+        if img.dtype == np.float32 or img.dtype == np.float64:
+            img = np.clip(img, 0, 1)
+        else:
+            img = img / 255.0
+        return img
+
+    # 定义过滤函数：填充 0（边界像素）为邻域内最多的值
+    def __fill_boundary(self, pixel_values):
+        center_pixel = pixel_values[len(pixel_values) // 2]
+        if center_pixel == 0:  # 如果是边界像素
+            valid_values = pixel_values[pixel_values > 0].astype(np.int64)  # 确保是整数
+            if len(valid_values) > 0:
+                return np.bincount(valid_values).argmax()  # 返回出现次数最多的值
+            else:
+                return 0  # 如果没有有效值，则保持为 0
+        return center_pixel
+
+    def initial_segmentation(self, img):
+        """
+        使用 Canny 边缘检测和连通域分析生成初始分割。
+        """
+        # 转换为灰度图
+        gray = (img * 255).astype(np.uint8)
+        if gray.shape[-1] == 3:  # RGB 转灰度
+            gray = cv2.cvtColor(gray, cv2.COLOR_RGB2GRAY)
+
+        sobel_x = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)  # x 方向梯度
+        sobel_y = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)  # y 方向梯度
+
+        # 计算梯度幅值
+        gradient_magnitude = cv2.magnitude(sobel_x, sobel_y)
+
+        # 归一化到 0-255 范围以便可视化
+        gradient_magnitude = cv2.convertScaleAbs(gradient_magnitude)
+
+        threshold1 = np.percentile(gradient_magnitude, 73)
+        threshold2 = np.percentile(gradient_magnitude, 92)
+
+        # 高斯模糊，减少噪声
+        gray = cv2.GaussianBlur(gray, (5, 5), 1)
+
+        # Canny 边缘检测
+        edges = cv2.Canny(gray, threshold1=threshold1, threshold2=threshold2)
+
+        # 膨胀边缘，使其闭合
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
+        closed_edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)  # 闭操作
+
+        # 3. 填充区域
+        filled_mask = cv2.dilate(closed_edges, kernel, iterations=1)  # 膨胀填充边界
+        filled_mask = cv2.threshold(filled_mask, 0, 255, cv2.THRESH_BINARY)[1]
+
+        thin_edges = skeletonize(filled_mask > 0)
+
+        # 假设 thin_edges 是边缘图
+        distance = distance_transform_edt(~thin_edges)  # 计算距离变换
+        markers = label(distance > np.percentile(distance, 50))  # 根据距离生成标记
+        segmented_image = watershed(-distance, markers, mask=~thin_edges)
+
+        segmented_image_no_boundary = generic_filter(segmented_image, self.__fill_boundary, size=3)
+
+        return segmented_image_no_boundary
+
+    def __build_rag(self, img, segments):
+        segments = segments.astype(int)
+        # 构建区域邻接图（RAG）
+        rag = graph.rag_mean_color(img, segments, mode='similarity')
+        return rag
+
+    def hierarchical_segmentation(self, img, segments, num_levels=4):
+        # 记录每一层的分割结果
+        segments_list = [segments]
+        current_segments = segments.copy()
+
+        for level in range(1, num_levels):
+            if np.unique(current_segments).shape[0] == 1:
+                pass
+            else:
+                # 在每次迭代中重新构建 RAG
+                rag = self.__build_rag(img, current_segments)
+
+                # 计算合并阈值，阈值逐层增大，导致合并的区域增多
+                thresh = 15 * level * np.percentile(
+                    [data['weight'] for u, v, data in rag.edges(data=True)], 98
+                )
+
+                # 合并相似区域
+                current_segments = graph.merge_hierarchical(
+                    current_segments,
+                    rag,
+                    thresh=thresh,
+                    rag_copy=False,
+                    in_place_merge=False,
+                    merge_func=self.__merge_mean_color,
+                    weight_func=self.__weight_mean_color,
+                )
+
+            segments_list.append(current_segments.copy())
+
+        return segments_list
+
+    def __merge_mean_color(self, graph_, src, dst):
+        # 定义合并后的区域属性更新方式
+        graph_.nodes[dst]["total color"] += graph_.nodes[src]["total color"]
+        graph_.nodes[dst]["pixel count"] += graph_.nodes[src]["pixel count"]
+        graph_.nodes[dst]["mean color"] = (
+            graph_.nodes[dst]["total color"] / graph_.nodes[dst]["pixel count"]
+        )
+
+    def __weight_mean_color(self, graph_, src, dst, n):
+        # 定义区域之间的权重计算方式
+        diff = graph_.nodes[dst]["mean color"] * 255 - graph_.nodes[n]["mean color"] * 255
+        diff = np.linalg.norm(diff)
+        return {"weight": diff}
+
+    def __display_segments(self, img, segments, title):
+        # 绘制分割边缘
+        boundary = segmentation.mark_boundaries(img, segments)
+        # plt.figure(figsize=(8, 8))
+        plt.imshow(boundary)
+        plt.title(title)
+        plt.axis("off")
+
+    def get_mask(self, feature_ID=5):
+        return self.features_list[feature_ID]
+
+    def plot_segments(self, feature_ID, savename=None):
+        feature = self.get_mask(feature_ID=feature_ID)
+
+        self.__display_segments(np.transpose(self.img.detach().cpu().numpy(), (1, 2, 0)), feature, f'Hierarchical Segmentation - Level {feature_ID}')
+
+        if savename is not None:
+            plt.savefig(savename)
+        else:
+            plt.show()

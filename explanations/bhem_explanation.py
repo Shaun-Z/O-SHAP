@@ -9,7 +9,7 @@ from scipy.ndimage import zoom
 import torch
 import torch.nn.functional as F
 
-from util.segmentation import basic_segment, hierarchical_segment, hierarchical_segment_V2, hierarchical_segment_edge
+from util.segmentation import basic_segment, hierarchical_segment, hierarchical_segment_V2, hierarchical_segment_edge, hierarchical_segment_updated
 from util.color import red_transparent_blue
 
 from models import create_model
@@ -63,7 +63,7 @@ class layer:
         elif seg_method == 'slic_v1':
             basic_seg = hierarchical_segment(image, n_segments=n_segments)
         elif seg_method == 'edge':
-            basic_seg = hierarchical_segment_edge(image)
+            basic_seg = hierarchical_segment_updated(image)
         else:
             raise ValueError(f"Segmentation method {seg_method} is not supported.")
 

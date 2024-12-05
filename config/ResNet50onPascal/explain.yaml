@@ -22,7 +22,7 @@ epoch: 14
 batch_size: 1
 
 # Explanation configurations
-explanation_name: bhem
+explanation_name: rise
 # index_explain: [0,1]
 # Configuration for BHEM
 seg_method: slic

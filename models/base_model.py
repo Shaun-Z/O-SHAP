@@ -71,6 +71,11 @@ class BaseModel(ABC):
         pass
 
     @abstractmethod
+    def __call__(self, input):
+        """Return the output of the model."""
+        pass
+
+    @abstractmethod
     def optimize_parameters(self):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
         pass

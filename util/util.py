@@ -106,3 +106,33 @@ def mkdir(path):
     """
     if not os.path.exists(path):
         os.makedirs(path)
+
+def nhwc_to_nchw(x: torch.Tensor) -> torch.Tensor:
+    """Converts a tensor from NHWC to NCHW format
+
+    Parameters:
+        x (torch.Tensor) -- the input tensor
+
+    Returns:
+        torch.Tensor -- the converted
+    """
+    if x.dim() == 4:
+        x = x if x.shape[1] == 3 else x.permute(0, 3, 1, 2)
+    elif x.dim() == 3:
+        x = x if x.shape[0] == 3 else x.permute(2, 0, 1)
+    return x
+
+def nchw_to_nhwc(x: torch.Tensor) -> torch.Tensor:
+    """Converts a tensor from NCHW to NHWC format
+    
+    Parameters:
+        x (torch.Tensor) -- the input tensor
+    
+    Returns:
+        torch.Tensor -- the converted
+    """
+    if x.dim() == 4:
+        x = x if x.shape[3] == 3 else x.permute(0, 2, 3, 1)
+    elif x.dim() == 3:
+        x = x if x.shape[2] == 3 else x.permute(1, 2, 0)
+    return x 

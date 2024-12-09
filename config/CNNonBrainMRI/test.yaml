@@ -9,7 +9,7 @@ use_wandb: False
 # Model configurations
 input_nc: 3
 num_classes: 4
-phase: test 
+phase: test
 eval: True
 serial_batches: True
 
@@ -17,4 +17,4 @@ serial_batches: True
 batch_size: 16
 
 # Evaluation configurations
-epoch: 23
+epoch: best

@@ -10,11 +10,11 @@ use_wandb: False
 input_nc: 3
 num_classes: 4
 phase: val
-eval: True 
+eval: True
 serial_batches: True
 
 # Evaluation configurations
-epoch: 23
+epoch: best
 
 # Explanation configurations
 explanation_name: bhem

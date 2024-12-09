@@ -17,7 +17,7 @@ serial_batches: True
 epoch: 23
 
 # Explanation configurations
-explanation_name: rise
+explanation_name: bhem
 approx: False
 # index_explain: [0,1]
 # Configuration for BHEM

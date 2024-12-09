@@ -110,3 +110,7 @@ class ResClassModel(BaseModel):
         self.optimizer.zero_grad()  # set gradients to zero
         self.backward()             # calculate gradients
         self.optimizer.step()       # update weights
+
+    def __call__(self, input):
+        """Calculate output of the model"""
+        return self.netResnet_classifier(input)

@@ -36,6 +36,7 @@ from options.train_options import TrainOptions
 from datasets import create_dataloader
 from models import create_model
 import time
+import os
 import torch
 import torch.nn.functional as F
 
@@ -59,6 +60,7 @@ if __name__ == '__main__':
     true_cnt = 0
 
     labels = dataloader.dataset.labels   # get the labels so we can search the label
+    os.makedirs('log', exist_ok=True)
     with open(f'{opt.name}_log.txt', 'w') as file:
         for i, data in enumerate(dataloader):
             model.set_input(data)

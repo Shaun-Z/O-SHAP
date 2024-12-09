@@ -2,6 +2,7 @@ checkpoints*/
 results*/
 wandb/
 .vscode/
+log/
 # Data directory
 data/*
 !data/

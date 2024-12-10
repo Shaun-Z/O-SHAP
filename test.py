@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
     labels = dataloader.dataset.labels   # get the labels so we can search the label
     os.makedirs('log', exist_ok=True)
-    with open(f'{opt.name}_log.txt', 'w') as file:
+    with open(f'log/{opt.name}_log.txt', 'w') as file:
         for i, data in enumerate(dataloader):
             model.set_input(data)
             time_stamp = time.time() # timer for computation time

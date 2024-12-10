@@ -1,0 +1,26 @@
+# Global configurations
+dataroot: ./data/tiny-imagenet
+name: ResNet101onTinyImageNet
+gpu_ids: '0'
+model: res_class
+dataset_name: tiny_imagenet
+use_wandb: False
+
+# Model configurations
+net_name: resnet101
+input_nc: 3
+num_classes: 200
+phase: val 
+eval: True
+
+# Evaluation configurations
+serial_batches: True
+epoch: best
+
+# Explanation configurations
+explanation_name: shap
+# index_explain: [0,1]
+# Configuration for BHEM
+seg_method: edge
+n_segments: 500
+approx: False

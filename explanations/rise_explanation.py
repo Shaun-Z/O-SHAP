@@ -128,7 +128,7 @@ class RiseExplanation(BaseExplanation):
 
         input_img = X
         
-        self.explainer.generate_masks(N=1000, s=8, p1=0.5)
+        self.explainer.generate_masks(N=500, s=8, p1=0.5)
 
         self.saliency = self.explainer(input_img.cuda()).cpu().numpy()
         p, c = torch.topk(self.predict(input_img.cuda()), k=2)
@@ -158,11 +158,11 @@ class RiseExplanation(BaseExplanation):
         for i in range(result_show.shape[0]):
             axes[0, i+1].set_title(labels_to_display[i])
             axes[0, i+1].imshow(image_show, cmap=plt.get_cmap('gray'))
-            axes[0, i+1].imshow(result_show[i], cmap=transparent_red)
-            # axes[0, i+1].imshow(result_show[i], cmap='jet', alpha=0.5)
+            # axes[0, i+1].imshow(result_show[i], cmap=transparent_red)
+            axes[0, i+1].imshow(result_show[i], cmap='jet', alpha=0.5)
             axes[0, i+1].axis('off')
-            im = axes[0, i+1].imshow(result_show[i], cmap=transparent_red)
-            # im = axes[0, i+1].imshow(result_show[i], cmap='jet', alpha=0.5)
+            # im = axes[0, i+1].imshow(result_show[i], cmap=transparent_red)
+            im = axes[0, i+1].imshow(result_show[i], cmap='jet', alpha=0.5)
 
         cb = plt.colorbar(im, ax=np.ravel(axes).tolist(), label="RISE value", orientation="horizontal", aspect=30)
         cb.outline.set_visible(False)

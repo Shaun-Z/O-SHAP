@@ -62,7 +62,7 @@ class GradientShapExplanation(BaseExplanation):
         attributions, delta = self.explainer.attribute (
             input_img.to(self.device),
             stdevs=0.09,
-            n_samples=4,
+            n_samples=50,
             baselines=baseline.to(self.device),
             target=output_indexes,
             return_convergence_delta=True

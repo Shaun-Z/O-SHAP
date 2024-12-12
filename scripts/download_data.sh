@@ -129,6 +129,12 @@ case $NAME in
     unzip EuroSAT.zip -d data/eurosat
     rm EuroSAT.zip
     ;;
+  "jatracer")
+    curl -L -o jatracer-images.zip https://www.kaggle.com/api/v1/datasets/download/conorsully1/jatracer-images
+    mkdir -p data/jatracer
+    unzip jatracer-images.zip -d data/jatracer
+    rm jatracer-images.zip
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

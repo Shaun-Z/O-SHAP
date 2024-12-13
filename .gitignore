@@ -1,15 +1,22 @@
+# Output files
 checkpoints*/
 results*/
-wandb/
+*.pth
+
+# Local configuration
 .vscode/
+
+# Logs
+wandb/
 log/
+
 # Data directory
 data/*
 !data/
 
+# Other types of files
 *.svg
 *.txt
-img_res
 *.npy
 *.ipynb
 image_folder

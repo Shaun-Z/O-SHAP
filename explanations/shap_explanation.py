@@ -18,8 +18,9 @@ class ShapExplanation(BaseExplanation):
     @staticmethod
     def modify_commandline_options(parser):
         # rewrite default values
-        parser.add_argument('--n_evals', type=int, default=5000, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
-        parser.set_defaults(batch_size=50)
+        parser.add_argument('--n_evals', type=int, default=10000, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
+        parser.add_argument('--batch', type=int, default=50, help='batch size for shap values calculation')
+        parser.add_argument('--blur', type=str, default="blur(128, 128)", help='the size of the blur kernel to use for masking')
         return parser
 
     def __init__(self, opt):
@@ -50,7 +51,7 @@ class ShapExplanation(BaseExplanation):
         X = self.dataset[img_index]['X'].unsqueeze(0)
         indices = self.dataset[img_index]['indices']
         # Y = self.dataset[img_index]['Y']
-        Y = [self.dataset.labels[i] for i in indices]
+        '''Y = [self.dataset.labels[i] for i in indices]'''
         # Class_list = [self.dataset.label2id[l] for l in Y.split(',')]
         Class_list = self.dataset[img_index]['indices']
 
@@ -58,7 +59,7 @@ class ShapExplanation(BaseExplanation):
         
         output_indexes = Class_list if len(self.opt.index_explain)==0 else self.opt.index_explain
         
-        self.shap_values = self.explainer(input_img, max_evals=self.opt.n_evals, batch_size=self.opt.batch_size, outputs=output_indexes)
+        self.shap_values = self.explainer(input_img, max_evals=self.opt.n_evals, batch_size=self.opt.batch, outputs=output_indexes)  
         
         os.makedirs(f"results/{self.opt.explanation_name}/{self.opt.name}/value", exist_ok=True)
         # np.save(f"results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{Y}.npy", np.moveaxis(self.shap_values.values[0],-1, 0))
@@ -73,7 +74,7 @@ class ShapExplanation(BaseExplanation):
     def define_explainer(self, pred_fn, dataset):
         Xtr = self.transform(dataset[0]['X'])
         # out = predict(Xtr[0:1])
-        masker_blur = shap.maskers.Image("blur(64, 64)", Xtr.shape)
+        masker_blur = shap.maskers.Image(self.opt.blur, Xtr.shape)
         print(masker_blur.clustering)
         explainer = shap.Explainer(pred_fn, masker_blur, output_names=dataset.labels)
         print(type(explainer))

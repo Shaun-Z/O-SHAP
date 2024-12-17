@@ -1,0 +1,21 @@
+# Global configurations
+dataroot: None
+name: MobileNetV2onImageNet50
+gpu_ids: '0'
+model: classifier
+dataset_name: imagenet50
+use_wandb: False
+
+# Model configurations
+net_name: mobilenet_v2
+input_nc: 3
+num_classes: 1000
+phase: test
+eval: True
+
+# Evaluation configurations
+serial_batches: True
+epoch: best
+
+# Test configurations
+batch_size: 16

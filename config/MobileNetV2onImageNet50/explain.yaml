@@ -1,0 +1,32 @@
+# Global configurations
+dataroot: None
+name: MobileNetV2onImageNet50
+gpu_ids: '0'
+model: classifier
+dataset_name: imagenet50
+use_wandb: False
+
+# Model configurations
+net_name: mobilenet_v2
+input_nc: 3
+num_classes: 1000
+phase: test 
+eval: True
+
+# Evaluation configurations
+serial_batches: True
+epoch: best
+
+# Explanation configurations
+explanation_name: shap
+
+index_instance: [1]
+index_explain: [132, 134, 131, 129]
+# index_instance: [2]
+# index_explain: [814, 408, 833, 693]
+# index_instance: [3]
+# index_explain: [746, 795, 615, 560]
+# Configuration for BHEM
+seg_method: edge
+n_segments: 500
+approx: False

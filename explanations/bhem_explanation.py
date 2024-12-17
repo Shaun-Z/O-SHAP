@@ -283,10 +283,10 @@ class BhemExplanation(BaseExplanation):
                             img = torch.zeros_like(input_img)
                             s1,s2,s3,s4 = 0,0,0,0
                             # print(f"{len(f1s)}\t{len(f2s)}\t{len(f3s)}\t{len(f4s)}")
-                            for subset1 in n_of_all_subsets(f1s):
-                                for subset2 in n_of_all_subsets(f2s):
-                                    for subset3 in n_of_all_subsets(f3s):
-                                        for subset4 in n_of_all_subsets(f4s):
+                            for subset1 in all_subsets(f1s):
+                                for subset2 in all_subsets(f2s):
+                                    for subset3 in all_subsets(f3s):
+                                        for subset4 in all_subsets(f4s):
                                             # numerator =  float(math.factorial(len(subset4)))*float(math.factorial(len(f4s)-len(subset4))) \
                                             #             *float(math.factorial(len(subset3)))*float(math.factorial(len(f3s)-len(subset3))) \
                                             #             *float(math.factorial(len(subset2)))*float(math.factorial(len(f2s)-len(subset2))) \

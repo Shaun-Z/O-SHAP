@@ -19,8 +19,8 @@ class GradientShapExplanation(BaseExplanation):
     @staticmethod
     def modify_commandline_options(parser):
         # rewrite default values
-        # parser.add_argument('--n_evals', type=int, default=5000, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
-        # parser.set_defaults(batch_size=50)
+        parser.add_argument('--std', type=float, default=0.09, help='the standard deviation of the noise used to approximate the integral')
+        parser.add_argument('--n_samples', type=int, default=100, help='the number of samples to use to approximate the expectation')
         return parser
     
     def __init__(self, opt):
@@ -61,8 +61,8 @@ class GradientShapExplanation(BaseExplanation):
         # Compute the attributions
         attributions, delta = self.explainer.attribute (
             input_img.to(self.device),
-            stdevs=0.09,
-            n_samples=50,
+            stdevs=self.opt.std,
+            n_samples=self.opt.n_samples,
             baselines=baseline.to(self.device),
             target=output_indexes,
             return_convergence_delta=True

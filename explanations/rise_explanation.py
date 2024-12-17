@@ -122,7 +122,7 @@ class RiseExplanation(BaseExplanation):
         X = self.image.unsqueeze(0)
         indices = self.dataset[img_index]['indices']
         self.class_list = self.dataset[img_index]['indices'] if len(self.opt.index_explain)==0 else self.opt.index_explain
-        Y = [self.dataset.labels[i] for i in indices]
+        # Y = [self.dataset.labels[i] for i in indices]
         # Class_list = [self.dataset.label2id[l] for l in Y.split(',')]
         indices = self.dataset[img_index]['indices']
 

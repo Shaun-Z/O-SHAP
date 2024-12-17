@@ -75,9 +75,9 @@ class ShapExplanation(BaseExplanation):
         Xtr = self.transform(dataset[0]['X'])
         # out = predict(Xtr[0:1])
         masker_blur = shap.maskers.Image(self.opt.blur, Xtr.shape)
-        print(masker_blur.clustering)
+        # print(masker_blur.clustering.shape)
         explainer = shap.Explainer(pred_fn, masker_blur, output_names=dataset.labels)
-        print(type(explainer))
+        print(f"Explainer type: {type(explainer)}")
         return explainer
 
     def plot(self, save_path: str = None):

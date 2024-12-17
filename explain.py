@@ -47,16 +47,22 @@ if __name__ == '__main__':
     # # explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{Y}.png")
     # explainer.plot()
 
-
-    for img_index in tqdm(range(len(explainer.dataset))):
-        indices = explainer.dataset[img_index]['indices']
-        # print(indices)
-        Y = [explainer.dataset.labels[i] for i in indices]
-        # print(indices, Y)
-        explainer.explain(img_index)
-        # explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{Y}.png")
-        explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{indices}.png")
-        
+    if len(opt.index_instance)==0:  # if instance index not specified, explain all instances
+        for img_index in tqdm(range(len(explainer.dataset))):
+            indices = explainer.dataset[img_index]['indices']
+            # print(indices)
+            Y = [explainer.dataset.labels[i] for i in indices]
+            # print(indices, Y)
+            explainer.explain(img_index)
+            # explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{Y}.png")
+            explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}_{indices}.png")
+    else:
+        for img_index in tqdm(opt.index_instance):
+            # indices = explainer.dataset[img_index]['indices']
+            # print(img_index, indices, len(explainer.dataset.labels))
+            # Y = [explainer.dataset.labels[i] for i in indices]
+            explainer.explain(img_index)
+            explainer.plot(save_path=f"results/{opt.explanation_name}/{opt.name}/image/P{img_index}.png")
         # aopc.get_single_aopc_value(explainer.predict, explainer.dataset, img_index, opt.explanation_name, opt.name)
 
     # aopc.get_average_aopc_value(opt.explanation_name, opt.name)

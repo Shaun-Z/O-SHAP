@@ -6,8 +6,6 @@ from datasets.base_dataset import BaseDataset
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
 
-from util.util import nhwc_to_nchw, nchw_to_nhwc
-
 import shap
 
 class ImageNet50Dataset(BaseDataset):
@@ -45,8 +43,9 @@ class ImageNet50Dataset(BaseDataset):
         self.std = [0.229, 0.224, 0.225]
 
         self.transform = transforms.Compose([
-            transforms.Lambda(nhwc_to_nchw),
+            # transforms.Lambda(nhwc_to_nchw),
             transforms.Lambda(lambda x: x * (1 / 255)),
+            transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.std),
             # transforms.Lambda(nchw_to_nhwc),
         ])
@@ -57,7 +56,7 @@ class ImageNet50Dataset(BaseDataset):
                 mean = (-1 * np.array(self.mean) / np.array(self.std)).tolist(),
                 std = (1 / np.array(self.std)).tolist()
             ),
-            transforms.Lambda(nchw_to_nhwc),
+            # transforms.Lambda(nchw_to_nhwc),
         ])
 
         self.load_data()
@@ -69,6 +68,7 @@ class ImageNet50Dataset(BaseDataset):
         return len(self.X)
     
     def __getitem__(self, index):
-        img = self.transform(torch.Tensor(self.X[index]))
+        # img = self.transform(torch.Tensor(self.X[index]))
+        img = self.transform(self.X[index])
         label = self.y[index]
         return {'X': img, 'label': label, 'indices': [label.astype(int)]}

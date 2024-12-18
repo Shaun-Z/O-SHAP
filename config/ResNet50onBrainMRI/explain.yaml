@@ -1,15 +1,15 @@
 # Global configurations
-dataroot: ./data/tiny-imagenet
-name: ResNet50onTinyImageNet
+dataroot: ./data/brain_tumor_mri
+name: ResNet50onBrainMRI
 gpu_ids: '0'
 model: res_class
-dataset_name: tiny_imagenet
+dataset_name: braintumormri
 use_wandb: False
 
 # Model configurations
 net_name: resnet50
 input_nc: 3
-num_classes: 200
+num_classes: 4
 phase: val 
 eval: True
 
@@ -18,7 +18,7 @@ serial_batches: True
 epoch: best
 
 # Explanation configurations
-explanation_name: rise
+explanation_name: shap
 # index_explain: [0,1]
 # Configuration for BHEM
 seg_method: edge

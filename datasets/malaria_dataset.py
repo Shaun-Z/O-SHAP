@@ -100,9 +100,9 @@ class MalariaDataset(BaseDataset):
         image = Image.open(image_path).convert('RGB')
         image = self.transform(image)
 
-        # Assign binary label: 1 for "red blood cell", 0 for others
-        has_red_cell = any(obj['category'] == 'red blood cell' for obj in objects)
-        label = 1 if has_red_cell else 0
+        # Assign binary label: 1 if there is a category other than "red blood cell", 0 otherwise
+        has_other_category = any(obj['category'] != 'red blood cell' for obj in objects)
+        label = 1 if has_other_category else 0
 
         return {'X': image, 'label': label, 'indices': [label]}
 

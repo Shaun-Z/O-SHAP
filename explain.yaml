@@ -1,0 +1,24 @@
+# Global configurations
+dataroot: ./data/brain_tumor_mri
+name: CNNonBrainMRI
+gpu_ids: '-1'
+model: cnn
+dataset_name: braintumormri
+use_wandb: False
+
+# Model configurations
+input_nc: 3
+num_classes: 4
+phase: test
+eval: True 
+serial_batches: True
+
+# Evaluation configurations
+epoch: 23
+
+# Explanation configurations
+explanation_name: shap
+# index_explain: [0,1]
+# Configuration for BHEM
+n_segments: 100
+approx: True

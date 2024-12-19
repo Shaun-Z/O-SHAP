@@ -147,6 +147,12 @@ case $NAME in
     unzip mvtec_ad.zip -d data/mvtec_ad
     rm mvtec_ad.zip
     ;;
+  "lisa_traffic_light")
+    curl -L -o ./lisa-traffic-light-dataset.zip https://www.kaggle.com/api/v1/datasets/download/mbornoe/lisa-traffic-light-dataset
+    mkdir -p data/lisa_traffic_light
+    unzip ./lisa-traffic-light-dataset.zip -d data/lisa_traffic_light
+    rm ./lisa-traffic-light-dataset.zip
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

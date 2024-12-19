@@ -4,17 +4,18 @@ name: ResNet18onMalaria
 gpu_ids: '0'
 model: res_class
 dataset_name: malaria
-use_wandb: True
+use_wandb: False
 
 # Model configurations
 net_name: resnet18
 input_nc: 3
 num_classes: 2
+phase: val
+eval: True
 
-# Training configurations
-batch_size: 64
-lr: 0.000001
-n_epochs: 20
-n_epochs_decay: 40
-loss_type: cross_entropy
-save_epoch_freq: 1
+# Evaluation configurations
+serial_batches: True
+epoch: best
+
+# Test configurations
+batch_size: 1

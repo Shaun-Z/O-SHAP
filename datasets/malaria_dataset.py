@@ -81,7 +81,9 @@ class MalariaDataset(BaseDataset):
             os.path.join(self.images_dir, item['image']['pathname'].lstrip('/').replace('images/', ''))
             for item in self.data
         ]
-        self.labels = [item['objects'] for item in self.data]  # Full object information
+        # self.labels = [item['objects'] for item in self.data]  
+        self.labels = ['redcell', 'other']  # Simplified labels
+        self.objects = [item['objects'] for item in self.data] # Full object information
 
     def __getitem__(self, index):
         """
@@ -94,7 +96,7 @@ class MalariaDataset(BaseDataset):
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
         image_path = self.image_paths[index]
-        objects = self.labels[index]
+        objects = self.objects[index]
 
         # Load image and apply transformations
         image = Image.open(image_path).convert('RGB')

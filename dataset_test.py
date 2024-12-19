@@ -22,11 +22,8 @@ if __name__ == '__main__':
     opt = TestOptions().parse()
     dataset = create_dataset(opt)
 
-    print(dataset.labels)
-
-    exit()
-
     for i in range(len(dataset)):
         data = dataset[i]
         print(f"X:{data['X'].shape}\tlabel:{data['label']}\tindices:{data['indices']}")
 
+    print(dataset.labels)

@@ -1,0 +1,20 @@
+# Global configurations
+dataroot: ./data/imagenets50
+name: ResNet50onImageNetS50
+gpu_ids: '0'
+model: res_class
+dataset_name: imagenets50
+use_wandb: True
+
+# Model configurations
+net_name: resnet50
+input_nc: 3
+num_classes: 50
+
+# Training configurations
+batch_size: 16
+lr: 0.00001
+n_epochs: 20
+n_epochs_decay: 40
+loss_type: cross_entropy
+save_epoch_freq: 1

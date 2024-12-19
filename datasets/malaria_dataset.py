@@ -1,7 +1,7 @@
 import os
 import json
 import numpy as np
-from datasets.base_dataset import BaseDataset
+from .base_dataset import BaseDataset
 import torchvision.transforms as transforms
 from PIL import Image
 
@@ -12,7 +12,7 @@ class MalariaDataset(BaseDataset):
 
     @staticmethod
     def modify_commandline_options(parser, is_train):
-        parser.set_defaults(num_classes=2)  # Example: infected and uninfected
+        parser.set_defaults(num_classes=2)  # Binary classification: red blood cell (1) vs others (0)
         return parser
 
     def __init__(self, opt):
@@ -28,7 +28,7 @@ class MalariaDataset(BaseDataset):
 
         # Paths to the JSON files containing annotations
         self.train_json = os.path.join(self.dataroot, "training.json")
-        self.test_json = os.path.join(self.dataroot, "testing.json")
+        self.test_json = os.path.join(self.dataroot, "test.json")
 
         # Path to the images folder
         self.images_dir = os.path.join(self.dataroot, "images")
@@ -77,7 +77,10 @@ class MalariaDataset(BaseDataset):
             self.data = json.load(f)
 
         # Extract file paths, labels, and bounding boxes from JSON
-        self.image_paths = [os.path.join(self.images_dir, item['image']['pathname'].lstrip('/')) for item in self.data]
+        self.image_paths = [
+            os.path.join(self.images_dir, item['image']['pathname'].lstrip('/').replace('images/', ''))
+            for item in self.data
+        ]
         self.labels = [item['objects'] for item in self.data]  # Full object information
 
     def __getitem__(self, index):
@@ -97,11 +100,11 @@ class MalariaDataset(BaseDataset):
         image = Image.open(image_path).convert('RGB')
         image = self.transform(image)
 
-        # Extract bounding boxes and categories
-        bboxes = [obj['bounding_box'] for obj in objects]
-        categories = [obj['category'] for obj in objects]
+        # Assign binary label: 1 for "red blood cell", 0 for others
+        has_red_cell = any(obj['category'] == 'red blood cell' for obj in objects)
+        label = 1 if has_red_cell else 0
 
-        return {'X': image, 'label': label, 'indices': [label]}  # Include bounding boxes and categories
+        return {'X': image, 'label': label, 'indices': [label]}
 
     def __len__(self):
         """

@@ -1,0 +1,20 @@
+# Global configurations
+dataroot: ./data/malaria
+name: ResNet18onMalaria
+gpu_ids: '0'
+model: res_class
+dataset_name: malaria
+use_wandb: True
+
+# Model configurations
+net_name: resnet18
+input_nc: 3
+num_classes: 2
+
+# Training configurations
+batch_size: 128
+lr: 0.0001
+n_epochs: 25
+n_epochs_decay: 10
+loss_type: cross_entropy
+save_epoch_freq: 1

@@ -141,6 +141,12 @@ case $NAME in
     rm malaria-bounding-boxes.zip
     rm -r ./data/malaria/malaria
     ;;
+  "mvtec_ad")
+    curl -L -o mvtec_ad.zip https://www.kaggle.com/api/v1/datasets/download/ipythonx/mvtec-ad
+    mkdir -p data/mvtec_ad
+    unzip mvtec_ad.zip -d data/mvtec_ad
+    rm mvtec_ad.zip
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

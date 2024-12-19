@@ -135,6 +135,12 @@ case $NAME in
     unzip jatracer-images.zip -d data/jatracer
     rm jatracer-images.zip
     ;;
+  "malaria")
+    curl -L -o malaria-bounding-boxes.zip https://www.kaggle.com/api/v1/datasets/download/kmader/malaria-bounding-boxes
+    unzip malaria-bounding-boxes.zip -d data
+    rm malaria-bounding-boxes.zip
+    rm -r ./data/malaria/malaria
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

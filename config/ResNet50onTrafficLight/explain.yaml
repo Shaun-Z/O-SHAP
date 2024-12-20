@@ -1,13 +1,13 @@
 # Global configurations
 dataroot: ./data/lisa_traffic_light
-name: ResNet18onTrafficLight
+name: ResNet50onTrafficLight
 gpu_ids: '0'
 model: res_class
 dataset_name: lisa_traffic_light
 use_wandb: False
 
 # Model configurations
-net_name: resnet18
+net_name: resnet50
 input_nc: 3
 num_classes: 2
 phase: val 

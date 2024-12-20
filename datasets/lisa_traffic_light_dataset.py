@@ -81,7 +81,7 @@ class LisaTrafficLightDataset(BaseDataset):
                         for row in reader:
                             img_name = row['Filename']
                             label = row['Annotation tag']
-                            img_path = os.path.join(clip_path, os.path.basename(img_name))
+                            img_path = os.path.join(clip_path, 'frames', os.path.basename(img_name))
                             if os.path.exists(img_path):
                                 self.image_paths.append(img_path)
                                 self.image_labels.append(self.label_to_index(label))

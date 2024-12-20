@@ -31,6 +31,11 @@ python test.py --config config/CNNonBrainMRI/test.yaml
 python test.py --config config/CNNonIcons50/test.yaml
 '''
 
+# %% Test ResNet50 on Lisa Traffic Light
+''' (Correctness: 5731/7900)
+python test.py --config config/ResNet50onTrafficLight/test.yaml
+'''
+
 from options.test_options import TestOptions
 from options.train_options import TrainOptions
 from datasets import create_dataloader

@@ -57,7 +57,7 @@ class LisaTrafficLightDataset(BaseDataset):
             ),
         ])
 
-        self.labels = ['go', 'other']
+        self.labels = ['other', 'go']
 
         self.load_data()
 

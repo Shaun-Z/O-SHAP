@@ -30,7 +30,7 @@ class LisaTrafficLightDataset(BaseDataset):
         self.std = [0.229, 0.224, 0.225]
 
         if self.phase == 'train':
-            self.data_path = os.path.join(self.dataroot, "dayTrain", "dayTrain")
+            self.data_path = os.path.join(self.dataroot, "dayTrain/dayTrain")
             self.transform = transforms.Compose([
                 transforms.Resize((224, 224)),
                 transforms.RandomHorizontalFlip(),
@@ -40,8 +40,8 @@ class LisaTrafficLightDataset(BaseDataset):
                 transforms.Normalize(mean=self.mean, std=self.std)
             ])
         else:
-            self.data_path = os.path.join(self.dataroot, "daySequence1", "frames")
-            self.annotation_file = os.path.join(self.dataroot, "Annotations", "Annotations", "daySequence1", "frameAnnotationsBOX.csv")
+            self.data_path = os.path.join(self.dataroot, "daySequence1/daySequence1", "frames")
+            self.annotation_file = os.path.join(self.dataroot, "Annotations/Annotations", "daySequence1", "frameAnnotationsBOX.csv")
             if not os.path.exists(self.annotation_file):
                 raise FileNotFoundError(f"Annotations file not found: {self.annotation_file}")
             self.transform = transforms.Compose([
@@ -57,6 +57,8 @@ class LisaTrafficLightDataset(BaseDataset):
             ),
         ])
 
+        self.labels = ['go', 'other']
+
         self.load_data()
 
     def load_data(self):
@@ -64,7 +66,7 @@ class LisaTrafficLightDataset(BaseDataset):
         Load data from the dataset and annotations.
         """
         self.image_paths = []
-        self.labels = []
+        self.image_labels = []
 
         if self.phase == 'train':
             for clip in os.listdir(self.data_path):
@@ -82,7 +84,7 @@ class LisaTrafficLightDataset(BaseDataset):
                             img_path = os.path.join(clip_path, os.path.basename(img_name))
                             if os.path.exists(img_path):
                                 self.image_paths.append(img_path)
-                                self.labels.append(self.label_to_index(label))
+                                self.image_labels.append(self.label_to_index(label))
         else:
             with open(self.annotation_file, 'r') as f:
                 reader = csv.DictReader(f, delimiter=';')
@@ -92,7 +94,7 @@ class LisaTrafficLightDataset(BaseDataset):
                     img_path = os.path.join(self.data_path, os.path.basename(img_name))
                     if os.path.exists(img_path):
                         self.image_paths.append(img_path)
-                        self.labels.append(self.label_to_index(label))
+                        self.image_labels.append(self.label_to_index(label))
 
     def label_to_index(self, label):
         """
@@ -104,8 +106,8 @@ class LisaTrafficLightDataset(BaseDataset):
         Returns:
             int: Corresponding index for the label.
         """
-        label_mapping = {'go': 0, 'stop': 1}
-        return label_mapping.get(label.lower(), -1)  # Default to -1 if label is not found
+        label_mapping = {'go': 1}
+        return label_mapping.get(label.lower(), 0)  # Default to 0 if label is not 'go'
 
     def __getitem__(self, index):
         """
@@ -118,7 +120,7 @@ class LisaTrafficLightDataset(BaseDataset):
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
         img_path = self.image_paths[index]
-        label = self.labels[index]
+        label = self.image_labels[index]
 
         image = Image.open(img_path).convert('RGB')
         image = self.transform(image)

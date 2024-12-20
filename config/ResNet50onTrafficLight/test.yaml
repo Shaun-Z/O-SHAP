@@ -15,7 +15,7 @@ eval: True
 
 # Evaluation configurations
 serial_batches: True
-epoch: 4
+epoch: best
 
 # Test configurations
 batch_size: 16

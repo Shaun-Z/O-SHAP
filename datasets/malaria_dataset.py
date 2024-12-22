@@ -1,13 +1,14 @@
 import os
 import json
+import torch
 import numpy as np
 from .base_dataset import BaseDataset
 import torchvision.transforms as transforms
-from PIL import Image
+from PIL import Image, ImageDraw
 
 class MalariaDataset(BaseDataset):
     """
-    A dataset class for malaria dataset.
+    A dataset class for the malaria dataset, including bounding box information and box map generation.
     """
 
     @staticmethod
@@ -38,26 +39,16 @@ class MalariaDataset(BaseDataset):
         self.std = [0.229, 0.224, 0.225]
 
         # Define transforms for training and testing phases
-        if self.phase == 'train':
-            self.transform = transforms.Compose([
-                transforms.Resize((224, 224)),
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotation(10),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=self.mean, std=self.std)
-            ])
-        else:
-            self.transform = transforms.Compose([
-                transforms.Resize((224, 224)),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=self.mean, std=self.std)
-            ])
+        self.transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.RandomHorizontalFlip() if self.phase == 'train' else transforms.Lambda(lambda x: x),
+            transforms.RandomRotation(10) if self.phase == 'train' else transforms.Lambda(lambda x: x),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=self.mean, std=self.std)
+        ])
 
-        self.inv_transform = transforms.Compose([
-            transforms.Normalize(
-                mean=(-1 * np.array(self.mean) / np.array(self.std)).tolist(),
-                std=(1 / np.array(self.std)).tolist()
-            ),
+        self.box_transform = transforms.Compose([
+            transforms.Resize((224, 224))
         ])
 
         self.load_data()
@@ -76,14 +67,52 @@ class MalariaDataset(BaseDataset):
         with open(json_path, 'r') as f:
             self.data = json.load(f)
 
-        # Extract file paths, labels, and bounding boxes from JSON
+        # Extract file paths and objects (with bounding_box)
         self.image_paths = [
             os.path.join(self.images_dir, item['image']['pathname'].lstrip('/').replace('images/', ''))
             for item in self.data
         ]
-        # self.labels = [item['objects'] for item in self.data]  
-        self.labels = ['redcell', 'other']  # Simplified labels
-        self.objects = [item['objects'] for item in self.data] # Full object information
+        self.objects = [item['objects'] for item in self.data]
+
+    def inv_transform(self, tensor):
+        """
+        Reverse the normalization to recover the original image.
+
+        Parameters:
+            tensor (torch.Tensor): The normalized image tensor.
+
+        Returns:
+            torch.Tensor: The unnormalized image tensor.
+        """
+        mean = torch.tensor(self.mean).view(3, 1, 1)  # Reshape mean for broadcasting
+        std = torch.tensor(self.std).view(3, 1, 1)  # Reshape std for broadcasting
+        return tensor * std + mean
+
+    def generate_box_map(self, image_size, boxes):
+        """
+        Generate a box map for the given image and bounding boxes, only for non-red blood cells.
+
+        Parameters:
+            image_size (tuple): (width, height) of the image.
+            boxes (list): List of bounding boxes.
+
+        Returns:
+            box_map (PIL.Image.Image): An RGB image with boxes drawn on it.
+        """
+        box_map = Image.new('RGB', image_size, (0, 0, 0))  # Create a black image
+        draw = ImageDraw.Draw(box_map)
+
+        # Iterate over bounding boxes and only draw non-red blood cells
+        for box in boxes:
+            if box['category'] != 'red blood cell':  # Filter non-red blood cells
+                coords = [
+                    box['bounding_box']['minimum']['c'],  # xmin
+                    box['bounding_box']['minimum']['r'],  # ymin
+                    box['bounding_box']['maximum']['c'],  # xmax
+                    box['bounding_box']['maximum']['r']  # ymax
+                ]
+                draw.rectangle(coords, outline=(255, 0, 255), width=4)  # Magenta box with thicker width
+        return box_map
 
     def __getitem__(self, index):
         """
@@ -98,15 +127,28 @@ class MalariaDataset(BaseDataset):
         image_path = self.image_paths[index]
         objects = self.objects[index]
 
-        # Load image and apply transformations
+        # Load the image
         image = Image.open(image_path).convert('RGB')
-        image = self.transform(image)
+        image_size = image.size  # Original image size (width, height)
+
+        # Generate the box map for non-red blood cells
+        box_map = self.generate_box_map(image_size, objects)
+
+        # Apply transforms
+        normalized_image = self.transform(image)
+        box_map = self.box_transform(box_map)
+
+        # Convert box_map to tensor
+        box_map = transforms.ToTensor()(box_map)
+
+        # Perform inverse normalization to get original image
+        inv_image = self.inv_transform(normalized_image)
 
         # Assign binary label: 1 if there is a category other than "red blood cell", 0 otherwise
         has_other_category = any(obj['category'] != 'red blood cell' for obj in objects)
         label = 1 if has_other_category else 0
 
-        return {'X': image, 'label': label, 'indices': [label]}
+        return {'X': normalized_image, 'inv_X': inv_image, 'label': label, 'box_map': box_map, 'indices': index}
 
     def __len__(self):
         """

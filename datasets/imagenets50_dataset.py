@@ -26,8 +26,8 @@ class ImageNetS50Dataset(BaseDataset):
         self.phase = opt.phase
 
         # Default dataset paths
-        self.train_path = "/Users/xianwu/Documents/Research/XAI/Codes/ML-Testbench/data/ImageNetS50/train"
-        self.validation_path = "/Users/xianwu/Documents/Research/XAI/Codes/ML-Testbench/data/ImageNetS50/validation"
+        self.train_path = "./data/ImageNetS50/train"
+        self.validation_path = "./data/ImageNetS50/validation"
 
         # Determine the data path based on the phase
         if self.phase in ['train']:

@@ -141,14 +141,11 @@ class MalariaDataset(BaseDataset):
         # Convert box_map to tensor
         box_map = transforms.ToTensor()(box_map)
 
-        # Perform inverse normalization to get original image
-        inv_image = self.inv_transform(normalized_image)
-
         # Assign binary label: 1 if there is a category other than "red blood cell", 0 otherwise
         has_other_category = any(obj['category'] != 'red blood cell' for obj in objects)
         label = 1 if has_other_category else 0
 
-        return {'X': normalized_image, 'inv_X': inv_image, 'label': label, 'box_map': box_map, 'indices': index}
+        return {'X': normalized_image, 'label': label, 'box_map': box_map, 'indices': [label]}
 
     def __len__(self):
         """

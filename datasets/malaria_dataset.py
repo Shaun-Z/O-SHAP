@@ -99,7 +99,7 @@ class MalariaDataset(BaseDataset):
         Returns:
             box_map (PIL.Image.Image): An RGB image with boxes drawn on it.
         """
-        box_map = Image.new('RGB', image_size, (0, 0, 0))  # Create a black image
+        box_map = Image.new('RGBA', image_size, (0, 0, 0, 0))  # Create a black image
         draw = ImageDraw.Draw(box_map)
 
         # Iterate over bounding boxes and only draw non-red blood cells
@@ -111,7 +111,7 @@ class MalariaDataset(BaseDataset):
                     box['bounding_box']['maximum']['c'],  # xmax
                     box['bounding_box']['maximum']['r']  # ymax
                 ]
-                draw.rectangle(coords, outline=(255, 0, 255), width=4)  # Magenta box with thicker width
+                draw.rectangle(coords, outline=(0, 255, 0, 255), width=4)  # Magenta box with thicker width
         return box_map
 
     def __getitem__(self, index):
@@ -145,7 +145,7 @@ class MalariaDataset(BaseDataset):
         has_other_category = any(obj['category'] != 'red blood cell' for obj in objects)
         label = 1 if has_other_category else 0
 
-        return {'X': normalized_image, 'label': label, 'box_map': box_map, 'indices': [label]}
+        return {'X': normalized_image, 'label': label, 'mask': box_map, 'indices': [label]}
 
     def __len__(self):
         """

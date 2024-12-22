@@ -1,7 +1,7 @@
 # Global configurations
 dataroot: ./data/malaria
 name: ResNet18onMalaria
-gpu_ids: '0'
+gpu_ids: '-1'
 model: res_class
 dataset_name: malaria
 use_wandb: False

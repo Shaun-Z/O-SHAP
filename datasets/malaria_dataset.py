@@ -57,6 +57,8 @@ class MalariaDataset(BaseDataset):
             transforms.Resize((224, 224))
         ])
 
+        self.labels = ['red blood cell', 'others']
+
         self.load_data()
 
     def load_data(self):

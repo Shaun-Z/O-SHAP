@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from datasets.base_dataset import BaseDataset
+from .base_dataset import BaseDataset
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
 
@@ -24,20 +24,16 @@ class ImageNetS50Dataset(BaseDataset):
         """
         BaseDataset.__init__(self, opt)
         self.phase = opt.phase
-        self.dataroot = os.path.join(opt.dataroot, "ImageNetS50")
 
-        if self.phase == 'train':
-            self.data_path = os.path.join(self.dataroot, "train")
-        elif self.phase == 'train-semi':
-            self.data_path = os.path.join(self.dataroot, "train-semi")
-        elif self.phase == 'train-semi-segmentation':
-            self.data_path = os.path.join(self.dataroot, "train-semi-segmentation")
-        elif self.phase == 'validation':
-            self.data_path = os.path.join(self.dataroot, "validation")
-        elif self.phase == 'validation-segmentation':
-            self.data_path = os.path.join(self.dataroot, "validation-segmentation")
-        elif self.phase == 'test':
-            self.data_path = os.path.join(self.dataroot, "test")
+        # Default dataset paths
+        self.train_path = "/Users/xianwu/Documents/Research/XAI/Codes/ML-Testbench/data/ImageNetS50/train"
+        self.validation_path = "/Users/xianwu/Documents/Research/XAI/Codes/ML-Testbench/data/ImageNetS50/validation"
+
+        # Determine the data path based on the phase
+        if self.phase in ['train']:
+            self.data_path = self.train_path
+        elif self.phase in ['validation', 'val', 'test']:
+            self.data_path = self.validation_path
         else:
             raise ValueError(f"Invalid phase: {self.phase}")
 
@@ -60,7 +56,7 @@ class ImageNetS50Dataset(BaseDataset):
         """
         Get appropriate transforms based on the phase.
         """
-        if self.phase in ['train', 'train-semi']:
+        if self.phase in ['train']:
             return transforms.Compose([
                 transforms.Resize((224, 224)),
                 transforms.RandomHorizontalFlip(),

@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     # Extract normalized image and box_map
     normalized_image = data['X']  # Tensor for the normalized image
-    box_map = data['box_map']  # Tensor for the box map
+    box_map = data['mask']  # Tensor for the box map
 
     # Perform inverse normalization (recover the original image)
     inv_image = dataset.inv_transform(normalized_image)  # Reverse the normalization
@@ -69,8 +69,12 @@ if __name__ == '__main__':
     # Convert box_map tensor to PIL image
     box_map_pil = ToPILImage()(box_map)
 
+    if image_pil.mode != 'RGBA':
+        image_pil = image_pil.convert('RGBA')
+    if box_map_pil.mode != 'RGBA':
+        box_map_pil = box_map_pil.convert('RGBA')
     # Overlay box_map on the original image
-    overlay = Image.blend(image_pil, box_map_pil, alpha=0.5)
+    overlay = Image.alpha_composite(image_pil, box_map_pil)
 
     # Display the combined image
     plt.figure(figsize=(8, 8))

@@ -46,6 +46,12 @@ class MalariaDataset(BaseDataset):
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.std)
         ])
+        self.inv_transform = transforms.Compose([
+            transforms.Normalize(
+                mean = (-1 * np.array(self.mean) / np.array(self.std)).tolist(),
+                std = (1 / np.array(self.std)).tolist()
+            ),
+        ])
 
         self.box_transform = transforms.Compose([
             transforms.Resize((224, 224))
@@ -74,20 +80,6 @@ class MalariaDataset(BaseDataset):
         ]
         self.objects = [item['objects'] for item in self.data]
 
-    def inv_transform(self, tensor):
-        """
-        Reverse the normalization to recover the original image.
-
-        Parameters:
-            tensor (torch.Tensor): The normalized image tensor.
-
-        Returns:
-            torch.Tensor: The unnormalized image tensor.
-        """
-        mean = torch.tensor(self.mean).view(3, 1, 1)  # Reshape mean for broadcasting
-        std = torch.tensor(self.std).view(3, 1, 1)  # Reshape std for broadcasting
-        return tensor * std + mean
-
     def generate_box_map(self, image_size, boxes):
         """
         Generate a box map for the given image and bounding boxes, only for non-red blood cells.
@@ -111,7 +103,7 @@ class MalariaDataset(BaseDataset):
                     box['bounding_box']['maximum']['c'],  # xmax
                     box['bounding_box']['maximum']['r']  # ymax
                 ]
-                draw.rectangle(coords, outline=(0, 255, 0, 255), width=4)  # Magenta box with thicker width
+                draw.rectangle(coords, outline=(0, 100, 0, 255), width=20)  # Magenta box with thicker width
         return box_map
 
     def __getitem__(self, index):

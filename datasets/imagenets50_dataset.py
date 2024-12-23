@@ -12,6 +12,7 @@ class ImageNetS50Dataset(BaseDataset):
 
     @staticmethod
     def modify_commandline_options(parser, is_train):
+        parser.add_argument('--segmentation', action='store_true', help='if specified, load the segmentation dataset')
         parser.set_defaults(num_classes=50)
         return parser
 
@@ -23,17 +24,27 @@ class ImageNetS50Dataset(BaseDataset):
             opt (Option class) -- stores all the experiment flags; needs to be a subclass of BaseOptions
         """
         BaseDataset.__init__(self, opt)
+        self.dataroot = opt.dataroot
         self.phase = opt.phase
+        self.segmentation = opt.segmentation
 
         # Default dataset paths
-        self.train_path = "./data/ImageNetS50/train"
-        self.validation_path = "./data/ImageNetS50/validation"
+        if self.segmentation:
+            self.train_path = os.path.join(self.dataroot, "train_semi")
+            self.train_semi_seg_path = os.path.join(self.dataroot, "train-semi-segmentation")
+            self.val_seg_path = os.path.join(self.dataroot, "validation-segmentation")
+        else:
+            self.train_path = os.path.join(self.dataroot, "train")
 
+        self.val_path = os.path.join(self.dataroot, "validation")
+        
         # Determine the data path based on the phase
         if self.phase in ['train']:
             self.data_path = self.train_path
+            self.data_seg_path = self.train_semi_seg_path if self.segmentation else None
         elif self.phase in ['validation', 'val', 'test']:
-            self.data_path = self.validation_path
+            self.data_path = self.val_path
+            self.data_seg_path = self.val_seg_path if self.segmentation else None
         else:
             raise ValueError(f"Invalid phase: {self.phase}")
 
@@ -57,20 +68,22 @@ class ImageNetS50Dataset(BaseDataset):
         Get appropriate transforms based on the phase.
         """
         if self.phase in ['train']:
-            return transforms.Compose([
+            self.transform_mask = transforms.Compose([
                 transforms.Resize((224, 224)),
                 transforms.RandomHorizontalFlip(),
-                transforms.RandomRotation(10),
-                transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+                transforms.RandomRotation(5),
+                # transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=self.mean, std=self.std)
             ])
         else:
-            return transforms.Compose([
+            self.transform_mask = transforms.Compose([
                 transforms.Resize((224, 224)),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=self.mean, std=self.std)
             ])
+        return transforms.Compose([
+            self.transform_mask,
+            transforms.Normalize(mean=self.mean, std=self.std)
+        ])
 
     def load_data(self):
         """
@@ -78,6 +91,8 @@ class ImageNetS50Dataset(BaseDataset):
         """
         self.dataset = ImageFolder(self.data_path, transform=self.transform)
         self.labels = self.dataset.classes
+
+        self.masks = ImageFolder(self.data_seg_path, transform=self.transform_mask) if self.segmentation else None
 
     def __getitem__(self, index):
         """
@@ -90,8 +105,12 @@ class ImageNetS50Dataset(BaseDataset):
             a dictionary of data with their names. It usually contains the data itself and its metadata information.
         """
         image, label = self.dataset[index]
-        return {'X': image, 'label': label,
-                'indices': [label]}  # {image, label (directly used for loss calculation), class (indices of label)}
+        if self.segmentation:
+            mask, _ = self.masks[index]
+            return {'X': image, 'label': label, 'indices': [label], 'mask': mask}
+        else:
+            return {'X': image, 'label': label,
+                    'indices': [label]}  # {image, label (directly used for loss calculation), class (indices of label)}
 
     def __len__(self):
         """

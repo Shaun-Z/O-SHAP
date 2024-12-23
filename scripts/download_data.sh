@@ -153,6 +153,12 @@ case $NAME in
     unzip ./lisa-traffic-light-dataset.zip -d data/lisa_traffic_light
     rm ./lisa-traffic-light-dataset.zip
     ;;
+  "celeba")
+    curl -L -o ~/Downloads/celeba-dataset.zip  https://www.kaggle.com/api/v1/datasets/download/jessicali9530/celeba-dataset
+    mkdir -p data/celeba
+    unzip ~/Downloads/celeba-dataset.zip -d data/celeba
+    rm ~/Downloads/celeba-dataset.zip
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

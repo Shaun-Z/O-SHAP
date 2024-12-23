@@ -39,6 +39,7 @@ or
 python imagenet_dataset_test.py -d ./data/tiny-imagenet -g -1
 ----------------
 '''
+'''
 import numpy as np
 import matplotlib.pyplot as plt
 from torchvision.transforms import ToPILImage
@@ -82,4 +83,44 @@ if __name__ == '__main__':
     plt.title(f"Label: {data['label']}, Indices: {data['indices']}")
     plt.axis("off")
     plt.show()
+'''
+import numpy as np
+import matplotlib.pyplot as plt
+
+from options.train_options import TrainOptions
+from options.test_options import TestOptions
+from datasets.celeba_dataset import CelebADataset  # Ensure this is the correct path to the CelebA dataset
+
+from datasets import create_dataset
+
+if __name__ == '__main__':
+    # Parse the test options
+    opt = TestOptions().parse()
+
+    # Create the dataset instance using the options provided
+    dataset = create_dataset(opt)
+
+    # Print the total number of samples in the dataset
+    print(f"Dataset size: {len(dataset)}")
+
+    # Loop through the first 5 samples of the dataset for demonstration
+    for i in range(5):  # Adjust this range if you want to process more samples
+        data = dataset[i]
+        print(f"Sample {i + 1}:")
+        print(f"  X shape: {data['X'].shape}")  # Shape of the image tensor
+        print(f"  Label tensor: {data['label']}")  # Binary label tensor
+        print(f"  Indices of labels: {data['indices']}\n")  # Indices of active labels (1s)
+
+        # Visualize the image with its corresponding active label indices
+        img = data['X'].permute(1, 2, 0).numpy()  # Convert the image tensor to a NumPy array
+        img = (img * 0.5 + 0.5)  # Denormalize the image back to [0, 1] range
+        plt.imshow(img)
+        plt.title(f"Labels: {data['indices']}")  # Display active label indices as the title
+        plt.axis('off')  # Remove axes for better visualization
+        plt.show()
+
+    # Print all possible labels in the dataset
+    # Assumes the dataset has an attribute `labels` containing label names
+    print("Dataset labels:")
+    print(dataset.labels)
 

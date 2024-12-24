@@ -29,16 +29,7 @@ if __name__ == '__main__':
 
     print(dataset.labels)
 '''
-'''
-To test this script, run the following command:
-----------------
-python imagenet_dataset_test.py --dataroot ./data/tiny-imagenet --gpu_ids -1
-----------------
-or
-----------------
-python imagenet_dataset_test.py -d ./data/tiny-imagenet -g -1
-----------------
-'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 from torchvision.transforms import ToPILImage

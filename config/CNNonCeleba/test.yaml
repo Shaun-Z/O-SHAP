@@ -1,0 +1,20 @@
+# Global configurations
+dataroot: ./data/celeba
+name: CNNonCeleba
+gpu_ids: '-1'
+model: cnn
+dataset_name: celeba
+use_wandb: False
+
+# Model configurations
+input_nc: 3
+num_classes: 50
+phase: test 
+eval: True
+serial_batches: True
+
+# Test configurations
+batch_size: 16
+
+# Evaluation configurations
+epoch: 24

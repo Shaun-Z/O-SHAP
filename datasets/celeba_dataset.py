@@ -18,17 +18,17 @@ class CelebADataset(BaseDataset):
         parser.set_defaults(num_classes=40)  # Number of labels in the dataset
         return parser
 
-    def __init__(self, opt, is_train=True):
+    def __init__(self, opt):
         """
         Initialize the dataset with options and load data.
         Args:
             opt: The options containing dataroot and other configurations.
-            is_train (bool): Flag to indicate whether this is the training set.
         """
         super(CelebADataset, self).__init__(opt)
         self.data_root = opt.dataroot
         self.image_dir = os.path.join(self.data_root, "img_align_celeba/img_align_celeba")
         self.label_file = os.path.join(self.data_root, "list_attr_celeba.csv")
+        self.phase = opt.phase
 
         # Load the attribute labels
         df = pd.read_csv(self.label_file)
@@ -36,8 +36,7 @@ class CelebADataset(BaseDataset):
         all_data = df.values.tolist()
 
         train_data, test_data = train_test_split(all_data, test_size=0.3, random_state=42)
-        self.data = train_data if is_train else test_data
-        self.phase = 'train' if is_train else 'test'
+        self.data = train_data if self.phase == 'train' else test_data
 
         # Define the image transformation pipeline
         self.transform = transforms.Compose([

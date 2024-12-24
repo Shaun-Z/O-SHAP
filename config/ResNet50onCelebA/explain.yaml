@@ -1,0 +1,26 @@
+# Global configurations
+dataroot: ./data/celeba
+name: CNNonCelebA
+gpu_ids: '0'
+model: res_class
+dataset_name: celeba
+use_wandb: False
+
+# Model configurations
+net_name: resnet50
+input_nc: 3
+num_classes: 40
+phase: test 
+eval: True
+
+# Evaluation configurations
+serial_batches: True
+epoch: best
+
+# Explanation configurations
+explanation_name: shap
+index_explain: [11]
+# Configuration for BHEM
+seg_method: edge
+n_segments: 500
+approx: False

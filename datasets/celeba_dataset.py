@@ -47,6 +47,12 @@ class CelebADataset(BaseDataset):
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.std)
         ])
+        self.inv_transform = transforms.Compose([
+            transforms.Normalize(
+                mean=(-1 * np.array(self.mean) / np.array(self.std)).tolist(),
+                std=(1 / np.array(self.std)).tolist()
+            ),
+        ])
 
     def __len__(self):
         """

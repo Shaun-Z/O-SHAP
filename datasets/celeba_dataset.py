@@ -73,18 +73,18 @@ class CelebADataset(BaseDataset):
                 image = self.transform(image)
 
             # Return only "X" and "label" during training
-            if self.phase == 'train':
+            if self.phase == 'train' or self.phase == 'val':
                 return {
                     "X": image,
                     "label": torch.tensor(binary_labels, dtype=torch.float32)
                 }
-
-            # Include "indices" during testing
-            return {
-                "X": image,
-                "label": torch.tensor(binary_labels, dtype=torch.float32),
-                "indices": indices
-            }
+            else:
+                # Include "indices" during testing
+                return {
+                    "X": image,
+                    "label": torch.tensor(binary_labels, dtype=torch.float32),
+                    "indices": indices
+                }
         except Exception as e:
             # Log the error and skip the current index
             print(f"Error loading data at index {index}: {e}")

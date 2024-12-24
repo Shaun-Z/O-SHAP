@@ -3,12 +3,14 @@ import torch
 import numpy as np
 from torchvision import transforms
 from PIL import Image
+from sklearn.model_selection import train_test_split  # For splitting data
 from .base_dataset import BaseDataset
+import pandas as pd
 
 
 class CelebADataset(BaseDataset):
     """
-    A dataset class for the CelebA dataset.
+    A dataset class for the CelebA dataset with train-test split.
     """
 
     @staticmethod
@@ -16,25 +18,32 @@ class CelebADataset(BaseDataset):
         parser.set_defaults(num_classes=40)  # Number of labels in the dataset
         return parser
 
-    def __init__(self, opt):
+    def __init__(self, opt, is_train=True):
         """
         Initialize the dataset with options and load data.
+        Args:
+            opt: The options containing dataroot and other configurations.
+            is_train (bool): Flag to indicate whether this is the training set.
         """
         super(CelebADataset, self).__init__(opt)
-        self.data_root = opt.dataroot  # Use the correct attribute name here
+        self.data_root = opt.dataroot
         self.image_dir = os.path.join(self.data_root, "img_align_celeba/img_align_celeba")
         self.label_file = os.path.join(self.data_root, "list_attr_celeba.csv")
 
         # Load the attribute labels
-        with open(self.label_file, "r") as f:
-            lines = f.readlines()
-            self.labels = lines[0].strip().split(",")[1:]  # Extract label names from the header row
-            self.data = [line.strip().split(",") for line in lines[1:]]  # Load data starting from the second line
+        df = pd.read_csv(self.label_file)
+        self.labels = df.columns[1:]
+        all_data = df.values.tolist()
 
+        train_data, test_data = train_test_split(all_data, test_size=0.3, random_state=42)
+        self.data = train_data if is_train else test_data
+        self.phase = 'train' if is_train else 'test'
+
+        # Define the image transformation pipeline
         self.transform = transforms.Compose([
-            transforms.Resize((128, 128)),  # Resize all images to 128x128
-            transforms.ToTensor(),  # Convert images to tensors
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalize
+            transforms.Resize((128, 128)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
 
     def __len__(self):
@@ -47,25 +56,37 @@ class CelebADataset(BaseDataset):
         """
         Retrieve an item at a specific index.
         """
-        # Get the image path and labels
-        img_name, *labels = self.data[index]
-        img_path = os.path.join(self.image_dir, img_name)
-        labels = np.array(labels, dtype=int)
+        try:
+            # Get the image path and labels
+            img_name, *labels = self.data[index]
+            img_path = os.path.join(self.image_dir, img_name)
+            labels = np.array(labels, dtype=int)
 
-        # Convert -1 to 0 for binary labels
-        binary_labels = (labels == 1).astype(np.int32)
+            # Convert -1 to 0 for binary labels
+            binary_labels = (labels == 1).astype(np.int32)
 
-        # Find indices of labels that are 1
-        indices = np.where(binary_labels == 1)[0].tolist()
+            # Find indices of labels that are 1
+            indices = np.where(binary_labels == 1)[0].tolist()
 
-        # Load and transform the image
-        image = Image.open(img_path).convert("RGB")
-        if self.transform:
-            image = self.transform(image)
+            # Load and transform the image
+            image = Image.open(img_path).convert("RGB")
+            if self.transform is not None:
+                image = self.transform(image)
 
-        # Return a dictionary of image, labels, and indices
-        return {
-            "X": image,
-            "label": torch.tensor(binary_labels, dtype=torch.float32),
-            "indices": indices
-        }
+            # Return only "X" and "label" during training
+            if self.phase == 'train':
+                return {
+                    "X": image,
+                    "label": torch.tensor(binary_labels, dtype=torch.float32)
+                }
+
+            # Include "indices" during testing
+            return {
+                "X": image,
+                "label": torch.tensor(binary_labels, dtype=torch.float32),
+                "indices": indices
+            }
+        except Exception as e:
+            # Log the error and skip the current index
+            print(f"Error loading data at index {index}: {e}")
+            return None

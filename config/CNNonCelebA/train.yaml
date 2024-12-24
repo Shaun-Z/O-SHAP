@@ -13,7 +13,7 @@ phase: train
 
 # Training configurations
 batch_size: 64
-lr: 0.0002
+lr: 0.0001
 n_epochs: 20
 n_epochs_decay: 20
 loss_type: bcewithlogits

@@ -1,14 +1,14 @@
 # Global configurations
 dataroot: ./data/celeba
-name: CNNonCeleba
-gpu_ids: '-1'
+name: CNNonCelebA
+gpu_ids: '0'
 model: cnn
 dataset_name: celeba
 use_wandb: False
 
 # Model configurations
 input_nc: 3
-num_classes: 50
+num_classes: 40
 phase: test 
 eval: True
 serial_batches: True

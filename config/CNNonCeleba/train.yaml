@@ -1,15 +1,14 @@
 # Global configurations
 dataroot: ./data/celeba
-name: CNNonCeleba
+name: CNNonCelebA
 gpu_ids: '0'
-model: res_class
+model: cnn
 dataset_name: celeba
 use_wandb: True
 
 # Model configurations
-net_name: cnn
 input_nc: 3
-num_classes: 20
+num_classes: 40
 phase: train
 
 # Training configurations

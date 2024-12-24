@@ -139,7 +139,7 @@ class MalariaDataset(BaseDataset):
         has_other_category = any(obj['category'] != 'red blood cell' for obj in objects)
         label = 1 if has_other_category else 0
 
-        return {'X': normalized_image, 'label': label, 'mask': box_map, 'indices': [label]}
+        return {'X': normalized_image, 'label': label, 'bounding': box_map, 'indices': [label]}
 
     def __len__(self):
         """

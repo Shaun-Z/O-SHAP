@@ -30,6 +30,9 @@ class CelebADataset(BaseDataset):
         self.label_file = os.path.join(self.data_root, "list_attr_celeba.csv")
         self.phase = opt.phase
 
+        self.mean = [0.5063, 0.4258, 0.3832]
+        self.std = [0.2644, 0.2436, 0.2397]
+
         # Load the attribute labels
         df = pd.read_csv(self.label_file)
         self.labels = df.columns[1:].tolist()
@@ -42,7 +45,7 @@ class CelebADataset(BaseDataset):
         self.transform = transforms.Compose([
             transforms.Resize((128, 128)),
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            transforms.Normalize(mean=self.mean, std=self.std)
         ])
 
     def __len__(self):

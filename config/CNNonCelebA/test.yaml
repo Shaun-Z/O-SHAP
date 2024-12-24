@@ -12,6 +12,7 @@ num_classes: 40
 phase: val 
 eval: True
 serial_batches: True
+loss_type: bcewithlogits
 
 # Test configurations
 batch_size: 16

@@ -32,7 +32,7 @@ class CelebADataset(BaseDataset):
 
         # Load the attribute labels
         df = pd.read_csv(self.label_file)
-        self.labels = df.columns[1:]
+        self.labels = df.columns[1:].tolist()
         all_data = df.values.tolist()
 
         train_data, test_data = train_test_split(all_data, test_size=0.3, random_state=42)

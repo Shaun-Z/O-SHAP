@@ -3,7 +3,8 @@ import numpy as np
 from .base_dataset import BaseDataset
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
-
+import cv2
+from PIL import Image, ImageDraw
 
 class ImageNetS50Dataset(BaseDataset):
     """
@@ -107,10 +108,14 @@ class ImageNetS50Dataset(BaseDataset):
         image, label = self.dataset[index]
         if self.segmentation:
             mask, _ = self.masks[index]
-            return {'X': image, 'label': label, 'indices': [label], 'mask': mask}
+            mask = mask.sum(dim=0)
+            mask[mask != 0] = 1.0
+            # Extract edges
+            edges = cv2.Canny((mask.numpy() * 255).astype(np.uint8), 100, 200)
+            bounding = generate_bounding(edges.shape, edges)
+            return {'X': image, 'label': label, 'indices': [label], 'mask': mask, 'bounding': bounding}
         else:
-            return {'X': image, 'label': label,
-                    'indices': [label]}  # {image, label (directly used for loss calculation), class (indices of label)}
+            return {'X': image, 'label': label, 'indices': [label]}
 
     def __len__(self):
         """
@@ -120,3 +125,28 @@ class ImageNetS50Dataset(BaseDataset):
             the total number of images in the dataset.
         """
         return len(self.dataset)
+
+def generate_bounding(image_size, edge_map):
+    """
+    Generate a box map for the given image and bounding boxes, only for non-red blood cells.
+
+    Parameters:
+        image_size (tuple): (width, height) of the image.
+        edge_map ndarray(H*W): edge map of the image
+    Returns:
+        box_map (PIL.Image.Image): An RGB image with boxes drawn on it.
+    """
+    contours, _ = cv2.findContours(edge_map, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    bounding_map = Image.new('RGBA', image_size, (0, 0, 0, 0))  # Create a black image
+    draw = ImageDraw.Draw(bounding_map)
+
+    # Iterate over bounding boxes and only draw non-red blood cells
+    for contour in contours:
+        # 将轮廓转换为坐标点列表
+        points = [(point[0][0], point[0][1]) for point in contour]
+        
+        # 绘制多边形的边界线（闭合路径）
+        draw.line(points + [points[0]], fill=(0, 100, 0, 255), width=2)
+    
+    return transforms.ToTensor()(bounding_map)

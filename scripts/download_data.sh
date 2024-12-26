@@ -159,6 +159,12 @@ case $NAME in
     unzip ~/Downloads/celeba-dataset.zip -d data/celeba
     rm ~/Downloads/celeba-dataset.zip
     ;;
+  "adult")
+    curl -L -o ./adult-census-income.zip https://www.kaggle.com/api/v1/datasets/download/uciml/adult-census-income
+    mkdir -p data/adult_census
+    unzip ./adult-census-income.zip -d data/adult_census
+    rm ./adult-census-income.zip
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

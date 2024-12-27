@@ -73,7 +73,14 @@ class AdultCensusIncomeDataset(BaseDataset):
         X = data.drop(["Target", "fnlwgt"], axis=1)
         y = data["Target"].values
 
+        self.mean = X.mean()
+        self.std = X.std()
+
         X_train, X_valid, y_train, y_valid = sklearn.model_selection.train_test_split(X, y, test_size=0.2, random_state=7)
+
+        X_train = (X_train - self.mean) / self.std
+        X_valid = (X_valid - self.mean) / self.std
+                
         self.data = X_train if self.phase == "train" else X_valid
         self.label = y_train if self.phase == "train" else y_valid
 

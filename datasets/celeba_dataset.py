@@ -15,6 +15,8 @@ class CelebADataset(BaseDataset):
 
     @staticmethod
     def modify_commandline_options(parser, is_train):
+        parser.set_defaults(dataroot="./data/celeba")
+        parser.set_defaults(dataset_name="celeba")
         parser.set_defaults(num_classes=40)  # Number of labels in the dataset
         return parser
 
@@ -25,9 +27,8 @@ class CelebADataset(BaseDataset):
             opt: The options containing dataroot and other configurations.
         """
         super(CelebADataset, self).__init__(opt)
-        self.data_root = opt.dataroot
-        self.image_dir = os.path.join(self.data_root, "img_align_celeba/img_align_celeba")
-        self.label_file = os.path.join(self.data_root, "list_attr_celeba.csv")
+        self.image_dir = os.path.join(self.root, "img_align_celeba/img_align_celeba")
+        self.label_file = os.path.join(self.root, "list_attr_celeba.csv")
         self.phase = opt.phase
 
         self.mean = [0.5063, 0.4258, 0.3832]

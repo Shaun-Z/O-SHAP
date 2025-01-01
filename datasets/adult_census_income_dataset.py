@@ -52,8 +52,10 @@ class AdultCensusIncomeDataset(BaseDataset):
             dtype=dict(self.dtypes)
         )
 
-        data = raw_data.drop(["Education"], axis=1)  # redundant with Education-Num
-        filt_dtypes = list(filter(lambda x: x[0] not in ["Target", "Education"], self.dtypes))
+        # data = raw_data.drop(["Education"], axis=1)  # redundant with Education-Num
+        # filt_dtypes = list(filter(lambda x: x[0] not in ["Target", "Education"], self.dtypes))
+        data = raw_data
+        filt_dtypes = list(filter(lambda x: x[0] not in ["Target"], self.dtypes))
         data["Target"] = data["Target"] == ">50K"
         rcode = {
             "Not-in-family": 0,

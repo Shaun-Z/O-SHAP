@@ -18,7 +18,7 @@ class HShapExplanation(BaseExplanation):
     @staticmethod
     def modify_commandline_options(parser):
         # rewrite default values
-        parser.add_argument('--s', type=int, default=20, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
+        parser.add_argument('--ss', type=int, default=20, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
         parser.add_argument('--threshold_mode', type=str, default='absolute', help='thresholding modes')
         parser.add_argument('--threshold', type=float, default=0.0, help='thresholding values')
         return parser
@@ -60,11 +60,14 @@ class HShapExplanation(BaseExplanation):
         self.explanation = self.explainer.explain(
             input_img,
             label=label,
-            s=self.opt.s,
+            s=self.opt.ss,
             threshold_mode=self.opt.threshold_mode,
             threshold=self.opt.threshold,
             batch_size=1,
         )
+
+        os.makedirs(f"results/{self.opt.explanation_name}/{self.opt.name}/value", exist_ok=True)
+        np.save(f"results/{self.opt.explanation_name}/{self.opt.name}/value/P{img_index}_{indices}.npy", self.explanation.squeeze().cpu().detach().numpy())
 
     def define_explainer(self, pred_fn, dataset):
         Xtr = dataset[0]['X']

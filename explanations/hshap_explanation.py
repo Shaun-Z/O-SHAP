@@ -18,7 +18,7 @@ class HShapExplanation(BaseExplanation):
     @staticmethod
     def modify_commandline_options(parser):
         # rewrite default values
-        parser.add_argument('--ss', type=int, default=20, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
+        parser.add_argument('--ss', type=int, default=57, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
         parser.add_argument('--threshold_mode', type=str, default='absolute', help='thresholding modes')
         parser.add_argument('--threshold', type=float, default=0.0, help='thresholding values')
         return parser
@@ -97,10 +97,10 @@ class HShapExplanation(BaseExplanation):
         for i in range(result_show.shape[0]):
             axes[0, i+1].set_title(labels_to_display[i])
             axes[0, i+1].imshow(image_show, cmap=plt.get_cmap('gray'))
-            axes[0, i+1].imshow(result_show[i], cmap=red_transparent_blue)
+            axes[0, i+1].imshow(result_show[i], cmap=red_transparent_blue, vmin=-max_val, vmax=max_val)
             # axes[0, i+1].imshow(result_show[i], cmap='jet', alpha=0.5)
             axes[0, i+1].axis('off')
-            im = axes[0, i+1].imshow(result_show[i], cmap=red_transparent_blue)
+            im = axes[0, i+1].imshow(result_show[i], cmap=red_transparent_blue, vmin=-max_val, vmax=max_val)
 
         cb = plt.colorbar(im, ax=np.ravel(axes).tolist(), label="Gradient SHAP value", orientation="horizontal", aspect=30)
         cb.outline.set_visible(False)

@@ -18,7 +18,7 @@ class ShapExplanation(BaseExplanation):
     @staticmethod
     def modify_commandline_options(parser):
         # rewrite default values
-        parser.add_argument('--n_evals', type=int, default=10000, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
+        parser.add_argument('--n_evals', type=int, default=1000, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
         parser.add_argument('--batch', type=int, default=50, help='batch size for shap values calculation')
         parser.add_argument('--blur', type=str, default="blur(128, 128)", help='the size of the blur kernel to use for masking')
         return parser

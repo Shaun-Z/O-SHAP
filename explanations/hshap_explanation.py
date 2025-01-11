@@ -18,7 +18,7 @@ class HShapExplanation(BaseExplanation):
     @staticmethod
     def modify_commandline_options(parser):
         # rewrite default values
-        parser.add_argument('--ss', type=int, default=57, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
+        parser.add_argument('--ss', type=int, default=80, help='the number of iterations. The larger the number, the finer the granularity of the significance analysis and the longer the computation consumes time')
         parser.add_argument('--threshold_mode', type=str, default='absolute', help='thresholding modes')
         parser.add_argument('--threshold', type=float, default=0.0, help='thresholding values')
         return parser
@@ -50,7 +50,7 @@ class HShapExplanation(BaseExplanation):
         X = self.image.unsqueeze(0)
         label = self.dataset[img_index]['label']
         indices = self.dataset[img_index]['indices']
-        self.class_list = self.dataset[img_index]['indices']
+        self.class_list = indices if len(self.opt.index_explain)==0 else self.opt.index_explain
 
         input_img = X.squeeze().to(self.device)   # torch.Size([1, 3, 224, 224])
         
@@ -59,7 +59,7 @@ class HShapExplanation(BaseExplanation):
         # explain image
         self.explanation = self.explainer.explain(
             input_img,
-            label=label,
+            label=output_indexes,
             s=self.opt.ss,
             threshold_mode=self.opt.threshold_mode,
             threshold=self.opt.threshold,

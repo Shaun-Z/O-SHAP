@@ -45,7 +45,7 @@ if __name__ == '__main__':
     dataset = create_dataset(opt)
 
     # Load the data item with index 200
-    index = 0
+    index = 173
     data = dataset[index]  # Load the 200th sample
 
     # Extract normalized image and box_map

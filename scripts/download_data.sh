@@ -135,6 +135,36 @@ case $NAME in
     unzip jatracer-images.zip -d data/jatracer
     rm jatracer-images.zip
     ;;
+  "malaria")
+    curl -L -o malaria-bounding-boxes.zip https://www.kaggle.com/api/v1/datasets/download/kmader/malaria-bounding-boxes
+    unzip malaria-bounding-boxes.zip -d data
+    rm malaria-bounding-boxes.zip
+    rm -r ./data/malaria/malaria
+    ;;
+  "mvtec_ad")
+    curl -L -o mvtec_ad.zip https://www.kaggle.com/api/v1/datasets/download/ipythonx/mvtec-ad
+    mkdir -p data/mvtec_ad
+    unzip mvtec_ad.zip -d data/mvtec_ad
+    rm mvtec_ad.zip
+    ;;
+  "lisa_traffic_light")
+    curl -L -o ./lisa-traffic-light-dataset.zip https://www.kaggle.com/api/v1/datasets/download/mbornoe/lisa-traffic-light-dataset
+    mkdir -p data/lisa_traffic_light
+    unzip ./lisa-traffic-light-dataset.zip -d data/lisa_traffic_light
+    rm ./lisa-traffic-light-dataset.zip
+    ;;
+  "celeba")
+    curl -L -o ~/Downloads/celeba-dataset.zip  https://www.kaggle.com/api/v1/datasets/download/jessicali9530/celeba-dataset
+    mkdir -p data/celeba
+    unzip ~/Downloads/celeba-dataset.zip -d data/celeba
+    rm ~/Downloads/celeba-dataset.zip
+    ;;
+  "adult")
+    curl -L -o ./adult-census-income.zip https://www.kaggle.com/api/v1/datasets/download/uciml/adult-census-income
+    mkdir -p data/adult_census_income
+    unzip ./adult-census-income.zip -d data/adult_census_income
+    rm ./adult-census-income.zip
+    ;;
   *)
     echo "Invalid dataset name"
     ;;

@@ -1,0 +1,20 @@
+# Global configurations
+dataroot: ./data/celeba
+name: CNNonCelebA
+gpu_ids: '0'
+model: cnn
+dataset_name: celeba
+use_wandb: True
+
+# Model configurations
+input_nc: 3
+num_classes: 40
+phase: train
+
+# Training configurations
+batch_size: 256
+lr: 0.0002
+n_epochs: 20
+n_epochs_decay: 20
+loss_type: bcewithlogits
+save_epoch_freq: 1

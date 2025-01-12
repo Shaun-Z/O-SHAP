@@ -1,15 +1,15 @@
 # Global configurations
-dataroot: ./data/tiny-imagenet
-name: ResNet50onTinyImageNet
+dataroot: ./data/imagenets50
+name: ResNet50onImageNetS50
 gpu_ids: '0'
 model: res_class
-dataset_name: tiny_imagenet
+dataset_name: imagenets50
 use_wandb: False
 
 # Model configurations
 net_name: resnet50
 input_nc: 3
-num_classes: 200
+num_classes: 50
 phase: val
 eval: True
 
@@ -18,4 +18,4 @@ serial_batches: True
 epoch: best
 
 # Test configurations
-batch_size: 16
+batch_size: 1

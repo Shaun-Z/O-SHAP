@@ -1,0 +1,20 @@
+# Global configurations
+dataroot: ./data/lisa_traffic_light
+name: ResNet50onTrafficLight
+gpu_ids: '0'
+model: res_class
+dataset_name: lisa_traffic_light
+use_wandb: True
+
+# Model configurations
+net_name: resnet50
+input_nc: 3
+num_classes: 2
+
+# Training configurations
+batch_size: 128
+lr: 0.00001
+n_epochs: 10
+n_epochs_decay: 15
+loss_type: cross_entropy
+save_epoch_freq: 1

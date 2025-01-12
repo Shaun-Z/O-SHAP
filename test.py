@@ -31,6 +31,11 @@ python test.py --config config/CNNonBrainMRI/test.yaml
 python test.py --config config/CNNonIcons50/test.yaml
 '''
 
+# %% Test ResNet50 on Lisa Traffic Light
+''' (Correctness: 5731/7900)
+python test.py --config config/ResNet50onTrafficLight/test.yaml
+'''
+
 from options.test_options import TestOptions
 from options.train_options import TrainOptions
 from datasets import create_dataloader
@@ -117,7 +122,7 @@ if __name__ == '__main__':
                     #     is_True = False
                     print(f"{i*opt.batch_size+j}\t\033[92m{is_True}\033[0m\t{predicted_index.tolist()}\t{true_index.tolist()}")
                     
-                    file.write(f"{i*opt.batch_size+j}\t{is_True}\t{data['indices'][j]}\t{predicted_index.tolist()}\t{true_index.tolist()}\t{predicted_labels}\t{true_labels}\n")
+                    file.write(f"{i*opt.batch_size+j}\t{is_True}\t{predicted_index.tolist()}\t{true_index.tolist()}\t{predicted_labels}\t{true_labels}\n")
             else:
                 raise NotImplementedError(f'Loss type {opt.loss_type} is not implemented')
         

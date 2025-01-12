@@ -1,0 +1,20 @@
+# Global configurations
+dataroot: ./data/brain_tumor_mri
+name: ResNet50onBrainMRI
+gpu_ids: '0'
+model: res_class
+dataset_name: braintumormri
+use_wandb: True
+
+# Model configurations
+net_name: resnet50
+input_nc: 3
+num_classes: 4
+
+# Training configurations
+batch_size: 64
+lr: 0.00001
+n_epochs: 15
+n_epochs_decay: 15
+loss_type: cross_entropy
+save_epoch_freq: 1

@@ -11,7 +11,7 @@ class ExplainOptions(BaseOptions):
         parser = BaseOptions.initialize(self, parser)  # define shared options
         # default values
         parser.add_argument('--index_explain', nargs='+', default=[], help='the indices of the class to explain')
-        parser.add_argument('--index_instance', nargs='+', default=[], help='the indices of the instance to explain')
+        parser.add_argument('--index_instance', type=int, nargs='+', default=[], help='the indices of the instance to explain')
         parser.add_argument('--results_dir', type=str, default='./results/', help='saves results here.')
         parser.add_argument('--aspect_ratio', type=float, default=1.0, help='aspect ratio of result images')
         parser.add_argument('--phase', type=str, default='val', help='train, val, test, etc')

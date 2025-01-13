@@ -12,7 +12,7 @@ input_nc: 3
 num_classes: 50
 
 # Training configurations
-batch_size: 64
+batch_size: 128
 lr: 0.00001
 n_epochs: 20
 n_epochs_decay: 40

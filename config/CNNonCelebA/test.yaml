@@ -18,4 +18,4 @@ loss_type: bcewithlogits
 batch_size: 16
 
 # Evaluation configurations
-epoch: 18
+epoch: best

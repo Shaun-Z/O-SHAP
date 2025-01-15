@@ -14,7 +14,7 @@ class ImageNetS50Dataset(BaseDataset):
     @staticmethod
     def modify_commandline_options(parser, is_train):
         parser.add_argument('--segmentation', action='store_true', help='if specified, load the segmentation dataset')
-        parser.add_argument('--resize', type=tuple, default=(224, 224), help='resize the image to this size')
+        parser.add_argument('--resize', type=int, nargs=2, default=[224, 224], help='resize the image to this size')
         parser.set_defaults(num_classes=50)
         return parser
 

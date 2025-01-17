@@ -16,7 +16,7 @@ loss_type: bcewithlogits
 
 # Evaluation configurations
 serial_batches: True
-epoch: 14
+epoch: best
 
 # Test configurations
 batch_size: 1

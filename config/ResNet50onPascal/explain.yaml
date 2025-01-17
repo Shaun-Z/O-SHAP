@@ -16,15 +16,12 @@ loss_type: bcewithlogits
 
 # Evaluation configurations
 serial_batches: True
-epoch: 14
-
-# Test configurations
-batch_size: 1
+epoch: best
 
 # Explanation configurations
-explanation_name: rise
+explanation_name: bhem
 # index_explain: [0,1]
 # Configuration for BHEM
-seg_method: slic
+seg_method: edge
 n_segments: 500
-approx: False
+approx: True

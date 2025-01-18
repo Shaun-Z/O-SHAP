@@ -11,6 +11,7 @@ class BrainTumorMRIDataset(BaseDataset):
 
     @staticmethod
     def modify_commandline_options(parser, is_train):
+        parser.add_argument('--resize', type=tuple, default=(224, 224), help='resize the image to this size')
         parser.set_defaults(num_classes=4)
         return parser
     
@@ -34,7 +35,7 @@ class BrainTumorMRIDataset(BaseDataset):
 
         if self.phase == 'train':
             self.transform = transforms.Compose([
-                transforms.Resize((224, 224)),
+                transforms.Resize(opt.resize),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomRotation(10),
                 transforms.ToTensor(),
@@ -42,7 +43,7 @@ class BrainTumorMRIDataset(BaseDataset):
             ])
         else:
             self.transform = transforms.Compose([
-                transforms.Resize((224, 224)),
+                transforms.Resize(opt.resize),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=self.mean, std=self.std)
             ])

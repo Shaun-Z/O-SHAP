@@ -17,6 +17,7 @@ class CelebADataset(BaseDataset):
     def modify_commandline_options(parser, is_train):
         parser.set_defaults(dataroot="./data/celeba")
         parser.set_defaults(dataset_name="celeba")
+        parser.add_argument('--resize', type=tuple, default=(128, 128), help='resize the image to this size')
         parser.set_defaults(num_classes=40)  # Number of labels in the dataset
         return parser
 
@@ -44,7 +45,7 @@ class CelebADataset(BaseDataset):
 
         # Define the image transformation pipeline
         self.transform = transforms.Compose([
-            transforms.Resize((128, 128)),
+            transforms.Resize(opt.resize),
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.std)
         ])

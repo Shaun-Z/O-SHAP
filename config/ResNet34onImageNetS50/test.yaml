@@ -1,18 +1,17 @@
 # Global configurations
-dataroot: ./data/pascal_voc_2012
-name: Resnet50onPASCAL
+dataroot: ./data/imagenets50
+name: ResNet34onImageNetS50
 gpu_ids: '0'
 model: res_class
-dataset_name: pascalvoc2012
+dataset_name: imagenets50
 use_wandb: False
 
 # Model configurations
-net_name: resnet50
+net_name: resnet34
 input_nc: 3
-num_classes: 20
-phase: test
+num_classes: 50
+phase: val
 eval: True
-loss_type: bcewithlogits
 
 # Evaluation configurations
 serial_batches: True

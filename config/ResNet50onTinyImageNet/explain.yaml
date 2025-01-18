@@ -1,18 +1,17 @@
 # Global configurations
-dataroot: ./data/pascal_voc_2012
-name: Resnet50onPASCAL
+dataroot: ./data/tiny-imagenet
+name: ResNet50onTinyImageNet
 gpu_ids: '0'
 model: res_class
-dataset_name: pascalvoc2012
+dataset_name: tiny_imagenet
 use_wandb: False
 
 # Model configurations
 net_name: resnet50
 input_nc: 3
-num_classes: 20
-phase: test 
+num_classes: 200
+phase: val
 eval: True
-loss_type: bcewithlogits
 
 # Evaluation configurations
 serial_batches: True
@@ -21,6 +20,7 @@ epoch: best
 # Explanation configurations
 explanation_name: bhem
 # index_explain: [0,1]
+# index_instance: [548,549]
 # Configuration for BHEM
 seg_method: edge
 n_segments: 500

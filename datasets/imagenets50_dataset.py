@@ -14,6 +14,7 @@ class ImageNetS50Dataset(BaseDataset):
     @staticmethod
     def modify_commandline_options(parser, is_train):
         parser.add_argument('--segmentation', action='store_true', help='if specified, load the segmentation dataset')
+        parser.add_argument('--resize', type=int, nargs=2, default=[224, 224], help='resize the image to this size')
         parser.set_defaults(num_classes=50)
         return parser
 
@@ -70,7 +71,7 @@ class ImageNetS50Dataset(BaseDataset):
         """
         if self.phase in ['train']:
             self.transform_mask = transforms.Compose([
-                transforms.Resize((224, 224)),
+                transforms.Resize(self.opt.resize),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomRotation(5),
                 # transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
@@ -78,7 +79,7 @@ class ImageNetS50Dataset(BaseDataset):
             ])
         else:
             self.transform_mask = transforms.Compose([
-                transforms.Resize((224, 224)),
+                transforms.Resize(self.opt.resize),
                 transforms.ToTensor(),
             ])
         return transforms.Compose([

@@ -27,7 +27,7 @@ class CnnModel(BaseModel):
         else:
             self.model_names = ['Cnn_classifier']
 
-        self.netCnn_classifier = networks.define_cnn_classifier(opt.input_nc, opt.num_classes, opt.init_type, opt.init_gain, self.gpu_ids)
+        self.netCnn_classifier = networks.define_cnn_classifier(opt.input_nc, opt.num_classes, opt.resize, opt.init_type, opt.init_gain, self.gpu_ids)
 
         if self.isTrain:
             # define loss functions
@@ -40,7 +40,6 @@ class CnnModel(BaseModel):
             
         self.optimizer = torch.optim.Adam(self.netCnn_classifier.parameters(), lr=opt.lr)
         self.optimizers.append(self.optimizer)
-        
 
     def set_input(self, input):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.

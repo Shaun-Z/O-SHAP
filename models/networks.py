@@ -121,9 +121,9 @@ def init_net(net, init_type='normal', init_gain=0.02, gpu_ids=[]):
             net.to(device)
         else:
             assert(torch.cuda.is_available())
-            net.to(gpu_ids[0])
             if len(gpu_ids) > 1:
                 net = torch.nn.DataParallel(net, gpu_ids)   # multi-GPUs
+            net.to(gpu_ids[0])
             # net = torch.nn.DataParallel(net, gpu_ids)  
     # init_weights(net, init_type, init_gain=init_gain)
     return net
@@ -390,10 +390,13 @@ def cal_gradient_penalty(netD, real_data, fake_data, device, type='mixed', const
     else:
         return 0.0, None
 
-def define_cnn_classifier(input_nc, num_classes, init_type='normal', init_gain=0.02, gpu_ids=[]):
+def define_cnn_classifier(input_nc, num_classes, image_size, init_type='normal', init_gain=0.02, gpu_ids=[]):
 
     net = None
     net = CnnClassifier(input_nc, num_classes)
+    # Dummy forward pass to initialize parameters
+    dummy_input = torch.zeros(1, input_nc, *image_size)
+    net(dummy_input)
     return init_net(net, init_type, init_gain, gpu_ids)
 
 class CnnClassifier(nn.Module):

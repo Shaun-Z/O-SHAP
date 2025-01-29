@@ -1,7 +1,9 @@
 # 启动两个命令并将它们放在后台运行
 python train.py --config config/ResNet50onEuroSAT/train.yaml &
 pid1=$!
-nvidia-smi --query-gpu=index,name,memory.total,memory.used,memory.free,utilization.gpu,utilization.memory,temperature.gpu,power.draw,power.limit --format=csv -l 1 > gpu_full_log.csv &
+stdbuf -oL nvidia-smi --query-gpu=index,name,memory.total,memory.used,memory.free,utilization.gpu,utilization.memory,temperature.gpu,power.draw,power.limit --format=csv -l 1 | while IFS= read -r line; do
+    echo "$(date '+%Y-%m-%d %H:%M:%S'), $line"
+done >> gpu_full_log.csv &
 pid2=$!
 
 # 等待其中一个命令结束

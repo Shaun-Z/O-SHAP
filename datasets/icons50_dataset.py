@@ -16,6 +16,7 @@ class Icons50Dataset(BaseDataset):
     @staticmethod
     def modify_commandline_options(parser, is_train):
         parser.set_defaults(num_classes=50)
+        parser.add_argument('--resize', type=int, nargs=2, default=[32, 32], help='resize the image to this size')
         return parser
     
     def __init__(self, opt):
@@ -37,7 +38,7 @@ class Icons50Dataset(BaseDataset):
 
         if self.phase == 'train':
             self.transform = transforms.Compose([
-                transforms.Resize((32, 32)),
+                transforms.Resize(self.opt.resize),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomRotation(10),
                 transforms.ToTensor(),
@@ -45,7 +46,7 @@ class Icons50Dataset(BaseDataset):
             ])
         else:
             self.transform = transforms.Compose([
-                transforms.Resize((32, 32)),
+                transforms.Resize(self.opt.resize),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=self.mean, std=self.std)
             ])

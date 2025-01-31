@@ -19,7 +19,7 @@ data/*
 *.txt
 *.npy
 *.ipynb
-image_folder
+!requirements.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

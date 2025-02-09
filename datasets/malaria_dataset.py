@@ -14,6 +14,7 @@ class MalariaDataset(BaseDataset):
     @staticmethod
     def modify_commandline_options(parser, is_train):
         parser.set_defaults(num_classes=2)  # Binary classification: red blood cell (1) vs others (0)
+        parser.add_argument('--resize', type=int, nargs=2, default=[224, 224], help='resize the image to this size')
         return parser
 
     def __init__(self, opt):
@@ -40,7 +41,7 @@ class MalariaDataset(BaseDataset):
 
         # Define transforms for training and testing phases
         self.transform = transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize(self.opt.resize),
             transforms.RandomHorizontalFlip() if self.phase == 'train' else transforms.Lambda(lambda x: x),
             transforms.RandomRotation(10) if self.phase == 'train' else transforms.Lambda(lambda x: x),
             transforms.ToTensor(),
@@ -54,7 +55,7 @@ class MalariaDataset(BaseDataset):
         ])
 
         self.box_transform = transforms.Compose([
-            transforms.Resize((224, 224))
+            transforms.Resize(self.opt.resize),
         ])
 
         self.labels = ['red blood cell', 'others']

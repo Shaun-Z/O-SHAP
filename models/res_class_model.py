@@ -73,11 +73,12 @@ class ResClassModel(BaseModel):
 
     def train(self):
         """Make models train mode during test time"""
-        for param in self.netResnet_classifier.parameters():
+        model = self.netResnet_classifier.module if isinstance(self.netResnet_classifier, torch.nn.DataParallel) else self.netResnet_classifier
+        for param in model.parameters():
             param.requires_grad = False
-        for param in self.netResnet_classifier.layer4.parameters():
+        for param in model.layer4.parameters():
             param.requires_grad = False
-        for param in self.netResnet_classifier.fc.parameters():
+        for param in model.fc.parameters():
             param.requires_grad = True
 
     def validate(self, DataLoader_val):

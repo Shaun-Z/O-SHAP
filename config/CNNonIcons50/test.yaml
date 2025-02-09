@@ -17,4 +17,4 @@ serial_batches: True
 batch_size: 16
 
 # Evaluation configurations
-epoch: 24
+epoch: best

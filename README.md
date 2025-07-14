@@ -1,105 +1,83 @@
-# ML-Testbench
+# O-Shap
 
 This is a testbench for ML algorithms and explanation methods.
 
-> These have already been achieved
+![O-Shap](assets/O-Shap.jpg)
+
+> Supported datasets and models.
 > - Dataset
->   - [ ] MNIST
+>   - [X] MNIST
 >   - [X] Tiny-ImageNet
 >   - [X] Brain-Tumor-MRI
+>   - [X] CelebA
+>   - [X] Pascal VOC 2012
+>   - [X] EuroSAT
+>   - [X] ImageNetS50
+>   - [X] TrafficLight
 >   - [ ] CUB-200-2011
 > - Model
 >   - [X] CNN Classifier
 >   - [X] Resnet Classifier
 
-- [ML-Testbench](#ml-testbench)
 - [Configuration YAML Files](#configuration-yaml-files)
 - [Download Datasets](#download-datasets)
 - [Models](#models)
   - [ResNet Classifier](#resnet-classifier)
   - [CNN Classifier](#cnn-classifier)
-- [Training](#training)
-  - [ImageNet](#imagenet)
-  - [Brain Tumor MRI](#brain-tumor-mri)
-- [How to add your work](#how-to-add-your-work)
+- [Train](#train)
+  - [ImageNet (specified arguments)](#imagenet-specified-arguments)
+  - [Brain Tumor MRI (use yaml)](#brain-tumor-mri-use-yaml)
+- [Explain](#explain)
+- [How to add work](#how-to-add-work)
   - [Model](#model)
   - [Dataset](#dataset)
 - [Acknowledgements](#acknowledgements)
 
-# Configuration YAML Files
-This is a newly added function and has not been fully tested.
+## Configuration YAML Files
 
-The configuration files are stored as `./config/<config>.yaml`. They provide arguments for each python commands you run
+The configuration files are stored as `./config/<config>.yaml`. They provide arguments for each python commands
 
 ```bash
 python <filename>.py --config <path_to_yaml>
 ```
 
-After specifying `--config`, you can also add other arguments, e.g.
+Add other arguments by specifying `--config`:
 
 ```bash
 python <filename>.py --config <path_to_yaml> --eval
 ```
 
-> The priority of arguments in YAML files are higher than that of manually specified arguments. In other words, if you specify the argument `dataroot` in both **YAML** and **command line**, the final value of `dataroot` will be the value in YAML.
+> The priority of arguments in YAML files are higher than that of manually specified arguments. For example, if `dataroot` is specified in both **YAML** and **command line**, the final value of `dataroot` will be the value in YAML.
 
-# Download Datasets
-
-1. carvana-image-masking-challenge
+## Download Datasets
 
 ```bash
-bash scripts/download_data.sh carvana
+bash scripts/download_data.sh <name_of_the_dataset>
 ```
 
-2. MNIST
+1. `carvana`
+2. `mnist`
+3. `tiny-imagenet`
+4. `cifar10`
+5. `cub200`
+6. `severstal`
+7. `pascal_voc_2007`
 
-```bash
-bash scripts/download_data.sh mnist
-```
+For more options, please refer to `scripts/download_data.sh`.
 
-3. ImageNet
+## Models
 
-```bash
-bash scripts/download_data.sh tiny-imagenet
-```
-
-4. cifar10
-
-```bash
-bash scripts/download_data.sh cifar10
-```
-
-5. cub200
-
-```bash
-bash scripts/download_data.sh cub200
-```
-
-6. serverstal
-
-```bash
-bash scripts/download_data.sh serverstal
-```
-
-7. pascal_voc_2007
-
-```bash
-bash scripts/download_data.sh pascal_voc_2007
-```
-
-# Models
-
-## ResNet Classifier
+### ResNet Classifier
 
 `./models/res_class_model.py`
 
-## CNN Classifier
+### CNN Classifier
 
 `./models/cnn_model.py`
 
-# Training
+## Train
 
-## ImageNet
+### ImageNet (specified arguments)
 
 ```bash
 python train.py --dataroot ./data/tiny-imagenet --name Restnet101Classifier --gpu_ids -1 --model res_class --net_name resnet101 --dataset_name imagenet --batch_size 128
@@ -117,18 +95,28 @@ python train.py -d ./data/tiny-imagenet -n Restnet101Classifier -g -1 -m res_cla
 > - `--save_by_iter`: save model by iteration
 > - `--use_wandb`: use wandb for visualization
 
-## Brain Tumor MRI
+### Brain Tumor MRI (use yaml)
 ```bash
-python train.py --config ./config/CNNonBrainMRI.yaml
+python train.py --config ./config/CNNonBrainMRI/train.yaml
 ```
 
-# How to add your work
+## Explain
 
-## Model
+An example of explaining trained CNN on Brain Tumor MRI dataset:
 
-1. Put your model file under `./models/`
+```bash
+python explain.py --config ./config/CNNonBrainMRI/explain.yaml
+```
 
-    Remember to name your file as `{model_name}_model.py` to make it looks like:
+Visualized results will be generated and put under `./results/`.
+
+## How to add work
+
+### Model
+
+1. Put the model under `./models/`
+
+    Remember to name the file as `{model_name}_model.py` to make it looks like:
 
     ```bash
     ./models/{model_name}_model.py
@@ -154,24 +142,24 @@ python train.py --config ./config/CNNonBrainMRI.yaml
             pass
     ```
 
-3. (optional) Write functions in `networks.py` to define how to get parts of your model
+3. (optional) Write functions in `networks.py` to define how to get parts of the model
     ```python
     def define_G(**args):
         net = ResnetGenerator(**args)
         return init_net(net, **args)
     ```
 
-4. Create your model
+4. Create the model
 
-    Import those basic networks in your model file `{model_name}_model.py`
+    Import those basic networks in the file `{model_name}_model.py`
     ```python
     from . import networks
     ```
 
-    Define your class (Example: `ResClassModel`)
+    Define the class (Example: `ResClassModel`)
     ```python
     class ResClassModel(BaseModel):
-        '''Please add options in this method if you want more customized options for your model while traing or testing.'''
+        '''Please add options in this method if you want more customized options for the model while traing or testing.'''
         @staticmethod
         def modify_commandline_options(parser, is_train=True):
             parser.set_defaults(no_dropout=True)  # default model did not use dropout
@@ -239,11 +227,11 @@ python train.py --config ./config/CNNonBrainMRI.yaml
             self.optimizer.step()       # update weights
     ```
 
-## Dataset
+### Dataset
 
 TBD
 
-# Acknowledgements
+## Acknowledgements
 I would like to express my sincere gratitude to the following individuals and projects for their contributions and inspiration to this project:
 
 - [Introduction to CNN Keras - 0.997 (top 6%)](https://www.kaggle.com/code/yassineghouzam/introduction-to-cnn-keras-0-997-top-6#2.1-Load-data): The MNIST dataset preprocessing for this project references its methodology.

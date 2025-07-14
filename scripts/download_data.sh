@@ -79,7 +79,7 @@ case $NAME in
     rm CUB_200_2011.tgz
     rm segmentations.tgz
     ;;
-  "serverstal")
+  "severstal")
     kaggle_diagnose
     kaggle competitions download -c severstal-steel-defect-detection
     mkdir -p data/severstal
